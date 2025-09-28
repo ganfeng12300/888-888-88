@@ -1,0 +1,526 @@
+# 🐳 Docker Compose 生产级编排配置
+# AI量化交易系统 - 完整服务栈部署
+
+version: '3.8'
+
+# 网络配置
+networks:
+  trading-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  monitoring-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+# 数据卷配置
+volumes:
+  # 应用数据
+  trading-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data
+  trading-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./logs
+  trading-config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./config
+  
+  # 数据库数据
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  
+  # 监控数据
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  elasticsearch-data:
+    driver: local
+
+# 服务配置
+services:
+  # ==================== 核心应用服务 ====================
+  
+  # AI量化交易主应用
+  trading-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: production
+      args:
+        BUILD_DATE: ${BUILD_DATE:-}
+        VERSION: ${VERSION:-latest}
+        VCS_REF: ${VCS_REF:-}
+    image: ai-trading-system:${VERSION:-latest}
+    container_name: trading-app
+    hostname: trading-app
+    restart: unless-stopped
+    
+    # 网络配置
+    networks:
+      - trading-network
+      - monitoring-network
+    
+    # 端口映射
+    ports:
+      - "8000:8000"   # 主应用端口
+      - "8001:8001"   # Prometheus指标端口
+      - "8002:8002"   # 健康检查端口
+    
+    # 环境变量
+    environment:
+      # 应用配置
+      TRADING_ENV: ${TRADING_ENV:-production}
+      TRADING_LOG_LEVEL: ${TRADING_LOG_LEVEL:-INFO}
+      TRADING_DEBUG: ${TRADING_DEBUG:-false}
+      
+      # 资源限制
+      TRADING_CPU_LIMIT: ${TRADING_CPU_LIMIT:-16}
+      TRADING_MEMORY_LIMIT: ${TRADING_MEMORY_LIMIT:-107374182400}
+      
+      # 数据库配置
+      DATABASE_URL: postgresql://trading:${POSTGRES_PASSWORD:-trading123}@postgres:5432/trading_db
+      
+      # Redis配置
+      REDIS_URL: redis://redis:6379/0
+      
+      # 监控配置
+      PROMETHEUS_GATEWAY_URL: http://prometheus-pushgateway:9091
+      
+      # 交易配置
+      TRADING_ENABLED: ${TRADING_ENABLED:-true}
+      TRADING_MAX_POSITION: ${TRADING_MAX_POSITION:-1000.0}
+      TRADING_RISK_LIMIT: ${TRADING_RISK_LIMIT:-10000.0}
+    
+    # 资源限制
+    deploy:
+      resources:
+        limits:
+          cpus: '16.0'
+          memory: 100G
+        reservations:
+          cpus: '8.0'
+          memory: 32G
+    
+    # 数据卷挂载
+    volumes:
+      - trading-data:/app/data
+      - trading-logs:/app/logs
+      - trading-config:/app/config
+      - /etc/localtime:/etc/localtime:ro
+    
+    # 依赖服务
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "./docker/healthcheck.sh", "quick"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # 日志配置
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+        labels: "service=trading-app"
+
+  # ==================== 数据库服务 ====================
+  
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: trading-postgres
+    hostname: postgres
+    restart: unless-stopped
+    
+    networks:
+      - trading-network
+    
+    ports:
+      - "5432:5432"
+    
+    environment:
+      POSTGRES_DB: trading_db
+      POSTGRES_USER: trading
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-trading123}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - /etc/localtime:/etc/localtime:ro
+    
+    # PostgreSQL配置优化
+    command: >
+      postgres
+      -c max_connections=200
+      -c shared_buffers=2GB
+      -c effective_cache_size=6GB
+      -c maintenance_work_mem=512MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=64MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+      -c max_worker_processes=8
+      -c max_parallel_workers_per_gather=4
+      -c max_parallel_workers=8
+      -c max_parallel_maintenance_workers=4
+    
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trading -d trading_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+        labels: "service=postgres"
+
+  # Redis缓存和消息队列
+  redis:
+    image: redis:7-alpine
+    container_name: trading-redis
+    hostname: redis
+    restart: unless-stopped
+    
+    networks:
+      - trading-network
+    
+    ports:
+      - "6379:6379"
+    
+    volumes:
+      - redis-data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - /etc/localtime:/etc/localtime:ro
+    
+    command: redis-server /usr/local/etc/redis/redis.conf
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+        labels: "service=redis"
+
+  # ==================== 监控服务 ====================
+  
+  # Prometheus监控
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: trading-prometheus
+    hostname: prometheus
+    restart: unless-stopped
+    
+    networks:
+      - monitoring-network
+      - trading-network
+    
+    ports:
+      - "9090:9090"
+    
+    volumes:
+      - prometheus-data:/prometheus
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./docker/prometheus/rules:/etc/prometheus/rules:ro
+      - /etc/localtime:/etc/localtime:ro
+    
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=50GB'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+        labels: "service=prometheus"
+
+  # Prometheus Pushgateway
+  prometheus-pushgateway:
+    image: prom/pushgateway:latest
+    container_name: trading-pushgateway
+    hostname: prometheus-pushgateway
+    restart: unless-stopped
+    
+    networks:
+      - monitoring-network
+    
+    ports:
+      - "9091:9091"
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+        labels: "service=pushgateway"
+
+  # Grafana可视化
+  grafana:
+    image: grafana/grafana:latest
+    container_name: trading-grafana
+    hostname: grafana
+    restart: unless-stopped
+    
+    networks:
+      - monitoring-network
+    
+    ports:
+      - "3000:3000"
+    
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - /etc/localtime:/etc/localtime:ro
+    
+    depends_on:
+      - prometheus
+    
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+        labels: "service=grafana"
+
+  # ==================== 日志服务 ====================
+  
+  # Elasticsearch日志存储
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: trading-elasticsearch
+    hostname: elasticsearch
+    restart: unless-stopped
+    
+    networks:
+      - monitoring-network
+    
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+      - /etc/localtime:/etc/localtime:ro
+    
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+        labels: "service=elasticsearch"
+
+  # Logstash日志处理
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.0
+    container_name: trading-logstash
+    hostname: logstash
+    restart: unless-stopped
+    
+    networks:
+      - monitoring-network
+    
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    
+    volumes:
+      - ./docker/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./docker/logstash/config:/usr/share/logstash/config:ro
+      - trading-logs:/app/logs:ro
+      - /etc/localtime:/etc/localtime:ro
+    
+    depends_on:
+      - elasticsearch
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+        labels: "service=logstash"
+
+  # Kibana日志可视化
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.0
+    container_name: trading-kibana
+    hostname: kibana
+    restart: unless-stopped
+    
+    networks:
+      - monitoring-network
+    
+    ports:
+      - "5601:5601"
+    
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    
+    depends_on:
+      - elasticsearch
+    
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+        labels: "service=kibana"
+
+  # ==================== 工具服务 ====================
+  
+  # Nginx反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: trading-nginx
+    hostname: nginx
+    restart: unless-stopped
+    
+    networks:
+      - trading-network
+      - monitoring-network
+    
+    ports:
+      - "80:80"
+      - "443:443"
+    
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      - /etc/localtime:/etc/localtime:ro
+    
+    depends_on:
+      - trading-app
+      - grafana
+      - kibana
+    
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+        labels: "service=nginx"
+
+  # Portainer容器管理
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: trading-portainer
+    hostname: portainer
+    restart: unless-stopped
+    
+    networks:
+      - monitoring-network
+    
+    ports:
+      - "9000:9000"
+    
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+      - /etc/localtime:/etc/localtime:ro
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+        labels: "service=portainer"
+
+# 额外数据卷
+volumes:
+  portainer-data:
+    driver: local
