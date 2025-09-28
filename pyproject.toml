@@ -1,0 +1,109 @@
+[tool.poetry]
+name = "ai-quant-trading-system"
+version = "1.0.0"
+description = "基于多AI融合技术的专业量化交易系统"
+authors = ["AI Quant Team <team@aiquant.com>"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+# Web框架
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.24.0"}
+websockets = "^12.0"
+# AI/ML框架
+torch = "^2.1.0"
+torchvision = "^0.16.0"
+torchaudio = "^2.1.0"
+tensorflow = "^2.14.0"
+scikit-learn = "^1.3.2"
+xgboost = "^2.0.1"
+lightgbm = "^4.1.0"
+catboost = "^1.2.2"
+# 深度学习相关
+transformers = "^4.35.2"
+accelerate = "^0.24.1"
+# 数据处理
+pandas = "^2.1.3"
+numpy = "^1.25.2"
+polars = "^0.19.14"
+# 数据库
+redis = "^5.0.1"
+clickhouse-driver = "^0.2.6"
+asyncpg = "^0.29.0"
+sqlalchemy = "^2.0.23"
+# 消息队列
+aiokafka = "^0.8.11"
+# 交易所API
+ccxt = "^4.1.49"
+python-binance = "^1.0.19"
+# 技术分析
+ta-lib = "^0.4.28"
+pandas-ta = "^0.3.14b0"
+# 数据可视化
+plotly = "^5.17.0"
+matplotlib = "^3.8.2"
+seaborn = "^0.13.0"
+# 异步处理
+asyncio = "^3.4.3"
+aiohttp = "^3.9.1"
+aiofiles = "^23.2.1"
+# 配置管理
+pydantic = "^2.5.0"
+pydantic-settings = "^2.1.0"
+# 日志和监控
+loguru = "^0.7.2"
+prometheus-client = "^0.19.0"
+# 工具库
+rich = "^13.7.0"
+typer = "^0.9.0"
+schedule = "^1.2.0"
+# 数值计算优化
+numba = "^0.58.1"
+# 时间处理
+pytz = "^2023.3"
+pendulum = "^2.1.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+black = "^23.11.0"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+mypy = "^1.7.1"
+pre-commit = "^3.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
