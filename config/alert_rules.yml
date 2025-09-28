@@ -1,0 +1,299 @@
+# 🚀 Prometheus告警规则 - AI量化交易系统
+# 针对高频交易和AI模型的关键告警
+
+groups:
+  # 🔥 系统硬件告警
+  - name: hardware_alerts
+    rules:
+      # CPU使用率告警
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 2m
+        labels:
+          severity: critical
+          component: hardware
+        annotations:
+          summary: "CPU使用率过高"
+          description: "实例 {{ $labels.instance }} CPU使用率为 {{ $value }}%，超过90%阈值"
+
+      # 内存使用率告警
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 2m
+        labels:
+          severity: critical
+          component: hardware
+        annotations:
+          summary: "内存使用率过高"
+          description: "实例 {{ $labels.instance }} 内存使用率为 {{ $value }}%，超过85%阈值"
+
+      # GPU使用率告警
+      - alert: HighGPUUsage
+        expr: nvidia_gpu_utilization > 95
+        for: 5m
+        labels:
+          severity: warning
+          component: gpu
+        annotations:
+          summary: "GPU使用率过高"
+          description: "GPU {{ $labels.gpu }} 使用率为 {{ $value }}%，超过95%阈值"
+
+      # GPU温度告警
+      - alert: HighGPUTemperature
+        expr: nvidia_gpu_temperature_celsius > 80
+        for: 1m
+        labels:
+          severity: critical
+          component: gpu
+        annotations:
+          summary: "GPU温度过高"
+          description: "GPU {{ $labels.gpu }} 温度为 {{ $value }}°C，超过80°C阈值"
+
+      # 磁盘使用率告警
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"})) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: storage
+        annotations:
+          summary: "磁盘使用率过高"
+          description: "实例 {{ $labels.instance }} 磁盘 {{ $labels.mountpoint }} 使用率为 {{ $value }}%"
+
+  # 📊 数据库告警
+  - name: database_alerts
+    rules:
+      # Redis连接数告警
+      - alert: RedisHighConnections
+        expr: redis_connected_clients > 8000
+        for: 2m
+        labels:
+          severity: warning
+          component: redis
+        annotations:
+          summary: "Redis连接数过高"
+          description: "Redis连接数为 {{ $value }}，超过8000阈值"
+
+      # Redis内存使用率告警
+      - alert: RedisHighMemoryUsage
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+          component: redis
+        annotations:
+          summary: "Redis内存使用率过高"
+          description: "Redis内存使用率为 {{ $value }}%，超过90%阈值"
+
+      # PostgreSQL连接数告警
+      - alert: PostgreSQLHighConnections
+        expr: pg_stat_database_numbackends > 180
+        for: 2m
+        labels:
+          severity: warning
+          component: postgresql
+        annotations:
+          summary: "PostgreSQL连接数过高"
+          description: "PostgreSQL连接数为 {{ $value }}，超过180阈值"
+
+      # ClickHouse查询延迟告警
+      - alert: ClickHouseHighQueryLatency
+        expr: clickhouse_query_duration_seconds{quantile="0.95"} > 5
+        for: 1m
+        labels:
+          severity: warning
+          component: clickhouse
+        annotations:
+          summary: "ClickHouse查询延迟过高"
+          description: "ClickHouse 95%查询延迟为 {{ $value }}秒，超过5秒阈值"
+
+  # 🚀 应用服务告警
+  - name: application_alerts
+    rules:
+      # 应用服务不可用
+      - alert: ApplicationDown
+        expr: up{job="ai-trading-system"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "AI交易系统服务不可用"
+          description: "AI交易系统主服务已停止响应"
+
+      # HTTP请求错误率过高
+      - alert: HighHTTPErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+          component: application
+        annotations:
+          summary: "HTTP错误率过高"
+          description: "HTTP 5xx错误率为 {{ $value }}%，超过5%阈值"
+
+      # API响应时间过长
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 2m
+        labels:
+          severity: warning
+          component: application
+        annotations:
+          summary: "API响应时间过长"
+          description: "API 95%响应时间为 {{ $value }}秒，超过2秒阈值"
+
+  # 💰 交易系统告警
+  - name: trading_alerts
+    rules:
+      # 交易所API连接失败
+      - alert: ExchangeAPIDown
+        expr: exchange_api_status == 0
+        for: 30s
+        labels:
+          severity: critical
+          component: trading
+        annotations:
+          summary: "交易所API连接失败"
+          description: "交易所 {{ $labels.exchange }} API连接失败"
+
+      # 订单执行延迟过高
+      - alert: HighOrderLatency
+        expr: order_execution_duration_seconds{quantile="0.95"} > 5
+        for: 1m
+        labels:
+          severity: warning
+          component: trading
+        annotations:
+          summary: "订单执行延迟过高"
+          description: "订单执行95%延迟为 {{ $value }}秒，超过5秒阈值"
+
+      # 订单失败率过高
+      - alert: HighOrderFailureRate
+        expr: rate(orders_failed_total[5m]) / rate(orders_total[5m]) * 100 > 10
+        for: 2m
+        labels:
+          severity: critical
+          component: trading
+        annotations:
+          summary: "订单失败率过高"
+          description: "订单失败率为 {{ $value }}%，超过10%阈值"
+
+      # 账户余额不足
+      - alert: LowAccountBalance
+        expr: account_balance_ratio < 0.1
+        for: 1m
+        labels:
+          severity: critical
+          component: trading
+        annotations:
+          summary: "账户余额不足"
+          description: "账户 {{ $labels.account }} 余额比例为 {{ $value }}，低于10%阈值"
+
+      # 持仓风险过高
+      - alert: HighPositionRisk
+        expr: position_risk_ratio > 0.8
+        for: 1m
+        labels:
+          severity: critical
+          component: risk
+        annotations:
+          summary: "持仓风险过高"
+          description: "持仓 {{ $labels.symbol }} 风险比例为 {{ $value }}，超过80%阈值"
+
+  # 🤖 AI模型告警
+  - name: ai_model_alerts
+    rules:
+      # AI模型训练失败
+      - alert: AIModelTrainingFailed
+        expr: ai_model_training_status{status="failed"} == 1
+        for: 0s
+        labels:
+          severity: critical
+          component: ai
+        annotations:
+          summary: "AI模型训练失败"
+          description: "AI模型 {{ $labels.model_name }} 训练失败"
+
+      # AI模型预测准确率下降
+      - alert: LowModelAccuracy
+        expr: ai_model_accuracy < 0.6
+        for: 5m
+        labels:
+          severity: warning
+          component: ai
+        annotations:
+          summary: "AI模型预测准确率下降"
+          description: "AI模型 {{ $labels.model_name }} 准确率为 {{ $value }}，低于60%阈值"
+
+      # AI模型推理延迟过高
+      - alert: HighModelInferenceLatency
+        expr: ai_model_inference_duration_seconds{quantile="0.95"} > 1
+        for: 2m
+        labels:
+          severity: warning
+          component: ai
+        annotations:
+          summary: "AI模型推理延迟过高"
+          description: "AI模型 {{ $labels.model_name }} 推理延迟为 {{ $value }}秒，超过1秒阈值"
+
+  # 🌐 网络连接告警
+  - name: network_alerts
+    rules:
+      # 交易所网络延迟过高
+      - alert: HighExchangeLatency
+        expr: probe_duration_seconds{job="blackbox-http"} > 1
+        for: 2m
+        labels:
+          severity: warning
+          component: network
+        annotations:
+          summary: "交易所网络延迟过高"
+          description: "交易所 {{ $labels.instance }} 网络延迟为 {{ $value }}秒，超过1秒阈值"
+
+      # WebSocket连接断开
+      - alert: WebSocketDisconnected
+        expr: websocket_connections_active == 0
+        for: 30s
+        labels:
+          severity: critical
+          component: network
+        annotations:
+          summary: "WebSocket连接断开"
+          description: "交易所 {{ $labels.exchange }} WebSocket连接已断开"
+
+  # 📈 业务指标告警
+  - name: business_alerts
+    rules:
+      # 日交易量异常
+      - alert: AbnormalDailyVolume
+        expr: daily_trading_volume < daily_trading_volume offset 1d * 0.5
+        for: 1h
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "日交易量异常"
+          description: "今日交易量 {{ $value }} 低于昨日的50%"
+
+      # 策略收益率异常
+      - alert: NegativeStrategyReturn
+        expr: strategy_daily_return < -0.05
+        for: 30m
+        labels:
+          severity: critical
+          component: business
+        annotations:
+          summary: "策略收益率异常"
+          description: "策略 {{ $labels.strategy }} 日收益率为 {{ $value }}，低于-5%阈值"
+
+      # 风险指标异常
+      - alert: HighDrawdown
+        expr: portfolio_max_drawdown > 0.15
+        for: 5m
+        labels:
+          severity: critical
+          component: risk
+        annotations:
+          summary: "最大回撤过高"
+          description: "投资组合最大回撤为 {{ $value }}，超过15%阈值"

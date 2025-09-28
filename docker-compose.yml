@@ -1,143 +1,383 @@
+# 🚀 AI量化交易系统 - 生产级Docker Compose配置
+# 支持完整的微服务架构和数据库集群
+
 version: '3.8'
 
 services:
-  # Redis - 实时数据缓存
-  redis:
-    image: redis:7-alpine
-    container_name: quant_redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes --maxmemory 8gb --maxmemory-policy allkeys-lru
-    restart: unless-stopped
-
-  # ClickHouse - 历史数据存储
-  clickhouse:
-    image: clickhouse/clickhouse-server:latest
-    container_name: quant_clickhouse
-    ports:
-      - "8123:8123"
-      - "9000:9000"
-    volumes:
-      - clickhouse_data:/var/lib/clickhouse
-      - ./config/clickhouse:/etc/clickhouse-server/config.d
-    environment:
-      CLICKHOUSE_DB: quant_data
-      CLICKHOUSE_USER: quant_user
-      CLICKHOUSE_PASSWORD: quant_password
-    restart: unless-stopped
-
-  # PostgreSQL - 系统配置和用户数据
-  postgres:
-    image: postgres:15-alpine
-    container_name: quant_postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: quant_system
-      POSTGRES_USER: quant_user
-      POSTGRES_PASSWORD: quant_password
-    restart: unless-stopped
-
-  # Kafka - 消息队列
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    container_name: quant_zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    restart: unless-stopped
-
-  kafka:
-    image: confluentinc/cp-kafka:latest
-    container_name: quant_kafka
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
-    restart: unless-stopped
-
-  # AI量化交易系统主服务
-  quant_system:
+  # 🔥 主应用服务
+  ai-trading-system:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: quant_main
+    container_name: ai-trading-system
+    restart: unless-stopped
     ports:
-      - "8000:8000"  # FastAPI服务
-      - "3000:3000"  # Web界面
+      - "8000:8000"  # 主API服务
+      - "8001:8001"  # WebSocket服务
+      - "8002:8002"  # 管理界面
     volumes:
-      - ./src:/app/src
-      - ./config:/app/config
-      - ./logs:/app/logs
-      - ./models:/app/models
       - ./data:/app/data
+      - ./logs:/app/logs
+      - ./config:/app/config
+      - ./models:/app/models
+      - /dev/shm:/dev/shm  # 共享内存加速
     environment:
-      - REDIS_URL=redis://redis:6379
-      - CLICKHOUSE_URL=clickhouse://quant_user:quant_password@clickhouse:9000/quant_data
-      - POSTGRES_URL=postgresql://quant_user:quant_password@postgres:5432/quant_system
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - CUDA_VISIBLE_DEVICES=0
       - PYTHONPATH=/app
+      - CUDA_VISIBLE_DEVICES=0
+      - REDIS_URL=redis://redis:6379/0
+      - POSTGRES_URL=postgresql://trader:trading123@postgres:5432/trading_db
+      - CLICKHOUSE_URL=clickhouse://clickhouse:8123/trading_db
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - PROMETHEUS_URL=http://prometheus:9090
+      - GRAFANA_URL=http://grafana:3000
     depends_on:
       - redis
-      - clickhouse
       - postgres
+      - clickhouse
       - kafka
-    restart: unless-stopped
+      - prometheus
     deploy:
       resources:
+        limits:
+          cpus: '18.0'  # 使用18个CPU核心
+          memory: 120G   # 使用120GB内存
         reservations:
           devices:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+    networks:
+      - trading-network
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
-  # Prometheus - 系统监控
+  # 📊 Redis缓存数据库
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis-cache
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 8G
+        reservations:
+          cpus: '1.0'
+          memory: 4G
+    networks:
+      - trading-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # 🗄️ PostgreSQL主数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-main
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    environment:
+      - POSTGRES_DB=trading_db
+      - POSTGRES_USER=trader
+      - POSTGRES_PASSWORD=trading123
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 16G
+        reservations:
+          cpus: '2.0'
+          memory: 8G
+    networks:
+      - trading-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trader -d trading_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # 📈 ClickHouse时序数据库
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8-alpine
+    container_name: clickhouse-timeseries
+    restart: unless-stopped
+    ports:
+      - "8123:8123"  # HTTP接口
+      - "9000:9000"  # Native接口
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./config/clickhouse-config.xml:/etc/clickhouse-server/config.xml
+      - ./config/clickhouse-users.xml:/etc/clickhouse-server/users.xml
+    environment:
+      - CLICKHOUSE_DB=trading_db
+      - CLICKHOUSE_USER=trader
+      - CLICKHOUSE_PASSWORD=trading123
+    deploy:
+      resources:
+        limits:
+          cpus: '6.0'
+          memory: 32G
+        reservations:
+          cpus: '4.0'
+          memory: 16G
+    networks:
+      - trading-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # 🔄 Apache Kafka消息队列
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+    networks:
+      - trading-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka-broker
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_NUM_PARTITIONS: 12  # 匹配CPU核心数
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 168  # 7天
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824  # 1GB
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+        reservations:
+          cpus: '2.0'
+          memory: 4G
+    networks:
+      - trading-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # 📊 Prometheus监控
   prometheus:
-    image: prom/prometheus:latest
-    container_name: quant_prometheus
+    image: prom/prometheus:v2.47.0
+    container_name: prometheus-monitor
+    restart: unless-stopped
     ports:
       - "9090:9090"
     volumes:
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./config/alert_rules.yml:/etc/prometheus/alert_rules.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
-    restart: unless-stopped
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.size=50GB'
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+    networks:
+      - trading-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
-  # Grafana - 数据可视化
+  # 📈 Grafana可视化
   grafana:
-    image: grafana/grafana:latest
-    container_name: quant_grafana
+    image: grafana/grafana:10.1.0
+    container_name: grafana-dashboard
+    restart: unless-stopped
     ports:
-      - "3001:3000"
+      - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./config/grafana:/etc/grafana/provisioning
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin123
-    restart: unless-stopped
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=trading123
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    depends_on:
+      - prometheus
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+    networks:
+      - trading-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
+  # 🔍 Elasticsearch日志存储
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    container_name: elasticsearch-logs
+    restart: unless-stopped
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 8G
+        reservations:
+          cpus: '1.0'
+          memory: 4G
+    networks:
+      - trading-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # 📋 Kibana日志可视化
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.9.0
+    container_name: kibana-logs
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+    networks:
+      - trading-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 🔄 Nginx反向代理
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/ssl:/etc/nginx/ssl
+      - ./web/static:/var/www/static
+    depends_on:
+      - ai-trading-system
+      - grafana
+      - kibana
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    networks:
+      - trading-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+# 📦 数据卷定义
 volumes:
   redis_data:
-  clickhouse_data:
+    driver: local
   postgres_data:
+    driver: local
+  clickhouse_data:
+    driver: local
+  kafka_data:
+    driver: local
+  zookeeper_data:
+    driver: local
+  zookeeper_logs:
+    driver: local
   prometheus_data:
+    driver: local
   grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
 
+# 🌐 网络定义
 networks:
-  default:
-    name: quant_network
+  trading-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

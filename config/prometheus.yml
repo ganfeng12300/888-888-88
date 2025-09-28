@@ -1,0 +1,182 @@
+# 🚀 Prometheus配置 - AI量化交易系统监控
+# 针对高频交易和AI模型监控优化
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'ai-trading-system'
+    environment: 'production'
+
+# 告警规则文件
+rule_files:
+  - "alert_rules.yml"
+
+# 告警管理器配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+# 抓取配置
+scrape_configs:
+  # Prometheus自身监控
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # AI交易系统主服务
+  - job_name: 'ai-trading-system'
+    static_configs:
+      - targets: ['ai-trading-system:8000']
+    scrape_interval: 5s  # 高频监控
+    metrics_path: /metrics
+    scrape_timeout: 10s
+    honor_labels: true
+    params:
+      format: ['prometheus']
+
+  # Redis监控
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  # PostgreSQL监控
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # ClickHouse监控
+  - job_name: 'clickhouse'
+    static_configs:
+      - targets: ['clickhouse:8123']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    params:
+      query: ['SELECT * FROM system.metrics FORMAT Prometheus']
+
+  # Kafka监控
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9092']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # 系统硬件监控 (Node Exporter)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['ai-trading-system:9100']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  # GPU监控 (NVIDIA GPU Exporter)
+  - job_name: 'gpu-exporter'
+    static_configs:
+      - targets: ['ai-trading-system:9445']
+    scrape_interval: 5s  # GPU高频监控
+    metrics_path: /metrics
+
+  # 容器监控 (cAdvisor)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['ai-trading-system:8080']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # 交易所API监控
+  - job_name: 'exchange-api-monitor'
+    static_configs:
+      - targets: ['ai-trading-system:8001']
+    scrape_interval: 10s
+    metrics_path: /api/metrics
+    params:
+      module: ['exchange_health']
+
+  # AI模型性能监控
+  - job_name: 'ai-model-metrics'
+    static_configs:
+      - targets: ['ai-trading-system:8002']
+    scrape_interval: 30s
+    metrics_path: /ai/metrics
+    honor_labels: true
+
+  # 网络延迟监控 (Blackbox Exporter)
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - https://api.binance.com/api/v3/ping
+        - https://www.okx.com/api/v5/public/time
+        - https://api.bybit.com/v3/public/time
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # WebSocket连接监控
+  - job_name: 'websocket-monitor'
+    static_configs:
+      - targets: ['ai-trading-system:8001']
+    scrape_interval: 15s
+    metrics_path: /ws/metrics
+
+  # 数据库连接池监控
+  - job_name: 'db-pool-monitor'
+    static_configs:
+      - targets: ['ai-trading-system:8000']
+    scrape_interval: 30s
+    metrics_path: /db/metrics
+
+# 远程写入配置 (可选 - 用于长期存储)
+remote_write:
+  - url: "http://victoriametrics:8428/api/v1/write"
+    queue_config:
+      max_samples_per_send: 10000
+      batch_send_deadline: 5s
+      max_shards: 200
+      capacity: 100000
+
+# 远程读取配置 (可选)
+remote_read:
+  - url: "http://victoriametrics:8428/api/v1/read"
+    read_recent: true
+
+# 存储配置
+storage:
+  tsdb:
+    path: /prometheus
+    retention.time: 30d
+    retention.size: 50GB
+    wal-compression: true
+
+# 查询配置
+query:
+  timeout: 2m
+  max_concurrent_queries: 20
+  max_samples: 50000000
+
+# Web配置
+web:
+  console.libraries: /etc/prometheus/console_libraries
+  console.templates: /etc/prometheus/consoles
+  enable-lifecycle: true
+  enable-admin-api: true
+  page-title: "AI Trading System Monitoring"
+  external-url: "http://prometheus:9090"
+
+# 日志配置
+log:
+  level: info
+  format: logfmt

@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+<!-- 🚀 ClickHouse用户配置 - AI量化交易系统 -->
+
+<clickhouse>
+    <profiles>
+        <!-- 默认配置文件 -->
+        <default>
+            <max_memory_usage>20000000000</max_memory_usage>
+            <use_uncompressed_cache>1</use_uncompressed_cache>
+            <load_balancing>random</load_balancing>
+            <max_query_size>268435456</max_query_size>
+            <max_ast_depth>1000</max_ast_depth>
+            <max_ast_elements>50000</max_ast_elements>
+            <max_expanded_ast_elements>500000</max_expanded_ast_elements>
+            <readonly>0</readonly>
+            <max_rows_to_read>0</max_rows_to_read>
+            <max_bytes_to_read>0</max_bytes_to_read>
+            <max_read_buffer_size>1048576</max_read_buffer_size>
+            <max_query_execution_time>0</max_query_execution_time>
+            <min_count_to_compile_expression>3</min_count_to_compile_expression>
+            <max_block_size>65536</max_block_size>
+            <max_insert_block_size>1048576</max_insert_block_size>
+            <min_insert_block_size_rows>0</min_insert_block_size_rows>
+            <min_insert_block_size_bytes>0</min_insert_block_size_bytes>
+            <max_threads>0</max_threads>
+            <max_compress_block_size>1048576</max_compress_block_size>
+            <min_compress_block_size>65536</min_compress_block_size>
+            <max_network_bandwidth>0</max_network_bandwidth>
+            <max_network_bytes>0</max_network_bytes>
+            <max_result_rows>0</max_result_rows>
+            <max_result_bytes>0</max_result_bytes>
+            <result_overflow_mode>throw</result_overflow_mode>
+            <max_execution_time>0</max_execution_time>
+            <min_execution_speed>0</min_execution_speed>
+            <max_execution_speed>0</max_execution_speed>
+            <max_columns_to_read>0</max_columns_to_read>
+            <max_temporary_columns>0</max_temporary_columns>
+            <max_temporary_non_const_columns>0</max_temporary_non_const_columns>
+            <max_subquery_depth>100</max_subquery_depth>
+            <max_pipeline_depth>1000</max_pipeline_depth>
+            <max_ast_depth>1000</max_ast_depth>
+            <max_ast_elements>50000</max_ast_elements>
+            <max_expanded_ast_elements>500000</max_expanded_ast_elements>
+            <readonly>0</readonly>
+            <max_rows_in_set>0</max_rows_in_set>
+            <max_bytes_in_set>0</max_bytes_in_set>
+            <set_overflow_mode>throw</set_overflow_mode>
+            <max_rows_in_join>0</max_rows_in_join>
+            <max_bytes_in_join>0</max_bytes_in_join>
+            <join_overflow_mode>throw</join_overflow_mode>
+            <max_rows_to_transfer>0</max_rows_to_transfer>
+            <max_bytes_to_transfer>0</max_bytes_to_transfer>
+            <transfer_overflow_mode>throw</transfer_overflow_mode>
+            <max_rows_in_distinct>0</max_rows_in_distinct>
+            <max_bytes_in_distinct>0</max_bytes_in_distinct>
+            <distinct_overflow_mode>throw</distinct_overflow_mode>
+            <max_memory_usage_for_user>0</max_memory_usage_for_user>
+            <max_memory_usage_for_all_queries>0</max_memory_usage_for_all_queries>
+            <max_partitions_per_insert_block>100</max_partitions_per_insert_block>
+            <max_concurrent_queries_for_user>0</max_concurrent_queries_for_user>
+            <force_index_by_date>0</force_index_by_date>
+            <force_primary_key>0</force_primary_key>
+            <max_http_get_redirects>0</max_http_get_redirects>
+            <input_format_values_interpret_expressions>1</input_format_values_interpret_expressions>
+            <input_format_defaults_for_omitted_fields>1</input_format_defaults_for_omitted_fields>
+            <output_format_json_quote_64bit_integers>0</output_format_json_quote_64bit_integers>
+            <output_format_json_quote_denormals>0</output_format_json_quote_denormals>
+            <low_cardinality_max_dictionary_size>8192</low_cardinality_max_dictionary_size>
+            <low_cardinality_use_single_dictionary_for_part>0</low_cardinality_use_single_dictionary_for_part>
+            <decimal_check_overflow>1</decimal_check_overflow>
+            <prefer_localhost_replica>1</prefer_localhost_replica>
+            <max_fetch_partition_retries_count>5</max_fetch_partition_retries_count>
+            <http_max_multipart_form_data_size>1073741824</http_max_multipart_form_data_size>
+            <calculate_text_stack_trace>1</calculate_text_stack_trace>
+            <allow_ddl>1</allow_ddl>
+            <parallel_replicas_count>0</parallel_replicas_count>
+            <parallel_replicas_offset>0</parallel_replicas_offset>
+            <parallel_replica_offset>0</parallel_replica_offset>
+            <skip_unavailable_shards>0</skip_unavailable_shards>
+            <query_profiler_real_time_period_ns>1000000000</query_profiler_real_time_period_ns>
+            <query_profiler_cpu_time_period_ns>1000000000</query_profiler_cpu_time_period_ns>
+            <allow_introspection_functions>0</allow_introspection_functions>
+            <async_insert>0</async_insert>
+            <async_insert_threads>16</async_insert_threads>
+            <wait_for_async_insert>1</wait_for_async_insert>
+            <wait_for_async_insert_timeout>120</wait_for_async_insert_timeout>
+            <async_insert_max_data_size>100000</async_insert_max_data_size>
+            <async_insert_busy_timeout_ms>200</async_insert_busy_timeout_ms>
+            <async_insert_stale_timeout_ms>0</async_insert_stale_timeout_ms>
+            <memory_profiler_step>4194304</memory_profiler_step>
+            <memory_profiler_sample_probability>0</memory_profiler_sample_probability>
+            <max_untracked_memory>4194304</max_untracked_memory>
+            <memory_usage_overcommit_max_wait_microseconds>5000000</memory_usage_overcommit_max_wait_microseconds>
+        </default>
+        
+        <!-- 只读配置文件 -->
+        <readonly>
+            <readonly>1</readonly>
+        </readonly>
+        
+        <!-- 高性能配置文件 -->
+        <performance>
+            <max_memory_usage>30000000000</max_memory_usage>
+            <max_threads>20</max_threads>
+            <max_block_size>1048576</max_block_size>
+            <max_insert_block_size>10485760</max_insert_block_size>
+            <use_uncompressed_cache>1</use_uncompressed_cache>
+            <load_balancing>random</load_balancing>
+            <max_concurrent_queries_for_user>50</max_concurrent_queries_for_user>
+        </performance>
+    </profiles>
+
+    <users>
+        <!-- 默认用户 -->
+        <default>
+            <password></password>
+            <networks incl="networks" replace="replace">
+                <ip>::/0</ip>
+            </networks>
+            <profile>default</profile>
+            <quota>default</quota>
+        </default>
+        
+        <!-- 交易系统用户 -->
+        <trader>
+            <password>trading123</password>
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>performance</profile>
+            <quota>default</quota>
+            <databases>
+                <trading_db>
+                    <query>1</query>
+                    <insert>1</insert>
+                    <create_table>1</create_table>
+                    <drop_table>1</drop_table>
+                    <create_database>1</create_database>
+                    <drop_database>1</drop_database>
+                    <create_dictionary>1</create_dictionary>
+                    <drop_dictionary>1</drop_dictionary>
+                </trading_db>
+            </databases>
+        </trader>
+        
+        <!-- 只读用户 -->
+        <readonly_user>
+            <password>readonly123</password>
+            <networks>
+                <ip>::/0</ip>
+            </networks>
+            <profile>readonly</profile>
+            <quota>default</quota>
+        </readonly_user>
+    </users>
+
+    <quotas>
+        <!-- 默认配额 -->
+        <default>
+            <interval>
+                <duration>3600</duration>
+                <queries>0</queries>
+                <errors>0</errors>
+                <result_rows>0</result_rows>
+                <read_rows>0</read_rows>
+                <execution_time>0</execution_time>
+            </interval>
+        </default>
+        
+        <!-- 高频交易配额 -->
+        <trading>
+            <interval>
+                <duration>3600</duration>
+                <queries>100000</queries>
+                <errors>1000</errors>
+                <result_rows>1000000000</result_rows>
+                <read_rows>1000000000</read_rows>
+                <execution_time>0</execution_time>
+            </interval>
+        </trading>
+    </quotas>
+</clickhouse>
