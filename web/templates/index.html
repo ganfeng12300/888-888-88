@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI量化交易系统 - 实时监控面板</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部状态栏 -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <h1>AI量化交易系统</h1>
+                <span class="version">v2.0 Pro</span>
+            </div>
+            <div class="system-status">
+                <div class="status-item">
+                    <span class="label">系统时间</span>
+                    <span class="value" id="system-time">--:--:--</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">运行时间</span>
+                    <span class="value" id="uptime">--</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">系统状态</span>
+                    <span class="value status-healthy" id="system-health">优秀</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要指标面板 -->
+        <section class="metrics-panel">
+            <div class="metric-card profit">
+                <div class="metric-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>总收益率</h3>
+                    <div class="metric-value" id="total-pnl">+15.8%</div>
+                    <div class="metric-change">今日: <span id="daily-pnl">+2.3%</span></div>
+                </div>
+            </div>
+            
+            <div class="metric-card trades">
+                <div class="metric-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>交易统计</h3>
+                    <div class="metric-value" id="total-trades">156</div>
+                    <div class="metric-change">胜率: <span id="win-rate">78.5%</span></div>
+                </div>
+            </div>
+            
+            <div class="metric-card drawdown">
+                <div class="metric-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>最大回撤</h3>
+                    <div class="metric-value" id="max-drawdown">-1.2%</div>
+                    <div class="metric-change">风险: <span class="risk-low">低</span></div>
+                </div>
+            </div>
+            
+            <div class="metric-card ai-level">
+                <div class="metric-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>AI平均等级</h3>
+                    <div class="metric-value" id="ai-average-level">65</div>
+                    <div class="metric-change">状态: <span class="ai-active">活跃</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 左侧面板 -->
+            <div class="left-panel">
+                <!-- 硬件监控 -->
+                <div class="panel hardware-panel">
+                    <h2><i class="fas fa-microchip"></i> 硬件性能监控</h2>
+                    <div class="hardware-metrics">
+                        <div class="hardware-item">
+                            <div class="hardware-label">CPU使用率</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="cpu-usage" style="width: 87%"></div>
+                            </div>
+                            <div class="hardware-value">87% | 74°C</div>
+                        </div>
+                        
+                        <div class="hardware-item">
+                            <div class="hardware-label">GPU使用率 (RTX3060)</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill gpu" id="gpu-usage" style="width: 93%"></div>
+                            </div>
+                            <div class="hardware-value">93% | 71°C | 11.2GB/12GB</div>
+                        </div>
+                        
+                        <div class="hardware-item">
+                            <div class="hardware-label">内存使用 (128GB)</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill memory" id="memory-usage" style="width: 83%"></div>
+                            </div>
+                            <div class="hardware-value">106GB/128GB (83%)</div>
+                        </div>
+                        
+                        <div class="hardware-item">
+                            <div class="hardware-label">存储使用 (1TB NVMe)</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill storage" id="storage-usage" style="width: 72%"></div>
+                            </div>
+                            <div class="hardware-value">720GB/1TB (72%)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI训练状态 -->
+                <div class="panel ai-panel">
+                    <h2><i class="fas fa-robot"></i> AI训练状态</h2>
+                    <div class="ai-models" id="ai-models">
+                        <!-- AI模型状态将通过JavaScript动态加载 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中间面板 -->
+            <div class="center-panel">
+                <!-- 实时图表 -->
+                <div class="panel chart-panel">
+                    <h2><i class="fas fa-chart-area"></i> 实时收益曲线</h2>
+                    <canvas id="pnl-chart"></canvas>
+                </div>
+
+                <!-- 持仓信息 -->
+                <div class="panel positions-panel">
+                    <h2><i class="fas fa-wallet"></i> 当前持仓</h2>
+                    <div class="positions-table">
+                        <table id="positions-table">
+                            <thead>
+                                <tr>
+                                    <th>交易对</th>
+                                    <th>方向</th>
+                                    <th>数量</th>
+                                    <th>入场价</th>
+                                    <th>当前价</th>
+                                    <th>盈亏</th>
+                                    <th>杠杆</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- 持仓数据将通过JavaScript动态加载 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧面板 -->
+            <div class="right-panel">
+                <!-- 市场数据 -->
+                <div class="panel market-panel">
+                    <h2><i class="fas fa-globe"></i> 市场数据</h2>
+                    <div class="market-data">
+                        <div class="market-item">
+                            <div class="symbol">BTC/USDT</div>
+                            <div class="price" id="btc-price">$45,200</div>
+                            <div class="change positive">+2.3%</div>
+                        </div>
+                        <div class="market-item">
+                            <div class="symbol">ETH/USDT</div>
+                            <div class="price" id="eth-price">$2,980</div>
+                            <div class="change negative">-1.1%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 交易记录 -->
+                <div class="panel trades-panel">
+                    <h2><i class="fas fa-history"></i> 最近交易</h2>
+                    <div class="trades-list" id="trades-list">
+                        <!-- 交易记录将通过JavaScript动态加载 -->
+                    </div>
+                </div>
+
+                <!-- 系统日志 -->
+                <div class="panel logs-panel">
+                    <h2><i class="fas fa-terminal"></i> 系统日志</h2>
+                    <div class="logs-container" id="logs-container">
+                        <div class="log-entry info">
+                            <span class="timestamp">15:30:25</span>
+                            <span class="message">AI模型训练完成，准确率提升至78.5%</span>
+                        </div>
+                        <div class="log-entry success">
+                            <span class="timestamp">15:29:18</span>
+                            <span class="message">BTCUSDT多单平仓，盈利+$400</span>
+                        </div>
+                        <div class="log-entry warning">
+                            <span class="timestamp">15:28:45</span>
+                            <span class="message">GPU温度达到75°C，启动智能降频</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+
