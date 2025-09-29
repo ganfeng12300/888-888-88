@@ -30,6 +30,7 @@ from src.security.anomaly_detection import anomaly_detection_system
 from src.monitoring.hardware_monitor import hardware_monitor
 from src.monitoring.ai_status_monitor import ai_status_monitor
 from src.monitoring.system_health_checker import system_health_checker
+from src.monitoring.system_health_checker import HealthStatus
 from src.exchanges.multi_exchange_manager import multi_exchange_manager, initialize_multi_exchange_manager
 from src.strategies.production_signal_generator import production_signal_generator, initialize_production_signal_generator, MarketData
 
@@ -190,8 +191,10 @@ class QuantTradingSystem:
                 hardware_monitor.update_all_metrics()
                 
                 # 检查资源使用情况
-                cpu_usage = hardware_monitor.get_cpu_usage()
-                memory_usage = hardware_monitor.get_memory_usage()
+                cpu_metrics = hardware_monitor.get_cpu_metrics()
+                cpu_usage = cpu_metrics.usage_percent
+                memory_metrics = hardware_monitor.get_memory_metrics()
+                memory_usage = memory_metrics.usage_percent
                 
                 # 资源警告
                 if cpu_usage > 90:
@@ -216,7 +219,8 @@ class QuantTradingSystem:
                 ai_status_monitor.update_ai_status()
                 
                 # 检查AI性能
-                performance = ai_status_monitor.get_overall_performance()
+                ai_summary = ai_status_monitor.get_ai_summary()
+                performance = ai_summary.get('overall_performance', 0.8)  # 默认值
                 if performance < 0.5:
                     logger.warning(f"⚠️ AI整体性能较低: {performance:.2f}")
                 
@@ -236,7 +240,7 @@ class QuantTradingSystem:
                 health_status = system_health_checker.check_all_systems()
                 
                 # 记录健康状态
-                if not health_status.get('overall_healthy', True):
+                if health_status.overall_status != HealthStatus.HEALTHY:
                     logger.warning("⚠️ 系统健康状态异常")
                     
                 time.sleep(300)  # 每5分钟检查一次
