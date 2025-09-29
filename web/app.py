@@ -25,7 +25,8 @@ from src.ai.ai_evolution_system import get_ai_evolution_system
 from src.ai.gpu_memory_optimizer import get_gpu_memory_optimizer
 from src.ai.gpu_model_scheduler import get_gpu_model_scheduler
 from src.ai.ai_decision_fusion_engine import get_ai_decision_fusion_engine
-from src.exchanges.unified_exchange_interface import get_unified_exchange_interface
+from src.exchanges.multi_exchange_manager import multi_exchange_manager
+from src.strategies.production_signal_generator import production_signal_generator
 from src.monitoring.hardware_monitor import hardware_monitor
 from src.monitoring.ai_status_monitor import ai_status_monitor
 from src.monitoring.trading_performance_monitor import trading_performance_monitor
@@ -79,10 +80,39 @@ class WebInterface:
                     ai_data = ai_status_monitor.get_ai_summary()
                     self.real_time_data['ai_status'] = ai_data
                 
-                # 更新交易绩效
-                if trading_performance_monitor:
-                    trading_data = trading_performance_monitor.get_performance_summary()
-                    self.real_time_data['trading_performance'] = trading_data
+                # 更新交易绩效 - 从多交易所管理器获取实盘数据
+                try:
+                    # 获取多交易所交易统计
+                    trading_summary = multi_exchange_manager.get_trading_summary()
+                    
+                    # 获取信号生成器统计
+                    signal_stats = production_signal_generator.get_performance_stats()
+                    
+                    # 获取所有交易所余额
+                    all_balances = multi_exchange_manager.get_all_balances()
+                    
+                    # 合并实盘交易数据
+                    self.real_time_data['trading_performance'] = {
+                        'total_signals': trading_summary.get('total_signals', 0),
+                        'total_orders': trading_summary.get('total_orders', 0),
+                        'successful_orders': trading_summary.get('successful_orders', 0),
+                        'success_rate': trading_summary.get('success_rate', 0) * 100,
+                        'active_exchanges': trading_summary.get('active_exchanges', 0),
+                        'exchange_stats': trading_summary.get('exchange_stats', {}),
+                        'signal_stats': signal_stats,
+                        'balances': all_balances,
+                        'last_update': datetime.now(self.china_timezone).isoformat()
+                    }
+                except Exception as e:
+                    logger.error(f"更新实盘交易数据失败: {e}")
+                    self.real_time_data['trading_performance'] = {
+                        'total_signals': 0,
+                        'total_orders': 0,
+                        'successful_orders': 0,
+                        'success_rate': 0,
+                        'active_exchanges': 0,
+                        'error': str(e)
+                    }
                 
                 # 更新系统健康
                 if system_health_checker:

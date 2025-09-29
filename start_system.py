@@ -124,11 +124,102 @@ class ProductionSystemLauncher:
             
         return True
         
+    def interactive_api_configuration(self):
+        """交互式API配置"""
+        print(f"\n{Fore.CYAN}🏦 交易所API配置向导{Style.RESET_ALL}")
+        print("请为您要使用的交易所配置实盘API密钥")
+        print("⚠️ 注意：这些API将用于真实资金交易！")
+        
+        configured_count = 0
+        
+        for exchange_id, config in self.supported_exchanges.items():
+            print(f"\n{Fore.YELLOW}━━━ {config['name']} 配置 ━━━{Style.RESET_ALL}")
+            
+            # 询问是否配置此交易所
+            while True:
+                choice = input(f"是否配置 {config['name']} 交易所？(y/n/skip): ").lower().strip()
+                if choice in ['y', 'yes', '是']:
+                    break
+                elif choice in ['n', 'no', '否', 'skip', 's']:
+                    print(f"⚪ 跳过 {config['name']} 配置")
+                    break
+                else:
+                    print("请输入 y(是) 或 n(否)")
+            
+            if choice in ['n', 'no', '否', 'skip', 's']:
+                continue
+                
+            # 配置API密钥
+            print(f"\n📝 请输入 {config['name']} 的实盘API信息:")
+            
+            # API Key
+            while True:
+                api_key = input(f"API Key: ").strip()
+                if api_key:
+                    break
+                print("❌ API Key不能为空，请重新输入")
+            
+            # Secret Key
+            while True:
+                secret = input(f"Secret Key: ").strip()
+                if secret:
+                    break
+                print("❌ Secret Key不能为空，请重新输入")
+            
+            # Passphrase (如果需要)
+            passphrase = None
+            if 'passphrase_env' in config:
+                while True:
+                    passphrase = input(f"Passphrase: ").strip()
+                    if passphrase:
+                        break
+                    print("❌ Passphrase不能为空，请重新输入")
+            
+            # 保存配置
+            self.exchange_configs[exchange_id] = {
+                'name': config['name'],
+                'api_key': api_key,
+                'secret': secret,
+                'passphrase': passphrase
+            }
+            
+            configured_count += 1
+            key_preview = api_key[:8] + "..." if len(api_key) > 8 else api_key
+            print(f"✅ {config['name']} 配置完成: {key_preview}")
+        
+        if configured_count == 0:
+            print(f"\n{Fore.RED}❌ 未配置任何交易所API！{Style.RESET_ALL}")
+            print("实盘交易系统需要至少配置一个交易所API才能启动")
+            return False
+        
+        print(f"\n{Fore.GREEN}🎉 成功配置 {configured_count} 个交易所API{Style.RESET_ALL}")
+        
+        # 显示配置摘要
+        print(f"\n{Fore.CYAN}📋 配置摘要:{Style.RESET_ALL}")
+        for exchange_id, config in self.exchange_configs.items():
+            key_preview = config['api_key'][:8] + "..." if len(config['api_key']) > 8 else config['api_key']
+            print(f"  ✅ {config['name']}: {key_preview}")
+        
+        # 最终确认
+        print(f"\n{Fore.RED}⚠️ 最终确认 ⚠️{Style.RESET_ALL}")
+        print("以上配置将用于真实资金交易，请确认无误！")
+        
+        while True:
+            confirm = input("确认使用以上配置进行实盘交易？(yes/no): ").lower().strip()
+            if confirm in ['yes', 'y', '是']:
+                return True
+            elif confirm in ['no', 'n', '否']:
+                print("❌ 用户取消配置")
+                return False
+            else:
+                print("请输入 yes 或 no")
+    
     def check_exchange_apis(self):
         """检查交易所API配置"""
         logger.info("🏦 检查实盘交易所API配置...")
         
-        configured_exchanges = []
+        # 首先检查环境变量中是否有配置
+        env_configured_exchanges = []
         
         for exchange_id, config in self.supported_exchanges.items():
             api_key = os.getenv(config['api_key_env'])
@@ -152,19 +243,16 @@ class ProductionSystemLauncher:
                 
                 # 隐藏密钥显示
                 key_preview = api_key[:8] + "..." if api_key else ""
-                logger.success(f"✅ {config['name']}: {key_preview} (实盘)")
-                configured_exchanges.append(config['name'])
-            else:
-                logger.info(f"⚪ {config['name']}: 未配置")
+                logger.success(f"✅ {config['name']}: {key_preview} (来自环境变量)")
+                env_configured_exchanges.append(config['name'])
         
-        if not configured_exchanges:
-            logger.error("❌ 未配置任何交易所API，无法进行实盘交易！")
-            self.prompt_exchange_configuration()
-            return False
-        else:
-            logger.success(f"✅ 已配置实盘交易所: {', '.join(configured_exchanges)}")
-            
-        return True
+        if env_configured_exchanges:
+            logger.success(f"✅ 从环境变量加载: {', '.join(env_configured_exchanges)}")
+            return True
+        
+        # 如果环境变量中没有配置，启动交互式配置
+        logger.info("📝 未发现环境变量配置，启动交互式配置...")
+        return self.interactive_api_configuration()
         
     def check_api_configuration(self):
         """检查其他API配置"""
