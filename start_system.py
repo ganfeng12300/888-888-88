@@ -318,6 +318,47 @@ class ProductionSystemLauncher:
         print("2. 添加: API_KEY=your_key_here")
         print("3. 重新启动系统")
         
+        # 询问用户是否要现在配置
+        print(f"\n{Fore.CYAN}🤔 是否现在配置API密钥？{Style.RESET_ALL}")
+        configure_now = input("输入 'y' 现在配置，或按回车跳过: ").lower().strip()
+        
+        if configure_now == 'y':
+            self.interactive_api_setup(missing_apis)
+    
+    def interactive_api_setup(self, missing_apis: List[str]):
+        """交互式API设置"""
+        import os
+        
+        env_content = []
+        if os.path.exists('.env'):
+            with open('.env', 'r', encoding='utf-8') as f:
+                env_content = f.readlines()
+        
+        print(f"\n{Fore.GREEN}🔧 交互式API配置{Style.RESET_ALL}")
+        
+        for api_key in missing_apis:
+            if api_key.startswith('OPENAI'):
+                print(f"\n{Fore.CYAN}配置 {api_key}:{Style.RESET_ALL}")
+                print("• 用于AI分析和决策增强")
+                print("• 获取地址: https://platform.openai.com/api-keys")
+                
+                api_value = input(f"请输入 {api_key} (或按回车跳过): ").strip()
+                
+                if api_value:
+                    # 添加到环境变量内容
+                    env_line = f"{api_key}={api_value}\n"
+                    env_content.append(env_line)
+                    print(f"✅ {api_key} 已添加到配置")
+        
+        # 写入.env文件
+        if env_content:
+            with open('.env', 'w', encoding='utf-8') as f:
+                f.writelines(env_content)
+            print(f"\n{Fore.GREEN}✅ API配置已保存到 .env 文件{Style.RESET_ALL}")
+            print("重新启动系统后配置将生效")
+        else:
+            print(f"\n{Fore.YELLOW}⚠️ 未配置任何API密钥{Style.RESET_ALL}")
+        
     def configure_exchanges(self):
         """配置交易所连接"""
         if not self.exchange_configs:
@@ -426,7 +467,7 @@ class ProductionSystemLauncher:
             time.sleep(3)
             
             logger.success("✅ 实盘交易监控界面启动成功")
-            logger.info("🌐 访问地址: http://localhost:5000")
+            logger.info("🌐 访问地址: http://localhost:8080")
             self.system_status['web'] = True
             
         except Exception as e:
@@ -565,14 +606,14 @@ class ProductionSystemLauncher:
             exchange_names = [config['name'] for config in self.exchange_configs.values()]
             print(f"║ 🏦 实盘交易所: {', '.join(exchange_names)[:50]:50}                    ║")
         
-        print(f"║ 🌐 监控界面: http://localhost:5000                                            ║")
+        print(f"║ 🌐 监控界面: http://localhost:8080                                            ║")
         print(f"║ 📊 实时监控: 交易数据、AI状态、系统性能                                        ║")
         print(f"║ 🤖 AI模型: 6大AI融合决策系统                                                  ║")
         print(f"║ 🎯 目标收益: 周收益20%+                                                       ║")
         print(f"╚══════════════════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}")
         
         print(f"\n{Fore.YELLOW}💡 使用提示:{Style.RESET_ALL}")
-        print("• 访问 http://localhost:5000 查看实时监控面板")
+        print("• 访问 http://localhost:8080 查看实时监控面板")
         print("• 按 Ctrl+C 安全停止系统")
         print("• 查看日志了解系统运行状态")
         
