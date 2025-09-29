@@ -66,6 +66,13 @@ class SystemLauncher:
                 'api_key_env': 'KUCOIN_API_KEY',
                 'secret_env': 'KUCOIN_SECRET_KEY',
                 'passphrase_env': 'KUCOIN_PASSPHRASE'
+            },
+            'bitget': {
+                'name': 'Bitget',
+                'api_key_env': 'BITGET_API_KEY',
+                'secret_env': 'BITGET_SECRET_KEY',
+                'passphrase_env': 'BITGET_PASSPHRASE',
+                'testnet_env': 'BITGET_TESTNET'
             }
         }
         

@@ -3,6 +3,7 @@
 🏦 多交易所管理器 - 生产级实盘交易
 支持多个交易所同时开平仓，统一信号分发，独立风控管理
 专为实盘交易设计，无模拟数据，无占位符，完整生产级代码
+支持: Binance, OKEx, Huobi, Bybit, Gate.io, KuCoin, Bitget
 """
 import asyncio
 import ccxt
@@ -27,6 +28,7 @@ class ExchangeType(Enum):
     BYBIT = "bybit"
     GATE = "gate"
     KUCOIN = "kucoin"
+    BITGET = "bitget"
 
 class OrderSide(Enum):
     """订单方向"""
@@ -46,7 +48,7 @@ class ExchangeConfig:
     name: str
     api_key: str
     secret: str
-    passphrase: Optional[str] = None  # OKEx需要
+    passphrase: Optional[str] = None  # OKEx, KuCoin, Bitget需要
     sandbox: bool = False
     testnet: bool = False
     rateLimit: int = 1200
@@ -116,8 +118,8 @@ class ExchangeConnection:
                 'sandbox': self.config.sandbox,
             }
             
-            # OKEx需要passphrase
-            if self.config.passphrase:
+            # OKEx, KuCoin, Bitget需要passphrase
+            if self.config.passphrase and self.config.name in ['okex', 'kucoin', 'bitget']:
                 exchange_config['password'] = self.config.passphrase
                 
             # 币安测试网配置
@@ -126,6 +128,19 @@ class ExchangeConnection:
                     'api': {
                         'public': 'https://testnet.binance.vision/api',
                         'private': 'https://testnet.binance.vision/api',
+                    }
+                }
+            
+            # Bitget测试网配置
+            if self.config.name == 'bitget' and self.config.testnet:
+                exchange_config['sandbox'] = True
+                
+            # Bybit测试网配置
+            if self.config.name == 'bybit' and self.config.testnet:
+                exchange_config['urls'] = {
+                    'api': {
+                        'public': 'https://api-testnet.bybit.com',
+                        'private': 'https://api-testnet.bybit.com',
                     }
                 }
             
