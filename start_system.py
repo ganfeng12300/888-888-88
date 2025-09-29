@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-🚀 AI量化交易系统 - 一键启动脚本
-支持多交易所API配置，生产级实盘交易
-专为交易所带单设计，支持多AI融合决策，目标周收益20%+
+🚀 AI量化交易系统 - 实盘交易启动器
+专为实盘交易设计，支持7大主流交易所
+无测试网，无模拟，纯实盘API，专业级量化交易
 """
 import os
 import sys
@@ -21,8 +21,8 @@ from colorama import Fore, Back, Style
 # 初始化颜色输出
 colorama.init()
 
-class SystemLauncher:
-    """系统启动器"""
+class ProductionSystemLauncher:
+    """生产级系统启动器 - 实盘交易专用"""
     
     def __init__(self):
         self.start_time = datetime.now()
@@ -32,13 +32,12 @@ class SystemLauncher:
             'OPENAI_API_KEY'
         ]
         
-        # 支持的交易所配置
+        # 支持的交易所配置 - 实盘交易专用
         self.supported_exchanges = {
             'binance': {
                 'name': 'Binance',
                 'api_key_env': 'BINANCE_API_KEY',
-                'secret_env': 'BINANCE_SECRET_KEY',
-                'testnet_env': 'BINANCE_TESTNET'
+                'secret_env': 'BINANCE_SECRET_KEY'
             },
             'okex': {
                 'name': 'OKEx',
@@ -71,29 +70,30 @@ class SystemLauncher:
                 'name': 'Bitget',
                 'api_key_env': 'BITGET_API_KEY',
                 'secret_env': 'BITGET_SECRET_KEY',
-                'passphrase_env': 'BITGET_PASSPHRASE',
-                'testnet_env': 'BITGET_TESTNET'
+                'passphrase_env': 'BITGET_PASSPHRASE'
             }
         }
         
     def print_banner(self):
         """打印启动横幅"""
         banner = f"""
-{Fore.CYAN}╔══════════════════════════════════════════════════════════════════════════════╗
-║                          🚀 AI量化交易系统启动器                              ║
-║                     专业级量化交易 • 多AI融合决策 • 实时监控                    ║
-║                     多交易所支持 • 生产级实盘交易 • 统一信号分发                ║
+{Fore.RED}╔══════════════════════════════════════════════════════════════════════════════╗
+║                      🔥 AI量化交易系统 - 实盘交易启动器                        ║
+║                   专业级实盘交易 • 7大交易所 • 真实资金操作                     ║
+║                   ⚠️  WARNING: LIVE TRADING WITH REAL MONEY ⚠️               ║
 ╚══════════════════════════════════════════════════════════════════════════════╝{Style.RESET_ALL}
 
-{Fore.YELLOW}🎯 系统目标: 周收益20%+ | 🤖 AI驱动: 6大AI模型融合 | 📊 实时监控: Web界面{Style.RESET_ALL}
-{Fore.GREEN}🏦 多交易所: 统一信号分发 | 🔒 风险控制: 多层安全保障 | ⚡ 实盘交易: 生产级代码{Style.RESET_ALL}
+{Fore.YELLOW}🎯 实盘目标: 周收益20%+ | 🤖 AI驱动: 6大AI模型融合 | 📊 实时监控: Web界面{Style.RESET_ALL}
+{Fore.RED}💰 真实资金: 实盘交易模式 | 🔒 风险控制: 多层安全保障 | ⚡ 7大交易所: 统一执行{Style.RESET_ALL}
 {Fore.GREEN}启动时间: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}{Style.RESET_ALL}
+
+{Fore.RED}⚠️  重要提醒: 本系统将使用真实资金进行交易，请确保您已充分了解风险！{Style.RESET_ALL}
 """
         print(banner)
         
     def check_environment(self):
         """检查运行环境"""
-        logger.info("🔍 检查运行环境...")
+        logger.info("🔍 检查生产环境...")
         
         # 检查Python版本
         python_version = sys.version_info
@@ -126,7 +126,7 @@ class SystemLauncher:
         
     def check_exchange_apis(self):
         """检查交易所API配置"""
-        logger.info("🏦 检查交易所API配置...")
+        logger.info("🏦 检查实盘交易所API配置...")
         
         configured_exchanges = []
         
@@ -143,32 +143,26 @@ class SystemLauncher:
                         logger.warning(f"⚠️ {config['name']} 缺少Passphrase")
                         continue
                 
-                # 检查测试网配置
-                testnet = False
-                if 'testnet_env' in config:
-                    testnet = os.getenv(config['testnet_env'], '').lower() in ['true', '1', 'yes']
-                
                 self.exchange_configs[exchange_id] = {
                     'name': config['name'],
                     'api_key': api_key,
                     'secret': secret,
-                    'passphrase': passphrase,
-                    'testnet': testnet
+                    'passphrase': passphrase
                 }
                 
                 # 隐藏密钥显示
                 key_preview = api_key[:8] + "..." if api_key else ""
-                testnet_info = " (测试网)" if testnet else ""
-                logger.success(f"✅ {config['name']}: {key_preview}{testnet_info}")
+                logger.success(f"✅ {config['name']}: {key_preview} (实盘)")
                 configured_exchanges.append(config['name'])
             else:
                 logger.info(f"⚪ {config['name']}: 未配置")
         
         if not configured_exchanges:
-            logger.warning("⚠️ 未配置任何交易所API，系统将使用模拟模式")
+            logger.error("❌ 未配置任何交易所API，无法进行实盘交易！")
             self.prompt_exchange_configuration()
+            return False
         else:
-            logger.success(f"✅ 已配置交易所: {', '.join(configured_exchanges)}")
+            logger.success(f"✅ 已配置实盘交易所: {', '.join(configured_exchanges)}")
             
         return True
         
@@ -196,30 +190,29 @@ class SystemLauncher:
         
     def prompt_exchange_configuration(self):
         """提示用户配置交易所API"""
-        print(f"\n{Fore.YELLOW}🏦 交易所API配置向导{Style.RESET_ALL}")
-        print("为了进行实盘交易，请配置至少一个交易所的API密钥:")
+        print(f"\n{Fore.RED}🚨 实盘交易API配置向导{Style.RESET_ALL}")
+        print("⚠️ 警告：以下配置将用于真实资金交易，请谨慎操作！")
         
         for exchange_id, config in self.supported_exchanges.items():
-            print(f"\n{Fore.CYAN}📝 {config['name']}:{Style.RESET_ALL}")
+            print(f"\n{Fore.CYAN}📝 {config['name']} (实盘):{Style.RESET_ALL}")
             print(f"  • API Key: {config['api_key_env']}")
             print(f"  • Secret: {config['secret_env']}")
             if 'passphrase_env' in config:
                 print(f"  • Passphrase: {config['passphrase_env']}")
-            if 'testnet_env' in config:
-                print(f"  • 测试网: {config['testnet_env']} (可选)")
                 
         print(f"\n{Fore.GREEN}💡 配置方法:{Style.RESET_ALL}")
         print("1. 创建 .env 文件")
-        print("2. 添加交易所API配置:")
-        print("   BINANCE_API_KEY=your_binance_api_key")
-        print("   BINANCE_SECRET_KEY=your_binance_secret_key")
-        print("   BINANCE_TESTNET=false")
+        print("2. 添加实盘交易所API配置:")
+        print("   BINANCE_API_KEY=your_real_binance_api_key")
+        print("   BINANCE_SECRET_KEY=your_real_binance_secret_key")
         print("3. 重新启动系统")
         
-        print(f"\n{Fore.RED}⚠️ 重要提示:{Style.RESET_ALL}")
-        print("• 请确保API密钥具有交易权限")
-        print("• 建议先在测试网环境测试")
+        print(f"\n{Fore.RED}⚠️ 重要安全提示:{Style.RESET_ALL}")
+        print("• 确保API密钥具有交易权限")
+        print("• 这些是实盘API，将操作真实资金")
+        print("• 建议设置合理的API权限限制")
         print("• 妥善保管API密钥，避免泄露")
+        print("• 建议先小资金测试系统稳定性")
         
     def prompt_api_configuration(self, missing_apis: List[str]):
         """提示用户配置API"""
@@ -240,10 +233,10 @@ class SystemLauncher:
     def configure_exchanges(self):
         """配置交易所连接"""
         if not self.exchange_configs:
-            logger.info("📊 未配置交易所API，系统将以监控模式运行")
-            return True
+            logger.error("❌ 未配置交易所API，无法启动实盘交易系统")
+            return False
             
-        logger.info("🏦 配置交易所连接...")
+        logger.info("🏦 配置实盘交易所连接...")
         
         try:
             from src.exchanges.multi_exchange_manager import multi_exchange_manager, ExchangeConfig
@@ -254,42 +247,43 @@ class SystemLauncher:
                         name=exchange_id,
                         api_key=config['api_key'],
                         secret=config['secret'],
-                        passphrase=config.get('passphrase'),
-                        testnet=config.get('testnet', False)
+                        passphrase=config.get('passphrase')
                     )
                     
                     success = multi_exchange_manager.add_exchange(exchange_config)
                     if success:
-                        logger.success(f"✅ {config['name']} 连接成功")
+                        logger.success(f"✅ {config['name']} 实盘连接成功")
                     else:
-                        logger.error(f"❌ {config['name']} 连接失败")
+                        logger.error(f"❌ {config['name']} 实盘连接失败")
                         
                 except Exception as e:
                     logger.error(f"❌ {config['name']} 配置失败: {e}")
                     
             active_exchanges = multi_exchange_manager.get_active_exchanges()
             if active_exchanges:
-                logger.success(f"🎉 成功连接 {len(active_exchanges)} 个交易所: {', '.join(active_exchanges)}")
+                logger.success(f"🎉 成功连接 {len(active_exchanges)} 个实盘交易所: {', '.join(active_exchanges)}")
                 self.system_status['exchanges'] = True
             else:
-                logger.warning("⚠️ 未成功连接任何交易所")
+                logger.error("❌ 未成功连接任何实盘交易所")
                 self.system_status['exchanges'] = False
+                return False
                 
         except Exception as e:
-            logger.error(f"❌ 交易所配置失败: {e}")
+            logger.error(f"❌ 实盘交易所配置失败: {e}")
             self.system_status['exchanges'] = False
+            return False
             
         return True
         
     def start_core_system(self):
         """启动核心系统"""
-        logger.info("🚀 启动核心系统...")
+        logger.info("🚀 启动实盘交易核心系统...")
         
         try:
             # 导入并启动主系统
             from main import QuantTradingSystem
             
-            logger.info("🔧 初始化量化交易系统...")
+            logger.info("🔧 初始化实盘量化交易系统...")
             self.trading_system = QuantTradingSystem()
             
             # 在后台线程中启动系统
@@ -299,11 +293,11 @@ class SystemLauncher:
             )
             system_thread.start()
             
-            logger.success("✅ 核心系统启动成功")
+            logger.success("✅ 实盘交易核心系统启动成功")
             self.system_status['core'] = True
             
         except Exception as e:
-            logger.error(f"❌ 核心系统启动失败: {e}")
+            logger.error(f"❌ 实盘交易核心系统启动失败: {e}")
             self.system_status['core'] = False
             return False
             
@@ -311,18 +305,18 @@ class SystemLauncher:
         
     def start_signal_generator(self):
         """启动信号生成器"""
-        logger.info("📡 启动信号生成器...")
+        logger.info("📡 启动实盘交易信号生成器...")
         
         try:
             from src.strategies.production_signal_generator import production_signal_generator
             
             production_signal_generator.start_generation()
             
-            logger.success("✅ 信号生成器启动成功")
+            logger.success("✅ 实盘交易信号生成器启动成功")
             self.system_status['signal_generator'] = True
             
         except Exception as e:
-            logger.error(f"❌ 信号生成器启动失败: {e}")
+            logger.error(f"❌ 实盘交易信号生成器启动失败: {e}")
             self.system_status['signal_generator'] = False
             return False
             
@@ -330,7 +324,7 @@ class SystemLauncher:
         
     def start_web_interface(self):
         """启动Web界面"""
-        logger.info("🌐 启动Web界面...")
+        logger.info("🌐 启动实盘交易监控界面...")
         
         try:
             # 在后台线程中启动Web服务器
@@ -343,12 +337,12 @@ class SystemLauncher:
             # 等待Web服务器启动
             time.sleep(3)
             
-            logger.success("✅ Web界面启动成功")
+            logger.success("✅ 实盘交易监控界面启动成功")
             logger.info("🌐 访问地址: http://localhost:5000")
             self.system_status['web'] = True
             
         except Exception as e:
-            logger.error(f"❌ Web界面启动失败: {e}")
+            logger.error(f"❌ 实盘交易监控界面启动失败: {e}")
             self.system_status['web'] = False
             return False
             
@@ -363,12 +357,8 @@ class SystemLauncher:
             logger.error(f"Web服务器运行错误: {e}")
             
     def start_trading_loop(self):
-        """启动交易循环"""
-        if not self.exchange_configs:
-            logger.info("📊 未配置交易所，跳过交易循环启动")
-            return True
-            
-        logger.info("🔄 启动交易循环...")
+        """启动实盘交易循环"""
+        logger.info("🔄 启动实盘交易循环...")
         
         try:
             # 启动交易循环线程
@@ -378,22 +368,23 @@ class SystemLauncher:
             )
             trading_thread.start()
             
-            logger.success("✅ 交易循环启动成功")
+            logger.success("✅ 实盘交易循环启动成功")
             self.system_status['trading'] = True
             
         except Exception as e:
-            logger.error(f"❌ 交易循环启动失败: {e}")
+            logger.error(f"❌ 实盘交易循环启动失败: {e}")
             self.system_status['trading'] = False
             return False
             
         return True
         
     def _trading_loop(self):
-        """交易循环"""
+        """实盘交易循环"""
         from src.exchanges.multi_exchange_manager import multi_exchange_manager
         from src.strategies.production_signal_generator import production_signal_generator
         
-        logger.info("🔄 交易循环开始运行...")
+        logger.info("🔄 实盘交易循环开始运行...")
+        logger.warning("⚠️ 注意：系统现在将使用真实资金进行交易！")
         
         # 支持的交易对
         symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT']
@@ -405,31 +396,31 @@ class SystemLauncher:
                     signal = production_signal_generator.generate_signal(symbol)
                     
                     if signal:
-                        logger.info(f"🎯 收到交易信号: {signal.symbol} {signal.action}")
+                        logger.warning(f"🎯 实盘交易信号: {signal.symbol} {signal.action} (真实资金)")
                         
                         # 转换为交易信号
                         trading_signal = production_signal_generator.convert_to_trading_signal(signal)
                         
-                        # 广播到所有交易所
+                        # 广播到所有实盘交易所
                         results = multi_exchange_manager.broadcast_signal(trading_signal)
                         
                         # 记录结果
                         success_count = sum(1 for r in results if r.status not in ['failed', 'timeout'])
-                        logger.info(f"📊 信号执行结果: {success_count}/{len(results)} 成功")
+                        logger.info(f"📊 实盘交易执行结果: {success_count}/{len(results)} 成功")
                 
                 # 等待下一轮
                 time.sleep(60)  # 每分钟检查一次
                 
             except KeyboardInterrupt:
-                logger.info("🛑 交易循环收到停止信号")
+                logger.info("🛑 实盘交易循环收到停止信号")
                 break
             except Exception as e:
-                logger.error(f"❌ 交易循环错误: {e}")
+                logger.error(f"❌ 实盘交易循环错误: {e}")
                 time.sleep(30)  # 错误后等待30秒
                 
     def monitor_system_health(self):
         """监控系统健康状态"""
-        logger.info("📊 启动系统健康监控...")
+        logger.info("📊 启动实盘交易系统健康监控...")
         
         while True:
             try:
@@ -439,7 +430,7 @@ class SystemLauncher:
                 
                 # 每5分钟输出一次状态
                 if uptime.total_seconds() % 300 == 0:
-                    logger.info(f"💓 系统运行时间: {uptime}")
+                    logger.info(f"💓 实盘交易系统运行时间: {uptime}")
                     logger.info(f"📈 系统状态: {self.system_status}")
                     
                     # 检查交易所健康状态
@@ -447,14 +438,14 @@ class SystemLauncher:
                         try:
                             from src.exchanges.multi_exchange_manager import multi_exchange_manager
                             health = multi_exchange_manager.health_check()
-                            logger.info(f"🏦 交易所状态: {health['overall_status']}")
+                            logger.info(f"🏦 实盘交易所状态: {health['overall_status']}")
                         except:
                             pass
                 
                 time.sleep(60)  # 每分钟检查一次
                 
             except KeyboardInterrupt:
-                logger.info("🛑 收到停止信号，正在关闭系统...")
+                logger.info("🛑 收到停止信号，正在安全关闭实盘交易系统...")
                 break
             except Exception as e:
                 logger.error(f"系统监控错误: {e}")
@@ -462,9 +453,9 @@ class SystemLauncher:
                 
     def print_startup_summary(self):
         """打印启动总结"""
-        print(f"\n{Fore.GREEN}🎉 系统启动完成!{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}╔══════════════════════════════════════════════════════════════════════════════╗")
-        print(f"║                              🚀 系统状态总览                                  ║")
+        print(f"\n{Fore.GREEN}🎉 实盘交易系统启动完成!{Style.RESET_ALL}")
+        print(f"{Fore.RED}╔══════════════════════════════════════════════════════════════════════════════╗")
+        print(f"║                          🔥 实盘交易系统状态总览                              ║")
         print(f"╠══════════════════════════════════════════════════════════════════════════════╣")
         
         for module, status in self.system_status.items():
@@ -484,11 +475,9 @@ class SystemLauncher:
         # 显示配置的交易所
         if self.exchange_configs:
             exchange_names = [config['name'] for config in self.exchange_configs.values()]
-            print(f"║ 🏦 已配置交易所: {', '.join(exchange_names)[:50]:50}                    ║")
-        else:
-            print(f"║ 🏦 交易所: 未配置 (监控模式)                                               ║")
-            
-        print(f"║ 🌐 Web界面: http://localhost:5000                                            ║")
+            print(f"║ 🏦 实盘交易所: {', '.join(exchange_names)[:50]:50}                    ║")
+        
+        print(f"║ 🌐 监控界面: http://localhost:5000                                            ║")
         print(f"║ 📊 实时监控: 交易数据、AI状态、系统性能                                        ║")
         print(f"║ 🤖 AI模型: 6大AI融合决策系统                                                  ║")
         print(f"║ 🎯 目标收益: 周收益20%+                                                       ║")
@@ -499,15 +488,17 @@ class SystemLauncher:
         print("• 按 Ctrl+C 安全停止系统")
         print("• 查看日志了解系统运行状态")
         
-        if self.exchange_configs:
-            print(f"\n{Fore.GREEN}🚀 实盘交易模式:{Style.RESET_ALL}")
-            print("• 系统将自动生成交易信号")
-            print("• 信号将同时发送到所有配置的交易所")
-            print("• 请确保账户有足够余额进行交易")
-        else:
-            print(f"\n{Fore.BLUE}📊 监控模式:{Style.RESET_ALL}")
-            print("• 系统以监控模式运行，不会执行实际交易")
-            print("• 配置交易所API后可启用实盘交易")
+        print(f"\n{Fore.RED}🚀 实盘交易模式:{Style.RESET_ALL}")
+        print("• ⚠️ 系统正在使用真实资金进行交易")
+        print("• 🎯 AI信号将同时发送到所有配置的交易所")
+        print("• 💰 请确保账户有足够余额进行交易")
+        print("• 🔒 建议定期检查交易结果和风险状况")
+        
+        print(f"\n{Fore.RED}⚠️ 风险提醒:{Style.RESET_ALL}")
+        print("• 量化交易存在亏损风险，请谨慎操作")
+        print("• 建议先用小资金测试系统稳定性")
+        print("• 定期监控系统状态和交易结果")
+        print("• 如有异常请立即停止系统")
         
     def run(self):
         """运行启动器"""
@@ -515,19 +506,30 @@ class SystemLauncher:
             # 打印启动横幅
             self.print_banner()
             
+            # 用户确认
+            print(f"\n{Fore.RED}⚠️ 重要确认 ⚠️{Style.RESET_ALL}")
+            print("本系统将使用真实资金进行交易，存在亏损风险。")
+            confirm = input("请输入 'YES' 确认继续启动实盘交易系统: ")
+            
+            if confirm != 'YES':
+                print("❌ 用户取消启动")
+                return False
+            
             # 检查环境
             if not self.check_environment():
                 return False
                 
             # 检查交易所API配置
-            self.check_exchange_apis()
+            if not self.check_exchange_apis():
+                return False
             
             # 检查其他API配置
             self.check_api_configuration()
             
             # 配置交易所连接
-            self.configure_exchanges()
-            
+            if not self.configure_exchanges():
+                return False
+                
             # 启动核心系统
             if not self.start_core_system():
                 return False
@@ -548,18 +550,18 @@ class SystemLauncher:
             self.monitor_system_health()
             
         except KeyboardInterrupt:
-            logger.info("🛑 用户中断，正在安全关闭系统...")
+            logger.info("🛑 用户中断，正在安全关闭实盘交易系统...")
         except Exception as e:
-            logger.error(f"❌ 系统启动失败: {e}")
+            logger.error(f"❌ 实盘交易系统启动失败: {e}")
             return False
         finally:
-            logger.info("👋 系统已关闭")
+            logger.info("👋 实盘交易系统已关闭")
             
         return True
 
 def main():
     """主函数"""
-    launcher = SystemLauncher()
+    launcher = ProductionSystemLauncher()
     return launcher.run()
 
 if __name__ == "__main__":

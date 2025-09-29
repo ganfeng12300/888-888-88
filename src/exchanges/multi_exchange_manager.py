@@ -44,13 +44,11 @@ class OrderType(Enum):
 
 @dataclass
 class ExchangeConfig:
-    """交易所配置"""
+    """交易所配置 - 实盘交易专用"""
     name: str
     api_key: str
     secret: str
     passphrase: Optional[str] = None  # OKEx, KuCoin, Bitget需要
-    sandbox: bool = False
-    testnet: bool = False
     rateLimit: int = 1200
     timeout: int = 30000
     enableRateLimit: bool = True
@@ -115,34 +113,12 @@ class ExchangeConnection:
                 'timeout': self.config.timeout,
                 'rateLimit': self.config.rateLimit,
                 'enableRateLimit': self.config.enableRateLimit,
-                'sandbox': self.config.sandbox,
+                'sandbox': False,  # 强制实盘模式
             }
             
             # OKEx, KuCoin, Bitget需要passphrase
             if self.config.passphrase and self.config.name in ['okex', 'kucoin', 'bitget']:
                 exchange_config['password'] = self.config.passphrase
-                
-            # 币安测试网配置
-            if self.config.name == 'binance' and self.config.testnet:
-                exchange_config['urls'] = {
-                    'api': {
-                        'public': 'https://testnet.binance.vision/api',
-                        'private': 'https://testnet.binance.vision/api',
-                    }
-                }
-            
-            # Bitget测试网配置
-            if self.config.name == 'bitget' and self.config.testnet:
-                exchange_config['sandbox'] = True
-                
-            # Bybit测试网配置
-            if self.config.name == 'bybit' and self.config.testnet:
-                exchange_config['urls'] = {
-                    'api': {
-                        'public': 'https://api-testnet.bybit.com',
-                        'private': 'https://api-testnet.bybit.com',
-                    }
-                }
             
             self.exchange = exchange_class(exchange_config)
             
