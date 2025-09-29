@@ -929,3 +929,6 @@ def initialize_auto_feature_engineering():
     logger.success("✅ 自动特征工程系统初始化完成")
     return system
 
+
+# 创建全局实例供导入使用
+auto_feature_engineering = auto_feature_engineer

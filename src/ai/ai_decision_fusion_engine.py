@@ -679,6 +679,9 @@ def get_ai_decision_fusion_engine() -> Optional[ProductionAIDecisionFusionEngine
     """获取AI决策融合引擎实例"""
     return _ai_decision_fusion_engine
 
+# 创建全局实例供导入使用
+ai_decision_fusion_engine = initialize_ai_decision_fusion_engine()
+
 if __name__ == "__main__":
     # 测试AI决策融合引擎
     engine = initialize_ai_decision_fusion_engine()

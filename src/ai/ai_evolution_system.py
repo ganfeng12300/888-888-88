@@ -384,6 +384,9 @@ def get_ai_evolution_system() -> Optional[ProductionAIEvolutionSystem]:
     """获取AI进化系统实例"""
     return _ai_evolution_system
 
+# 创建全局实例供导入使用
+ai_evolution_system = initialize_ai_evolution_system()
+
 if __name__ == "__main__":
     # 测试AI进化系统
     async def test_evolution_system():

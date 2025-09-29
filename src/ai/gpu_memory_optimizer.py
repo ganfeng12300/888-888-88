@@ -459,6 +459,9 @@ def get_gpu_memory_optimizer() -> Optional[ProductionGPUMemoryOptimizer]:
     """获取GPU内存优化器实例"""
     return _gpu_memory_optimizer
 
+
+# 创建全局实例供导入使用
+gpu_memory_optimizer = initialize_gpu_memory_optimizer()
 if __name__ == "__main__":
     # 测试GPU内存优化器
     optimizer = initialize_gpu_memory_optimizer()
