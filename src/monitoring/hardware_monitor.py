@@ -513,6 +513,36 @@ class HardwareMonitor:
             logger.error(f"获取硬件指标失败: {e}")
             return {}
     
+    def update_all_metrics(self) -> Dict[str, Any]:
+        """更新并获取所有硬件指标"""
+        try:
+            with self.lock:
+                # 更新各个监控器的指标
+                cpu_metrics = self.cpu_monitor.get_cpu_metrics()
+                gpu_metrics = self.gpu_monitor.get_gpu_metrics()
+                memory_metrics = self.memory_monitor.get_memory_metrics()
+                disk_metrics = self.disk_monitor.get_disk_metrics()
+                network_metrics = self.network_monitor.get_network_metrics()
+                
+                # 组合所有指标
+                all_metrics = {
+                    'cpu': cpu_metrics,
+                    'gpu': gpu_metrics,
+                    'memory': memory_metrics,
+                    'disk': disk_metrics,
+                    'network': network_metrics,
+                    'timestamp': time.time()
+                }
+                
+                # 检查告警
+                self._check_alerts(all_metrics)
+                
+                return all_metrics
+        
+        except Exception as e:
+            logger.error(f"更新硬件指标失败: {e}")
+            return {}
+    
     def _check_alerts(self, metrics: Dict[str, Any]):
         """检查告警"""
         try:

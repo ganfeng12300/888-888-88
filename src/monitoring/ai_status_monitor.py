@@ -504,6 +504,20 @@ class AIStatusMonitor:
         """添加进化事件回调"""
         self.evolution_callbacks.append(callback)
     
+    def update_ai_status(self) -> Dict[str, Any]:
+        """更新并获取AI状态"""
+        try:
+            with self.lock:
+                # 检查模型健康状态
+                self._check_model_health()
+                
+                # 获取AI摘要
+                return self.get_ai_summary()
+        
+        except Exception as e:
+            logger.error(f"更新AI状态失败: {e}")
+            return {}
+    
     def get_ai_summary(self) -> Dict[str, Any]:
         """获取AI摘要"""
         try:
