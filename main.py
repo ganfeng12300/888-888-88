@@ -236,12 +236,8 @@ class QuantTradingSystem:
                 health_status = system_health_checker.check_all_systems()
                 
                 # 记录健康状态
-                if hasattr(health_status, 'overall_healthy'):
-                    if not health_status.overall_healthy:
-                        logger.warning("⚠️ 系统健康状态异常")
-                elif hasattr(health_status, 'get'):
-                    if not health_status.get('overall_healthy', True):
-                        logger.warning("⚠️ 系统健康状态异常")
+                if not health_status.get('overall_healthy', True):
+                    logger.warning("⚠️ 系统健康状态异常")
                     
                 time.sleep(300)  # 每5分钟检查一次
                 
@@ -298,14 +294,8 @@ class QuantTradingSystem:
                     for symbol in symbols:
                         try:
                             # 获取K线数据
-                            if isinstance(active_exchanges, list):
-                                # 如果是列表，取第一个交易所
-                                exchange = active_exchanges[0]
-                                exchange_name = exchange.id if hasattr(exchange, 'id') else 'unknown'
-                            else:
-                                # 如果是字典，取第一个交易所
-                                exchange_name = list(active_exchanges.keys())[0]
-                                exchange = active_exchanges[exchange_name]
+                            exchange_name = list(active_exchanges.keys())[0]  # 使用第一个活跃交易所
+                            exchange = active_exchanges[exchange_name]
                             
                             # 获取1小时K线数据
                             ohlcv = exchange.fetch_ohlcv(symbol, '1h', limit=200)
