@@ -450,6 +450,10 @@ class SystemHealthChecker:
         
         logger.info("系统健康检查器初始化完成")
     
+    def check_all_systems(self) -> SystemHealthReport:
+        """检查所有系统（别名方法）"""
+        return self.perform_full_health_check()
+    
     def perform_full_health_check(self) -> SystemHealthReport:
         """执行完整健康检查"""
         try:

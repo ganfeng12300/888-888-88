@@ -31,7 +31,7 @@ from src.monitoring.hardware_monitor import hardware_monitor
 from src.monitoring.ai_status_monitor import ai_status_monitor
 from src.monitoring.system_health_checker import system_health_checker
 from src.exchanges.multi_exchange_manager import multi_exchange_manager, initialize_multi_exchange_manager
-from src.strategies.production_signal_generator import production_signal_generator, initialize_production_signal_generator
+from src.strategies.production_signal_generator import production_signal_generator, initialize_production_signal_generator, MarketData
 
 class QuantTradingSystem:
     """量化交易系统主类"""
@@ -292,14 +292,35 @@ class QuantTradingSystem:
                 
                 if active_exchanges:
                     for symbol in symbols:
-                        # 获取所有交易所的行情数据
-                        tickers = multi_exchange_manager.get_all_tickers(symbol)
-                        
-                        if tickers:
-                            # 更新信号生成器的市场数据
-                            # 这里需要转换为MarketData格式
-                            # 暂时跳过，等待实际数据接口
-                            pass
+                        try:
+                            # 获取K线数据
+                            exchange_name = list(active_exchanges.keys())[0]  # 使用第一个活跃交易所
+                            exchange = active_exchanges[exchange_name]
+                            
+                            # 获取1小时K线数据
+                            ohlcv = exchange.fetch_ohlcv(symbol, '1h', limit=200)
+                            
+                            if ohlcv:
+                                # 转换为MarketData格式
+                                market_data = []
+                                for candle in ohlcv:
+                                    timestamp, open_price, high, low, close, volume = candle
+                                    market_data.append(MarketData(
+                                        symbol=symbol,
+                                        timestamp=datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc),
+                                        open=float(open_price),
+                                        high=float(high),
+                                        low=float(low),
+                                        close=float(close),
+                                        volume=float(volume)
+                                    ))
+                                
+                                # 更新信号生成器的市场数据
+                                production_signal_generator.update_market_data(symbol, market_data)
+                                
+                        except Exception as e:
+                            logger.error(f"获取 {symbol} 市场数据失败: {e}")
+                            continue
                 
                 time.sleep(60)  # 每分钟更新一次
                 
