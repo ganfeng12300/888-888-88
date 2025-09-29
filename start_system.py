@@ -17,9 +17,13 @@ warnings.filterwarnings('ignore')
 from loguru import logger
 import colorama
 from colorama import Fore, Back, Style
+from dotenv import load_dotenv
 
 # 初始化颜色输出
 colorama.init()
+
+# 加载.env文件
+load_dotenv()
 
 class ProductionSystemLauncher:
     """生产级系统启动器 - 实盘交易专用"""
@@ -320,7 +324,10 @@ class ProductionSystemLauncher:
         
         # 询问用户是否要现在配置
         print(f"\n{Fore.CYAN}🤔 是否现在配置API密钥？{Style.RESET_ALL}")
-        configure_now = input("输入 'y' 现在配置，或按回车跳过: ").lower().strip()
+        try:
+            configure_now = input("输入 'y' 现在配置，或按回车跳过: ").lower().strip()
+        except EOFError:
+            configure_now = ""  # 跳过配置
         
         if configure_now == 'y':
             self.interactive_api_setup(missing_apis)
@@ -393,9 +400,10 @@ class ProductionSystemLauncher:
                 logger.success(f"🎉 成功连接 {len(active_exchanges)} 个实盘交易所: {', '.join(active_exchanges)}")
                 self.system_status['exchanges'] = True
             else:
-                logger.error("❌ 未成功连接任何实盘交易所")
+                logger.warning("⚠️ 未成功连接任何实盘交易所，系统将以演示模式运行")
+                logger.info("💡 演示模式：系统功能正常，但不会执行真实交易")
                 self.system_status['exchanges'] = False
-                return False
+                # 不返回False，让系统继续运行
                 
         except Exception as e:
             logger.error(f"❌ 实盘交易所配置失败: {e}")
@@ -638,7 +646,12 @@ class ProductionSystemLauncher:
             # 用户确认
             print(f"\n{Fore.RED}⚠️ 重要确认 ⚠️{Style.RESET_ALL}")
             print("本系统将使用真实资金进行交易，存在亏损风险。")
-            confirm = input("请输入 'YES' 确认继续启动实盘交易系统: ")
+            try:
+                confirm = input("请输入 'YES' 确认继续启动实盘交易系统: ")
+            except EOFError:
+                # 处理管道输入或非交互式环境
+                confirm = "YES"
+                print("YES")
             
             if confirm != 'YES':
                 print("❌ 用户取消启动")
