@@ -135,10 +135,21 @@ class ExchangeConnection:
     def _test_connection(self):
         """测试连接"""
         try:
-            # 获取交易所状态
-            status = self.exchange.fetch_status()
-            if status['status'] != 'ok':
-                raise Exception(f"交易所状态异常: {status}")
+            # 尝试不同的连接测试方法
+            try:
+                # 首先尝试获取交易所状态
+                status = self.exchange.fetch_status()
+                if status['status'] != 'ok':
+                    raise Exception(f"交易所状态异常: {status}")
+            except Exception as status_error:
+                # 如果fetch_status失败，尝试获取市场信息作为备用测试
+                if "not supported" in str(status_error).lower():
+                    markets = self.exchange.load_markets()
+                    if not markets:
+                        raise Exception("无法获取市场信息")
+                else:
+                    # 如果是其他错误，重新抛出
+                    raise status_error
                 
             # 测试API权限
             balance = self.exchange.fetch_balance()
