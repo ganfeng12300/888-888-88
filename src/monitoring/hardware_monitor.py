@@ -547,7 +547,9 @@ class HardwareMonitor:
         """获取CPU使用率"""
         try:
             cpu_metrics = self.cpu_monitor.get_cpu_metrics()
-            if cpu_metrics and 'usage_percent' in cpu_metrics:
+            if cpu_metrics and hasattr(cpu_metrics, 'usage_percent'):
+                return cpu_metrics.usage_percent
+            elif cpu_metrics and isinstance(cpu_metrics, dict) and 'usage_percent' in cpu_metrics:
                 return cpu_metrics['usage_percent']
             return 0.0
         except Exception as e:
