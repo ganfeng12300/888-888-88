@@ -17,9 +17,13 @@ warnings.filterwarnings('ignore')
 from loguru import logger
 import colorama
 from colorama import Fore, Back, Style
+from dotenv import load_dotenv
 
 # 初始化颜色输出
 colorama.init()
+
+# 加载.env文件
+load_dotenv()
 
 class ProductionSystemLauncher:
     """生产级系统启动器 - 实盘交易专用"""
