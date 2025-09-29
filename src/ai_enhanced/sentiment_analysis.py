@@ -927,8 +927,7 @@ sentiment_monitor = SentimentMonitor()
 
 def initialize_sentiment_analysis():
     """初始化情感分析系统"""
-    from src.ai_enhanced.sentiment_analysis import SentimentAnalysisSystem
-    system = SentimentAnalysisSystem()
+    # 返回全局情感监控器实例
+    global sentiment_monitor
     logger.success("✅ 情感分析系统初始化完成")
-    return system
-
+    return sentiment_monitor
