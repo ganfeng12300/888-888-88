@@ -202,10 +202,9 @@ class WebInterface:
                 btc_price = self._get_real_price("BTCUSDT") or 45000.0
                 eth_price = self._get_real_price("ETHUSDT") or 3000.0
                 market_trend = self._get_market_trend() or "震荡"
-                "timestamp": current_time.isoformat(),
-                "market_trend": market_trend,
-                "volume_24h": volume_24h
-            }
+                volume_24h = self._get_24h_volume() or "25.0B"
+            except:
+                btc_price = 45000.0
                 eth_price = 3000.0
                 market_trend = "震荡"
                 volume_24h = "25.0B"
@@ -213,7 +212,9 @@ class WebInterface:
             self.real_time_data["market_data"] = {
                 "btc_price": btc_price,
                 "eth_price": eth_price,
-                'volume_24h': f"{np.random.uniform(20, 50):.1f}B"
+                "timestamp": current_time.isoformat(),
+                "market_trend": market_trend,
+                "volume_24h": volume_24h
             }
         
         except Exception as e:
