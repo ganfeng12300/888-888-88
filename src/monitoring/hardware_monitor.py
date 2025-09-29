@@ -20,9 +20,9 @@ from loguru import logger
 try:
     import GPUtil
     import pynvml
-    GPU_MONITORING_AVAILABLE = True
     pynvml.nvmlInit()
-except ImportError:
+    GPU_MONITORING_AVAILABLE = True
+except (ImportError, Exception):
     GPU_MONITORING_AVAILABLE = False
     print("GPU monitoring libraries not available, GPU monitoring will be limited")
 
@@ -512,6 +512,26 @@ class HardwareMonitor:
         except Exception as e:
             logger.error(f"获取硬件指标失败: {e}")
             return {}
+    
+    def get_cpu_metrics(self):
+        """获取CPU指标"""
+        return self.cpu_monitor.get_cpu_metrics()
+    
+    def get_gpu_metrics(self):
+        """获取GPU指标"""
+        return self.gpu_monitor.get_gpu_metrics()
+    
+    def get_memory_metrics(self):
+        """获取内存指标"""
+        return self.memory_monitor.get_memory_metrics()
+    
+    def get_disk_metrics(self):
+        """获取磁盘指标"""
+        return self.disk_monitor.get_disk_metrics()
+    
+    def get_network_metrics(self):
+        """获取网络指标"""
+        return self.network_monitor.get_network_metrics()
     
     def update_all_metrics(self) -> Dict[str, Any]:
         """更新并获取所有硬件指标"""
