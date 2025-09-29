@@ -923,3 +923,12 @@ class SentimentMonitor:
 
 # 全局情感监控器实例
 sentiment_monitor = SentimentMonitor()
+
+
+def initialize_sentiment_analysis():
+    """初始化情感分析系统"""
+    from src.ai_enhanced.sentiment_analysis import SentimentAnalysisSystem
+    system = SentimentAnalysisSystem()
+    logger.success("✅ 情感分析系统初始化完成")
+    return system
+

@@ -10,7 +10,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Any, Optional
 import threading
 
-from flask import Flask, render_template, jsonify, request, websocket
+from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
 import pandas as pd
 import numpy as np
@@ -21,12 +21,11 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from src.ai.ai_evolution_system import ai_evolution_system
-from src.ai.gpu_memory_optimizer import gpu_memory_optimizer
-from src.ai.gpu_model_scheduler import gpu_model_scheduler
-from src.ai.ai_decision_fusion_engine import ai_decision_fusion_engine
-from src.exchanges.unified_exchange_interface import unified_exchange_interface
-from src.strategies.strategy_manager import strategy_manager
+from src.ai.ai_evolution_system import get_ai_evolution_system
+from src.ai.gpu_memory_optimizer import get_gpu_memory_optimizer
+from src.ai.gpu_model_scheduler import get_gpu_model_scheduler
+from src.ai.ai_decision_fusion_engine import get_ai_decision_fusion_engine
+from src.exchanges.unified_exchange_interface import get_unified_exchange_interface
 from src.monitoring.hardware_monitor import hardware_monitor
 from src.monitoring.ai_status_monitor import ai_status_monitor
 from src.monitoring.trading_performance_monitor import trading_performance_monitor
@@ -336,4 +335,3 @@ def run_web_server(host='0.0.0.0', port=8080, debug=False):
 
 if __name__ == '__main__':
     run_web_server(debug=True)
-

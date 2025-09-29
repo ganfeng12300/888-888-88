@@ -83,7 +83,7 @@ class EncryptionManager:
         
         logger.info("加密管理器初始化完成")
     
-    def _create_fernet(self) -> Fernet:
+    def _create_fernet(self):
         """创建Fernet加密器"""
         # 使用PBKDF2从主密码派生密钥
         salt = b'stable_salt_for_api_keys'  # 在生产环境中应该使用随机盐
@@ -566,3 +566,10 @@ def initialize_api_security(master_password: str, storage_path: str = "api_crede
     global api_security_manager
     api_security_manager = APISecurityManager(master_password, storage_path)
     return api_security_manager
+
+
+def initialize_api_security_manager():
+    """初始化API安全管理器"""
+    manager = initialize_api_security("default_password")
+    logger.success("✅ API安全管理器初始化完成")
+    return manager

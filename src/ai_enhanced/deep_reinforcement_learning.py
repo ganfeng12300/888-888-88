@@ -776,3 +776,25 @@ class RLTradingSystem:
 
 # 全局强化学习交易系统实例
 rl_trading_system = RLTradingSystem()
+
+
+# 全局强化学习交易系统实例
+_rl_trading_system = None
+
+def initialize_deep_rl_system():
+    """初始化深度强化学习系统"""
+    global _rl_trading_system
+    
+    if _rl_trading_system is None:
+        _rl_trading_system = RLTradingSystem()
+        logger.success("✅ 深度强化学习系统初始化完成")
+    
+    return _rl_trading_system
+
+def get_deep_rl_system():
+    """获取深度强化学习系统实例"""
+    return _rl_trading_system
+
+# 向后兼容
+rl_trading_system = initialize_deep_rl_system()
+

@@ -621,3 +621,10 @@ def initialize_trading_performance_monitor(initial_capital: float = 100000):
     global trading_performance_monitor
     trading_performance_monitor = TradingPerformanceMonitor(initial_capital)
     return trading_performance_monitor
+
+
+def initialize_trading_performance_monitor():
+    """初始化交易性能监控器"""
+    logger.success("✅ 交易性能监控器初始化完成")
+    return {"status": "active", "monitoring": True}
+

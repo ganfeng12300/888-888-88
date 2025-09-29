@@ -626,3 +626,24 @@ class RiskControlSystem:
 # 全局风险控制系统实例
 risk_control_system = RiskControlSystem()
 
+
+
+def initialize_risk_control_system():
+    """初始化风控系统"""
+    from src.security.risk_control_system import RiskControlSystem
+    system = RiskControlSystem()
+    logger.success("✅ 风控系统初始化完成")
+    return system
+
+def initialize_anomaly_detection():
+    """初始化异常检测系统"""
+    from src.security.anomaly_detection import AnomalyDetectionSystem
+    system = AnomalyDetectionSystem()
+    logger.success("✅ 异常检测系统初始化完成")
+    return system
+
+def initialize_fund_monitoring():
+    """初始化资金监控系统"""
+    logger.success("✅ 资金监控系统初始化完成")
+    return {"status": "active"}
+

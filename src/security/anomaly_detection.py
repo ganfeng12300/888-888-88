@@ -615,3 +615,12 @@ class AnomalyDetectionSystem:
 # 全局异常检测系统实例
 anomaly_detection_system = AnomalyDetectionSystem()
 
+
+
+def initialize_anomaly_detection():
+    """初始化异常检测系统"""
+    from src.security.anomaly_detection import AnomalyDetectionSystem
+    system = AnomalyDetectionSystem()
+    logger.success("✅ 异常检测系统初始化完成")
+    return system
+

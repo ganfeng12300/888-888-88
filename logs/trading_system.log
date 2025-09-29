@@ -1,0 +1,35 @@
+2025-09-29 07:30:09 | INFO     | __main__:__init__:83 - 🚀 AI量化交易系统主控制器初始化完成
+2025-09-29 07:30:09 | INFO     | __main__:run:362 - 🚀 AI量化交易系统启动中...
+2025-09-29 07:30:09 | INFO     | __main__:run:363 - 📅 启动时间: 2025-09-29 15:30:09
+2025-09-29 07:30:09 | INFO     | __main__:run:364 - 💰 初始资金: $100,000
+2025-09-29 07:30:09 | INFO     | __main__:run:365 - 🎯 目标周收益: 20.0%
+2025-09-29 07:30:09 | INFO     | __main__:run:366 - 🛡️ 最大日回撤: 3.0%
+2025-09-29 07:30:09 | INFO     | __main__:initialize_all_modules:88 - 🔧 开始初始化系统模块...
+2025-09-29 07:30:09 | INFO     | __main__:initialize_all_modules:91 - 🔥 初始化第一优先级模块...
+2025-09-29 07:30:09 | INFO     | src.ai.ai_evolution_system:__init__:60 - 🚀 生产级AI进化系统初始化完成
+2025-09-29 07:30:09 | SUCCESS  | src.ai.ai_evolution_system:initialize_ai_evolution_system:379 - ✅ AI进化系统初始化完成
+2025-09-29 07:30:09 | INFO     | __main__:initialize_all_modules:95 - ✅ AI级别进化系统初始化完成
+2025-09-29 07:30:09 | WARNING  | src.ai.gpu_memory_optimizer:__init__:45 - ⚠️ 未检测到GPU设备，使用CPU模式
+2025-09-29 07:30:09 | WARNING  | src.ai.gpu_memory_optimizer:start_memory_monitoring:76 - GPU不可用，跳过内存监控
+2025-09-29 07:30:09 | SUCCESS  | src.ai.gpu_memory_optimizer:initialize_gpu_memory_optimizer:454 - ✅ GPU内存优化器初始化完成
+2025-09-29 07:30:09 | INFO     | __main__:initialize_all_modules:99 - ✅ GPU内存优化器初始化完成
+2025-09-29 07:30:09 | INFO     | src.ai.gpu_model_scheduler:__init__:127 - 🎯 GPU模型调度器初始化完成 - CPU槽位: 1, GPU槽位: 0
+2025-09-29 07:30:09 | INFO     | src.ai.gpu_model_scheduler:start_scheduler:177 - 🚀 GPU模型调度器启动
+2025-09-29 07:30:09 | SUCCESS  | src.ai.gpu_model_scheduler:initialize_gpu_model_scheduler:666 - ✅ GPU模型调度器初始化完成
+2025-09-29 07:30:09 | INFO     | __main__:initialize_all_modules:103 - ✅ GPU模型调度器初始化完成
+2025-09-29 07:30:09 | INFO     | src.ai.ai_decision_fusion_engine:__init__:129 - 🧠 AI决策融合引擎初始化完成
+2025-09-29 07:30:09 | INFO     | src.ai.ai_decision_fusion_engine:start_fusion_engine:141 - 🚀 AI决策融合引擎启动
+2025-09-29 07:30:09 | SUCCESS  | src.ai.ai_decision_fusion_engine:initialize_ai_decision_fusion_engine:674 - ✅ AI决策融合引擎初始化完成
+2025-09-29 07:30:09 | INFO     | __main__:initialize_all_modules:107 - ✅ AI决策融合引擎初始化完成
+2025-09-29 07:30:09 | INFO     | __main__:initialize_all_modules:110 - 🚀 初始化第二优先级模块...
+2025-09-29 07:30:09 | INFO     | src.exchanges.unified_exchange_interface:__init__:43 - 🔗 统一交易所接口初始化完成
+2025-09-29 07:30:09 | SUCCESS  | src.exchanges.unified_exchange_interface:initialize_unified_exchange_interface:299 - ✅ 统一交易所接口初始化完成
+2025-09-29 07:30:09 | INFO     | __main__:initialize_all_modules:114 - ✅ 多交易所接口系统初始化完成
+2025-09-29 07:30:09 | ERROR    | __main__:initialize_all_modules:143 - ❌ 系统模块初始化失败: cannot import name 'SentimentAnalysisSystem' from 'src.ai_enhanced.sentiment_analysis' (/tmp/ganfeng12300/888-888-88/src/ai_enhanced/sentiment_analysis.py)
+2025-09-29 07:30:09 | ERROR    | __main__:run:391 - ❌ 系统运行失败: cannot import name 'SentimentAnalysisSystem' from 'src.ai_enhanced.sentiment_analysis' (/tmp/ganfeng12300/888-888-88/src/ai_enhanced/sentiment_analysis.py)
+2025-09-29 07:30:09 | INFO     | __main__:shutdown:397 - 🔄 正在关闭AI量化交易系统...
+2025-09-29 07:30:09 | INFO     | src.monitoring.hardware_monitor:stop_monitoring:480 - 硬件监控停止
+2025-09-29 07:30:09 | INFO     | src.monitoring.ai_status_monitor:stop_monitoring:467 - AI状态监控停止
+2025-09-29 07:30:09 | INFO     | src.monitoring.system_health_checker:stop_monitoring:601 - 系统健康监控停止
+2025-09-29 07:30:09 | INFO     | __main__:shutdown:423 - 📊 系统运行时间: 0小时0分钟0秒
+2025-09-29 07:30:09 | INFO     | __main__:shutdown:424 - ✅ AI量化交易系统已安全关闭

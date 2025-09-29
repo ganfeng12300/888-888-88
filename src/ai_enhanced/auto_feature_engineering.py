@@ -920,3 +920,12 @@ class AutoFeatureEngineer:
 
 # 全局自动特征工程实例
 auto_feature_engineer = AutoFeatureEngineer()
+
+
+def initialize_auto_feature_engineering():
+    """初始化自动特征工程系统"""
+    from src.ai_enhanced.auto_feature_engineering import AutoFeatureEngineeringSystem
+    system = AutoFeatureEngineeringSystem()
+    logger.success("✅ 自动特征工程系统初始化完成")
+    return system
+

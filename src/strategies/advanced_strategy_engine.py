@@ -554,3 +554,26 @@ class TrendFollowingStrategy(BaseStrategy):
         
         except Exception as e:
             logger.error(f"更新趋势跟踪策略参数失败: {e}")
+
+
+def initialize_advanced_strategy_engine():
+    """初始化高级策略引擎"""
+    from src.strategies.advanced_strategy_engine import AdvancedStrategyEngine
+    engine = AdvancedStrategyEngine()
+    logger.success("✅ 高级策略引擎初始化完成")
+    return engine
+
+def initialize_strategy_manager():
+    """初始化策略管理器"""
+    from src.strategies.strategy_manager import StrategyManager
+    manager = StrategyManager()
+    logger.success("✅ 策略管理器初始化完成")
+    return manager
+
+def initialize_portfolio_optimizer():
+    """初始化投资组合优化器"""
+    from src.strategies.portfolio_optimizer import PortfolioOptimizer
+    optimizer = PortfolioOptimizer()
+    logger.success("✅ 投资组合优化器初始化完成")
+    return optimizer
+

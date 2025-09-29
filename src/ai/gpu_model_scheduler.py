@@ -75,8 +75,8 @@ class ProductionGPUModelScheduler:
         }
         
         # 线程池
-        self.cpu_executor = ThreadPoolExecutor(max_workers=self.cpu_slots)
-        self.gpu_executor = ThreadPoolExecutor(max_workers=self.gpu_slots)
+        self.cpu_executor = ThreadPoolExecutor(max_workers=max(1, self.cpu_slots))
+        self.gpu_executor = ThreadPoolExecutor(max_workers=max(1, self.gpu_slots))
         
         # 调度控制
         self.is_running = False
