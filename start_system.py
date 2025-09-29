@@ -250,9 +250,12 @@ class ProductionSystemLauncher:
             logger.success(f"✅ 从环境变量加载: {', '.join(env_configured_exchanges)}")
             return True
         
-        # 如果环境变量中没有配置，启动交互式配置
-        logger.info("📝 未发现环境变量配置，启动交互式配置...")
-        return self.interactive_api_configuration()
+        # 如果环境变量中没有配置，提示用户配置并退出
+        logger.error("❌ 未配置任何交易所API，系统无法启动")
+        print(f"\n{Fore.RED}❌ 错误：未配置任何交易所API{Style.RESET_ALL}")
+        print("实盘交易系统需要至少配置一个交易所API才能启动。")
+        self.prompt_exchange_configuration()
+        return False
         
     def check_api_configuration(self):
         """检查其他API配置"""
@@ -301,6 +304,13 @@ class ProductionSystemLauncher:
         print("• 建议设置合理的API权限限制")
         print("• 妥善保管API密钥，避免泄露")
         print("• 建议先小资金测试系统稳定性")
+
+        # 询问是否现在配置
+        print(f"\n{Fore.CYAN}🤔 是否现在配置交易所API？{Style.RESET_ALL}")
+        configure_now = input("输入 'y' 现在配置，或按回车跳过: ").lower().strip()
+        
+        if configure_now == 'y':
+            self.interactive_exchange_setup()
         
     def prompt_api_configuration(self, missing_apis: List[str]):
         """提示用户配置API"""
@@ -358,6 +368,59 @@ class ProductionSystemLauncher:
             print("重新启动系统后配置将生效")
         else:
             print(f"\n{Fore.YELLOW}⚠️ 未配置任何API密钥{Style.RESET_ALL}")
+
+    def interactive_exchange_setup(self):
+        """交互式交易所API设置"""
+        import os
+        
+        env_content = []
+        if os.path.exists('.env'):
+            with open('.env', 'r', encoding='utf-8') as f:
+                env_content = f.readlines()
+        
+        print(f"\n{Fore.GREEN}🏦 交互式交易所API配置{Style.RESET_ALL}")
+        print("⚠️ 系统需要至少配置一个交易所API才能启动！")
+        
+        configured_count = 0
+        
+        for exchange_id, config in self.supported_exchanges.items():
+            print(f"\n{Fore.CYAN}配置 {config['name']}:{Style.RESET_ALL}")
+            print(f"• 全球知名交易所，支持现货和合约交易")
+            print(f"• API获取地址: https://{exchange_id}.com")
+            
+            # 配置API Key
+            api_key = input(f"请输入 {config['api_key_env']} (或按回车跳过): ").strip()
+            if api_key:
+                secret_key = input(f"请输入 {config['secret_env']}: ").strip()
+                if secret_key:
+                    env_content.append(f"{config['api_key_env']}={api_key}\n")
+                    env_content.append(f"{config['secret_env']}={secret_key}\n")
+                    
+                    # 如果需要passphrase
+                    if 'passphrase_env' in config:
+                        passphrase = input(f"请输入 {config['passphrase_env']}: ").strip()
+                        if passphrase:
+                            env_content.append(f"{config['passphrase_env']}={passphrase}\n")
+                    
+                    configured_count += 1
+                    print(f"✅ {config['name']} 配置完成")
+        
+        # 检查是否至少配置了一个交易所
+        if configured_count == 0:
+            print(f"\n{Fore.RED}❌ 错误：必须至少配置一个交易所API！{Style.RESET_ALL}")
+            print("系统无法在没有交易所API的情况下启动。")
+            print("请重新运行系统并配置至少一个交易所API。")
+            sys.exit(1)
+        
+        # 写入.env文件
+        if env_content:
+            with open('.env', 'w', encoding='utf-8') as f:
+                f.writelines(env_content)
+            print(f"\n{Fore.GREEN}✅ 交易所API配置已保存到 .env 文件{Style.RESET_ALL}")
+            print(f"已配置 {configured_count} 个交易所")
+            print("重新启动系统后配置将生效")
+        else:
+            print(f"\n{Fore.YELLOW}⚠️ 未配置任何交易所API{Style.RESET_ALL}")
         
     def configure_exchanges(self):
         """配置交易所连接"""

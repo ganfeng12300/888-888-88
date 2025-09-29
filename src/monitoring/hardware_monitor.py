@@ -543,6 +543,17 @@ class HardwareMonitor:
             logger.error(f"更新硬件指标失败: {e}")
             return {}
     
+    def get_cpu_usage(self) -> float:
+        """获取CPU使用率"""
+        try:
+            cpu_metrics = self.cpu_monitor.get_cpu_metrics()
+            if cpu_metrics and 'usage_percent' in cpu_metrics:
+                return cpu_metrics['usage_percent']
+            return 0.0
+        except Exception as e:
+            logger.error(f"获取CPU使用率失败: {e}")
+            return 0.0
+    
     def _check_alerts(self, metrics: Dict[str, Any]):
         """检查告警"""
         try:

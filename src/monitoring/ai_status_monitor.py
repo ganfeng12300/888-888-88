@@ -518,6 +518,54 @@ class AIStatusMonitor:
             logger.error(f"更新AI状态失败: {e}")
             return {}
     
+    def get_overall_performance(self) -> Dict[str, Any]:
+        """获取整体性能指标"""
+        try:
+            with self.lock:
+                if not self.ai_models:
+                    return {
+                        'total_models': 0,
+                        'average_accuracy': 0.0,
+                        'average_confidence': 0.0,
+                        'active_models': 0,
+                        'performance_score': 0.0
+                    }
+                
+                total_accuracy = 0
+                total_confidence = 0
+                active_models = 0
+                
+                for model in self.ai_models.values():
+                    if hasattr(model, 'accuracy') and model.accuracy is not None:
+                        total_accuracy += model.accuracy
+                    if hasattr(model, 'confidence') and model.confidence is not None:
+                        total_confidence += model.confidence
+                    if hasattr(model, 'status') and model.status == 'active':
+                        active_models += 1
+                
+                total_models = len(self.ai_models)
+                avg_accuracy = total_accuracy / total_models if total_models > 0 else 0
+                avg_confidence = total_confidence / total_models if total_models > 0 else 0
+                performance_score = (avg_accuracy + avg_confidence) / 2
+                
+                return {
+                    'total_models': total_models,
+                    'average_accuracy': avg_accuracy,
+                    'average_confidence': avg_confidence,
+                    'active_models': active_models,
+                    'performance_score': performance_score
+                }
+        
+        except Exception as e:
+            logger.error(f"获取整体性能失败: {e}")
+            return {
+                'total_models': 0,
+                'average_accuracy': 0.0,
+                'average_confidence': 0.0,
+                'active_models': 0,
+                'performance_score': 0.0
+            }
+    
     def get_ai_summary(self) -> Dict[str, Any]:
         """获取AI摘要"""
         try:
