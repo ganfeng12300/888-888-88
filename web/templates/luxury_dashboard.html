@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦊 猎狐AI量化交易系统 - 豪华仪表板</title>
+    
+    <!-- 🎨 样式文件 -->
+    <link rel="stylesheet" href="/static/css/luxury_theme.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- 📊 图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
+    <!-- 🔧 工具库 -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    
+    <style>
+        /* 🌟 页面特定样式 */
+        .startup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #000000 0%, #1E1E1E 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #FFD700;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .startup-logo {
+            font-size: 48px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 30px #FFD700;
+            animation: logoStartup 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes logoStartup {
+            from { transform: scale(1); filter: brightness(1); }
+            to { transform: scale(1.1); filter: brightness(1.5); }
+        }
+        
+        .startup-progress {
+            width: 400px;
+            height: 8px;
+            background: #0A0A0A;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid #FFD700;
+        }
+        
+        .startup-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #00FFFF);
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        
+        .startup-progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: progressShine 1.5s linear infinite;
+        }
+        
+        .startup-status {
+            font-size: 16px;
+            color: #00FFFF;
+            text-align: center;
+            min-height: 24px;
+        }
+        
+        .startup-phases {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 600px;
+        }
+        
+        .startup-phase {
+            text-align: center;
+            padding: 15px;
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid #FFD700;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .startup-phase.active {
+            background: rgba(255, 215, 0, 0.2);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        
+        .startup-phase.completed {
+            background: rgba(0, 255, 0, 0.2);
+            border-color: #00FF00;
+        }
+        
+        .phase-name {
+            font-size: 12px;
+            color: #C0C0C0;
+            margin-bottom: 5px;
+        }
+        
+        .phase-progress {
+            font-size: 14px;
+            font-weight: 700;
+            color: #FFD700;
+        }
+    </style>
+</head>
+<body>
+    <!-- 🚀 启动覆盖层 -->
+    <div id="startup-overlay" class="startup-overlay">
+        <div class="startup-logo">🦊 猎狐AI量化交易系统</div>
+        <div class="startup-progress">
+            <div id="startup-progress-fill" class="startup-progress-fill"></div>
+        </div>
+        <div id="startup-status" class="startup-status">系统初始化中...</div>
+        
+        <div class="startup-phases">
+            <div id="phase-system" class="startup-phase">
+                <div class="phase-name">系统检查</div>
+                <div class="phase-progress">0%</div>
+            </div>
+            <div id="phase-ai" class="startup-phase">
+                <div class="phase-name">AI模型</div>
+                <div class="phase-progress">0%</div>
+            </div>
+            <div id="phase-trading" class="startup-phase">
+                <div class="phase-name">交易引擎</div>
+                <div class="phase-progress">0%</div>
+            </div>
+            <div id="phase-interface" class="startup-phase">
+                <div class="phase-name">用户界面</div>
+                <div class="phase-progress">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎯 主界面容器 -->
+    <div id="main-interface" class="main-container" style="display: none;">
+        <!-- 📊 顶部状态栏 -->
+        <header class="header">
+            <div class="logo">
+                猎狐AI量化交易系统
+            </div>
+            
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-label">总收益</div>
+                    <div id="total-pnl" class="status-value">$0.00</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">今日收益</div>
+                    <div id="daily-pnl" class="status-value">$0.00</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">AI等级</div>
+                    <div id="ai-level" class="status-value">青铜 Lv.1</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">CPU</div>
+                    <div id="cpu-usage" class="status-value">0%</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">内存</div>
+                    <div id="memory-usage" class="status-value">0%</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">GPU温度</div>
+                    <div id="gpu-temp" class="status-value">0°C</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">连接状态</div>
+                    <div id="connection-status" class="status-value">连接中</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 🤖 左侧AI模型面板 -->
+        <aside class="sidebar">
+            <div class="ai-panel-title">🧠 8大AI智能体</div>
+            <div id="ai-models-container">
+                <!-- AI模型将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="ai-control-panel" style="margin-top: 20px;">
+                <button id="emergency-stop" class="emergency-btn" style="
+                    width: 100%;
+                    padding: 15px;
+                    background: linear-gradient(135deg, #FF0040, #8B0000);
+                    border: 2px solid #FF0040;
+                    color: white;
+                    font-family: 'Orbitron', monospace;
+                    font-weight: 700;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                ">
+                    🛑 紧急停止
+                </button>
+            </div>
+        </aside>
+
+        <!-- 📈 中央交易图表区 -->
+        <main class="content">
+            <!-- 📊 主图表 -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">📈 实时交易图表</div>
+                    <div class="chart-controls">
+                        <button class="chart-btn active" data-timeframe="1m">1分钟</button>
+                        <button class="chart-btn" data-timeframe="5m">5分钟</button>
+                        <button class="chart-btn" data-timeframe="15m">15分钟</button>
+                        <button class="chart-btn" data-timeframe="1h">1小时</button>
+                        <button class="chart-btn" data-timeframe="4h">4小时</button>
+                        <button class="chart-btn" data-timeframe="1d">1天</button>
+                    </div>
+                </div>
+                <div id="main-chart" style="height: 400px; padding: 20px;">
+                    <canvas id="trading-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- 🎯 交易信号面板 -->
+            <div class="signals-panel">
+                <div class="signals-title">🎯 AI交易信号</div>
+                <div id="trading-signals">
+                    <div class="signal-item">
+                        <span class="signal-name">BTC/USDT</span>
+                        <span class="signal-value hold">HOLD</span>
+                    </div>
+                    <div class="signal-item">
+                        <span class="signal-name">ETH/USDT</span>
+                        <span class="signal-value buy">BUY</span>
+                    </div>
+                    <div class="signal-item">
+                        <span class="signal-name">BNB/USDT</span>
+                        <span class="signal-value sell">SELL</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 📋 右侧信息面板 -->
+        <aside class="rightpanel">
+            <!-- 💰 投资组合 -->
+            <div class="info-section">
+                <div class="info-title">💰 投资组合</div>
+                <div id="portfolio-positions">
+                    <div class="position-item">
+                        <span class="position-symbol">BTC</span>
+                        <span class="position-amount">0.5</span>
+                        <span class="position-pnl positive">+$1,250.00</span>
+                    </div>
+                    <div class="position-item">
+                        <span class="position-symbol">ETH</span>
+                        <span class="position-amount">5.2</span>
+                        <span class="position-pnl negative">-$320.50</span>
+                    </div>
+                    <div class="position-item">
+                        <span class="position-symbol">BNB</span>
+                        <span class="position-amount">12.8</span>
+                        <span class="position-pnl positive">+$89.30</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📊 风险指标 -->
+            <div class="info-section">
+                <div class="info-title">🛡️ 风险指标</div>
+                <div class="risk-metrics">
+                    <div class="position-item">
+                        <span class="position-symbol">最大回撤</span>
+                        <span class="position-pnl">2.3%</span>
+                    </div>
+                    <div class="position-item">
+                        <span class="position-symbol">夏普比率</span>
+                        <span class="position-pnl positive">1.85</span>
+                    </div>
+                    <div class="position-item">
+                        <span class="position-symbol">VaR (95%)</span>
+                        <span class="position-pnl">$1,250</span>
+                    </div>
+                    <div class="position-item">
+                        <span class="position-symbol">仓位使用率</span>
+                        <span class="position-pnl">65%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📈 性能统计 -->
+            <div class="info-section">
+                <div class="info-title">📈 性能统计</div>
+                <div class="performance-stats">
+                    <div class="position-item">
+                        <span class="position-symbol">胜率</span>
+                        <span class="position-pnl positive">73.2%</span>
+                    </div>
+                    <div class="position-item">
+                        <span class="position-symbol">平均收益</span>
+                        <span class="position-pnl positive">2.8%</span>
+                    </div>
+                    <div class="position-item">
+                        <span class="position-symbol">交易次数</span>
+                        <span class="position-pnl">1,247</span>
+                    </div>
+                    <div class="position-item">
+                        <span class="position-symbol">AI准确率</span>
+                        <span class="position-pnl positive">89.5%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🔔 系统通知 -->
+            <div class="info-section">
+                <div class="info-title">🔔 系统通知</div>
+                <div id="system-notifications" class="notifications">
+                    <div class="notification-item">
+                        <div class="notification-time">14:32</div>
+                        <div class="notification-text">AI模型训练完成</div>
+                    </div>
+                    <div class="notification-item">
+                        <div class="notification-time">14:28</div>
+                        <div class="notification-text">检测到强买入信号</div>
+                    </div>
+                    <div class="notification-item">
+                        <div class="notification-time">14:25</div>
+                        <div class="notification-text">风控系统正常运行</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 🎛️ 底部状态栏 -->
+        <footer class="footer">
+            <div class="system-info">
+                <div class="system-metric">
+                    <div class="metric-icon"></div>
+                    <span>系统运行正常</span>
+                </div>
+                <div class="system-metric">
+                    <div class="metric-icon"></div>
+                    <span>延迟: 12ms</span>
+                </div>
+                <div class="system-metric">
+                    <div class="metric-icon"></div>
+                    <span>活跃AI: 8/8</span>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                © 2024 猎狐AI量化交易系统 | 史诗级AI驱动 | 版本 v2.0.0
+            </div>
+        </footer>
+    </div>
+
+    <!-- 📱 JavaScript文件 -->
+    <script src="/static/js/ai_dashboard.js"></script>
+    
+    <script>
+        // 🚀 启动序列管理
+        class StartupSequence {
+            constructor() {
+                this.phases = [
+                    { id: 'system', name: '系统检查', duration: 15 },
+                    { id: 'ai', name: 'AI模型', duration: 25 },
+                    { id: 'trading', name: '交易引擎', duration: 20 },
+                    { id: 'interface', name: '用户界面', duration: 10 }
+                ];
+                this.currentPhase = 0;
+                this.totalProgress = 0;
+                this.startTime = Date.now();
+            }
+
+            async start() {
+                const overlay = document.getElementById('startup-overlay');
+                const mainInterface = document.getElementById('main-interface');
+                const progressFill = document.getElementById('startup-progress-fill');
+                const statusText = document.getElementById('startup-status');
+
+                // 模拟启动过程
+                for (let i = 0; i < this.phases.length; i++) {
+                    const phase = this.phases[i];
+                    this.currentPhase = i;
+                    
+                    // 激活当前阶段
+                    const phaseElement = document.getElementById(`phase-${phase.id}`);
+                    phaseElement.classList.add('active');
+                    
+                    statusText.textContent = `正在${phase.name}...`;
+                    
+                    // 模拟阶段进度
+                    const phaseStart = this.totalProgress;
+                    const phaseEnd = phaseStart + phase.duration;
+                    
+                    for (let progress = phaseStart; progress <= phaseEnd; progress++) {
+                        this.totalProgress = progress;
+                        progressFill.style.width = `${progress}%`;
+                        
+                        // 更新阶段进度
+                        const phaseProgress = Math.min(100, ((progress - phaseStart) / phase.duration) * 100);
+                        phaseElement.querySelector('.phase-progress').textContent = `${Math.round(phaseProgress)}%`;
+                        
+                        await this.delay(50 + Math.random() * 100);
+                    }
+                    
+                    // 完成当前阶段
+                    phaseElement.classList.remove('active');
+                    phaseElement.classList.add('completed');
+                    phaseElement.querySelector('.phase-progress').textContent = '100%';
+                }
+
+                // 启动完成
+                statusText.textContent = '系统启动完成！';
+                await this.delay(1000);
+
+                // 隐藏启动界面，显示主界面
+                overlay.style.opacity = '0';
+                overlay.style.transition = 'opacity 1s ease-out';
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    mainInterface.style.display = 'grid';
+                    mainInterface.style.opacity = '0';
+                    mainInterface.style.transition = 'opacity 1s ease-in';
+                    
+                    setTimeout(() => {
+                        mainInterface.style.opacity = '1';
+                    }, 100);
+                }, 1000);
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // 页面加载完成后启动
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🦊 猎狐AI量化交易系统启动中...');
+            
+            // 启动序列
+            const startup = new StartupSequence();
+            await startup.start();
+            
+            // 初始化图表
+            initTradingChart();
+            
+            console.log('🚀 系统启动完成！');
+        });
+
+        // 📊 初始化交易图表
+        function initTradingChart() {
+            const ctx = document.getElementById('trading-chart');
+            if (!ctx) return;
+
+            // 生成模拟数据
+            const data = generateMockData();
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'BTC/USDT',
+                        data: data.prices,
+                        borderColor: '#FFD700',
+                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFD700',
+                                font: {
+                                    family: 'Orbitron'
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#C0C0C0',
+                                font: {
+                                    family: 'Orbitron'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 215, 0, 0.1)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#C0C0C0',
+                                font: {
+                                    family: 'Orbitron'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 215, 0, 0.1)'
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: 0,
+                            hoverRadius: 6,
+                            backgroundColor: '#00FFFF',
+                            borderColor: '#FFD700'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 生成模拟数据
+        function generateMockData() {
+            const labels = [];
+            const prices = [];
+            const now = new Date();
+            let price = 45000;
+
+            for (let i = 100; i >= 0; i--) {
+                const time = new Date(now.getTime() - i * 60000);
+                labels.push(time.toLocaleTimeString());
+                
+                price += (Math.random() - 0.5) * 500;
+                prices.push(price);
+            }
+
+            return { labels, prices };
+        }
+
+        // 🎨 添加额外的样式
+        const additionalStyles = `
+            .notification-item {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 0;
+                border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+                font-size: 12px;
+            }
+            
+            .notification-time {
+                color: #C0C0C0;
+                font-weight: 700;
+            }
+            
+            .notification-text {
+                color: #00FFFF;
+                flex: 1;
+                margin-left: 10px;
+            }
+            
+            .emergency-btn:hover {
+                background: linear-gradient(135deg, #FF6B35, #FF0040) !important;
+                box-shadow: 0 0 20px rgba(255, 0, 64, 0.5) !important;
+                transform: translateY(-2px);
+            }
+            
+            .emergency-btn:active {
+                transform: translateY(0);
+            }
+        `;
+        
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = additionalStyles;
+        document.head.appendChild(styleSheet);
+    </script>
+</body>
+</html>
+
