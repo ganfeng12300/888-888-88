@@ -1,477 +1,284 @@
 #!/usr/bin/env python3
 """
-🚀 AI量化交易系统 - 主程序
-集成多交易所管理、AI信号生成、风险控制等核心功能
-专为生产级实盘交易设计，支持多AI融合决策
+🦊 猎狐AI量化交易系统 - 主启动程序
+史诗级AI驱动的量化交易平台
+专为生产级实盘交易设计，生产级标准
 """
-import os
-import sys
-import time
+
 import asyncio
-import threading
-from datetime import datetime, timezone
-from typing import Dict, List, Any, Optional
-import warnings
-warnings.filterwarnings('ignore')
-
+import signal
+import sys
+import os
+from pathlib import Path
 from loguru import logger
-import pandas as pd
-import numpy as np
+from typing import Dict, Any
 
-# 导入核心模块
-from src.ai.ai_evolution_system import ai_evolution_system
-from src.ai.ai_decision_fusion_engine import ai_decision_fusion_engine
-from src.ai.gpu_memory_optimizer import gpu_memory_optimizer
-from src.ai_enhanced.deep_reinforcement_learning import initialize_deep_rl_system
-from src.ai_enhanced.sentiment_analysis import sentiment_monitor
-from src.ai_enhanced.auto_feature_engineering import auto_feature_engineering
-from src.security.risk_control_system import risk_control_system
-from src.security.anomaly_detection import anomaly_detection_system
-from src.monitoring.hardware_monitor import hardware_monitor
-from src.monitoring.ai_status_monitor import ai_status_monitor
-from src.monitoring.system_health_checker import system_health_checker
-from src.monitoring.system_health_checker import HealthStatus
-from src.exchanges.multi_exchange_manager import multi_exchange_manager, initialize_multi_exchange_manager
-from src.strategies.production_signal_generator import production_signal_generator, initialize_production_signal_generator, MarketData
+# 添加项目根目录到Python路径
+sys.path.insert(0, str(Path(__file__).parent))
 
-class QuantTradingSystem:
-    """量化交易系统主类"""
+# 导入系统组件
+from src.system.startup_manager import StartupManager
+from src.system.ai_scheduler import AIScheduler
+from src.trading.trading_engine import TradingEngine
+from src.trading.order_manager import OrderManager
+from src.risk.risk_manager import RiskManager
+
+# 导入Web应用
+from web.app import create_app
+
+class FoxAITradingSystem:
+    """🦊 猎狐AI量化交易系统主类"""
     
     def __init__(self):
-        self.start_time = datetime.now(timezone.utc)
+        self.config = self._load_config()
+        self.components = {}
+        self.ai_models = {}
+        self.web_app = None
         self.running = False
-        self.system_components = {}
-        self.performance_stats = {}
         
-        logger.info("🚀 初始化AI量化交易系统...")
+        # 设置日志
+        self._setup_logging()
         
-        # 初始化系统组件
-        self._initialize_components()
+        logger.info("🦊 猎狐AI量化交易系统初始化...")
+    
+    def _load_config(self) -> Dict[str, Any]:
+        """加载系统配置"""
+        config = {
+            # 交易所配置
+            'exchanges': {
+                'binance': {
+                    'enabled': os.getenv('BINANCE_API_KEY') is not None,
+                    'api_key': os.getenv('BINANCE_API_KEY'),
+                    'secret_key': os.getenv('BINANCE_SECRET_KEY'),
+                    'sandbox': os.getenv('BINANCE_SANDBOX', 'true').lower() == 'true'
+                }
+            },
+            
+            # 系统配置
+            'system': {
+                'max_order_size': float(os.getenv('MAX_ORDER_SIZE', '10000')),
+                'max_daily_orders': int(os.getenv('MAX_DAILY_ORDERS', '1000')),
+                'max_single_position': float(os.getenv('MAX_SINGLE_POSITION', '0.3')),
+                'max_total_position': float(os.getenv('MAX_TOTAL_POSITION', '0.8')),
+                'max_daily_loss': float(os.getenv('MAX_DAILY_LOSS', '0.03')),
+                'cpu_cores': int(os.getenv('CPU_CORES', '20')),
+                'gpu_memory_gb': float(os.getenv('GPU_MEMORY_GB', '12'))
+            },
+            
+            # Web配置
+            'web': {
+                'host': '0.0.0.0',
+                'port': 8080,
+                'debug': os.getenv('DEBUG', 'false').lower() == 'true'
+            }
+        }
         
-    def _initialize_components(self):
+        return config
+    
+    def _setup_logging(self):
+        """设置日志系统"""
+        # 创建日志目录
+        log_dir = Path('logs')
+        log_dir.mkdir(exist_ok=True)
+        
+        # 配置loguru
+        logger.remove()  # 移除默认处理器
+        
+        # 控制台输出
+        logger.add(
+            sys.stdout,
+            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+            level="INFO"
+        )
+        
+        # 文件输出
+        logger.add(
+            log_dir / "system.log",
+            format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
+            level="DEBUG",
+            rotation="100 MB",
+            retention="30 days"
+        )
+    
+    async def initialize_components(self):
         """初始化系统组件"""
         try:
-            # AI核心组件
-            logger.info("🤖 初始化AI核心组件...")
-            self.system_components['ai_evolution'] = ai_evolution_system
-            self.system_components['ai_fusion'] = ai_decision_fusion_engine
-            self.system_components['gpu_optimizer'] = gpu_memory_optimizer
+            logger.info("🔧 初始化系统组件...")
             
-            # AI增强组件
-            logger.info("🧠 初始化AI增强组件...")
-            self.system_components['deep_rl'] = initialize_deep_rl_system()
-            self.system_components['sentiment'] = sentiment_monitor
-            self.system_components['feature_engineering'] = auto_feature_engineering
+            # 1. 启动管理器
+            self.components['startup_manager'] = StartupManager(self.config)
             
-            # 安全组件
-            logger.info("🔒 初始化安全组件...")
-            self.system_components['risk_control'] = risk_control_system
-            self.system_components['anomaly_detection'] = anomaly_detection_system
+            # 2. AI调度中心
+            self.components['ai_scheduler'] = AIScheduler(self.config)
             
-            # 监控组件
-            logger.info("📊 初始化监控组件...")
-            self.system_components['hardware_monitor'] = hardware_monitor
-            self.system_components['ai_monitor'] = ai_status_monitor
-            self.system_components['health_checker'] = system_health_checker
+            # 3. 交易执行组件
+            self.components['trading_engine'] = TradingEngine(self.config)
+            self.components['order_manager'] = OrderManager(
+                self.components['trading_engine'], 
+                self.config
+            )
             
-            # 交易组件
-            logger.info("🏦 初始化交易组件...")
-            self.system_components['exchange_manager'] = initialize_multi_exchange_manager()
-            self.system_components['signal_generator'] = initialize_production_signal_generator()
+            # 4. 风险管理
+            self.components['risk_manager'] = RiskManager(self.config)
             
-            logger.success("✅ 所有系统组件初始化完成")
+            logger.success("✅ 系统组件初始化完成")
             
         except Exception as e:
             logger.error(f"❌ 系统组件初始化失败: {e}")
             raise
-            
-    def start_system(self):
-        """启动系统"""
-        if self.running:
-            logger.warning("⚠️ 系统已在运行中")
-            return
-            
-        logger.info("🚀 启动AI量化交易系统...")
-        self.running = True
-        
+    
+    async def start_web_interface(self):
+        """启动Web界面"""
         try:
-            # 启动监控线程
-            self._start_monitoring_threads()
+            logger.info("🌐 启动Web界面...")
             
-            # 启动AI训练线程
-            self._start_ai_training_threads()
+            # 创建Web应用
+            self.web_app = create_app()
             
-            # 启动数据更新线程
-            self._start_data_update_threads()
+            # 启动Web服务器
+            import uvicorn
             
-            logger.success("✅ AI量化交易系统启动成功")
+            config = uvicorn.Config(
+                self.web_app,
+                host=self.config['web']['host'],
+                port=self.config['web']['port'],
+                log_level="info",
+                access_log=True
+            )
             
-            # 主循环
-            self._main_loop()
+            server = uvicorn.Server(config)
+            
+            # 在后台启动服务器
+            asyncio.create_task(server.serve())
+            
+            logger.success(f"✅ Web界面已启动: http://{self.config['web']['host']}:{self.config['web']['port']}")
+            
+        except Exception as e:
+            logger.error(f"❌ Web界面启动失败: {e}")
+            raise
+    
+    async def start_system(self):
+        """启动完整系统"""
+        try:
+            logger.info("🚀 开始启动猎狐AI量化交易系统...")
+            
+            # 1. 执行60秒启动序列
+            startup_manager = self.components['startup_manager']
+            
+            # 添加进度回调
+            def progress_callback(progress_info):
+                logger.info(f"📊 启动进度: {progress_info['total_progress']:.1f}%")
+            
+            startup_manager.add_progress_callback(progress_callback)
+            
+            # 执行启动序列
+            startup_success = await startup_manager.start_system()
+            
+            if not startup_success:
+                raise Exception("系统启动序列失败")
+            
+            # 2. 启动核心组件
+            await self.components['ai_scheduler'].start()
+            await self.components['trading_engine'].start()
+            await self.components['order_manager'].start()
+            
+            # 3. 启动Web界面
+            await self.start_web_interface()
+            
+            self.running = True
+            logger.success("🎉 猎狐AI量化交易系统启动完成！")
             
         except Exception as e:
             logger.error(f"❌ 系统启动失败: {e}")
-            self.running = False
             raise
-            
-    def _start_monitoring_threads(self):
-        """启动监控线程"""
-        logger.info("📊 启动监控线程...")
-        
-        # 硬件监控线程
-        hardware_thread = threading.Thread(
-            target=self._hardware_monitoring_loop,
-            daemon=True
-        )
-        hardware_thread.start()
-        
-        # AI状态监控线程
-        ai_monitor_thread = threading.Thread(
-            target=self._ai_monitoring_loop,
-            daemon=True
-        )
-        ai_monitor_thread.start()
-        
-        # 系统健康检查线程
-        health_thread = threading.Thread(
-            target=self._health_check_loop,
-            daemon=True
-        )
-        health_thread.start()
-        
-        logger.success("✅ 监控线程启动完成")
-        
-    def _start_ai_training_threads(self):
-        """启动AI训练线程"""
-        logger.info("🤖 启动AI训练线程...")
-        
-        # AI进化训练线程
-        evolution_thread = threading.Thread(
-            target=self._ai_evolution_loop,
-            daemon=True
-        )
-        evolution_thread.start()
-        
-        # 深度强化学习训练线程
-        rl_thread = threading.Thread(
-            target=self._deep_rl_training_loop,
-            daemon=True
-        )
-        rl_thread.start()
-        
-        logger.success("✅ AI训练线程启动完成")
-        
-    def _start_data_update_threads(self):
-        """启动数据更新线程"""
-        logger.info("📈 启动数据更新线程...")
-        
-        # 市场数据更新线程
-        market_data_thread = threading.Thread(
-            target=self._market_data_update_loop,
-            daemon=True
-        )
-        market_data_thread.start()
-        
-        # 情感分析数据更新线程
-        sentiment_thread = threading.Thread(
-            target=self._sentiment_update_loop,
-            daemon=True
-        )
-        sentiment_thread.start()
-        
-        logger.success("✅ 数据更新线程启动完成")
-        
-    def _hardware_monitoring_loop(self):
-        """硬件监控循环"""
-        logger.info("💻 硬件监控循环开始...")
-        
-        while self.running:
-            try:
-                # 更新硬件状态
-                hardware_monitor.update_all_metrics()
-                
-                # 检查资源使用情况
-                cpu_metrics = hardware_monitor.get_cpu_metrics()
-                cpu_usage = cpu_metrics.usage_percent
-                memory_metrics = hardware_monitor.get_memory_metrics()
-                memory_usage = memory_metrics.usage_percent
-                
-                # 资源警告
-                if cpu_usage > 90:
-                    logger.warning(f"⚠️ CPU使用率过高: {cpu_usage:.1f}%")
-                    
-                if memory_usage > 90:
-                    logger.warning(f"⚠️ 内存使用率过高: {memory_usage:.1f}%")
-                
-                time.sleep(30)  # 每30秒检查一次
-                
-            except Exception as e:
-                logger.error(f"硬件监控错误: {e}")
-                time.sleep(60)
-                
-    def _ai_monitoring_loop(self):
-        """AI状态监控循环"""
-        logger.info("🤖 AI状态监控循环开始...")
-        
-        while self.running:
-            try:
-                # 更新AI状态
-                ai_status_monitor.update_ai_status()
-                
-                # 检查AI性能
-                ai_summary = ai_status_monitor.get_ai_summary()
-                performance = ai_summary.get('overall_performance', 0.8)  # 默认值
-                if performance < 0.5:
-                    logger.warning(f"⚠️ AI整体性能较低: {performance:.2f}")
-                
-                time.sleep(60)  # 每分钟检查一次
-                
-            except Exception as e:
-                logger.error(f"AI监控错误: {e}")
-                time.sleep(60)
-                
-    def _health_check_loop(self):
-        """系统健康检查循环"""
-        logger.info("🏥 系统健康检查循环开始...")
-        
-        while self.running:
-            try:
-                # 执行健康检查
-                health_status = system_health_checker.check_all_systems()
-                
-                # 记录健康状态
-                if health_status.overall_status != HealthStatus.HEALTHY:
-                    logger.warning("⚠️ 系统健康状态异常")
-                    
-                time.sleep(300)  # 每5分钟检查一次
-                
-            except Exception as e:
-                logger.error(f"健康检查错误: {e}")
-                time.sleep(300)
-                
-    def _ai_evolution_loop(self):
-        """AI进化训练循环"""
-        logger.info("🧬 AI进化训练循环开始...")
-        
-        while self.running:
-            try:
-                # 执行AI进化训练
-                if hasattr(ai_evolution_system, 'evolve_models'):
-                    ai_evolution_system.evolve_models()
-                
-                time.sleep(3600)  # 每小时进化一次
-                
-            except Exception as e:
-                logger.error(f"AI进化训练错误: {e}")
-                time.sleep(3600)
-                
-    def _deep_rl_training_loop(self):
-        """深度强化学习训练循环"""
-        logger.info("🎯 深度强化学习训练循环开始...")
-        
-        while self.running:
-            try:
-                # 执行强化学习训练
-                deep_rl = self.system_components.get('deep_rl')
-                if deep_rl and hasattr(deep_rl, 'train_step'):
-                    deep_rl.train_step()
-                
-                time.sleep(1800)  # 每30分钟训练一次
-                
-            except Exception as e:
-                logger.error(f"深度强化学习训练错误: {e}")
-                time.sleep(1800)
-                
-    def _market_data_update_loop(self):
-        """市场数据更新循环"""
-        logger.info("📈 市场数据更新循环开始...")
-        
-        # 支持的交易对
-        symbols = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'ADA/USDT']
-        
-        while self.running:
-            try:
-                # 获取活跃交易所
-                active_exchanges = multi_exchange_manager.get_active_exchanges()
-                
-                if active_exchanges:
-                    for symbol in symbols:
-                        try:
-                            # 获取K线数据
-                            exchange_name = list(active_exchanges.keys())[0]  # 使用第一个活跃交易所
-                            exchange = active_exchanges[exchange_name]
-                            
-                            # 获取1小时K线数据
-                            ohlcv = exchange.fetch_ohlcv(symbol, '1h', limit=200)
-                            
-                            if ohlcv:
-                                # 转换为MarketData格式
-                                market_data = []
-                                for candle in ohlcv:
-                                    timestamp, open_price, high, low, close, volume = candle
-                                    market_data.append(MarketData(
-                                        symbol=symbol,
-                                        timestamp=datetime.fromtimestamp(timestamp / 1000, tz=timezone.utc),
-                                        open=float(open_price),
-                                        high=float(high),
-                                        low=float(low),
-                                        close=float(close),
-                                        volume=float(volume)
-                                    ))
-                                
-                                # 更新信号生成器的市场数据
-                                production_signal_generator.update_market_data(symbol, market_data)
-                                
-                        except Exception as e:
-                            logger.error(f"获取 {symbol} 市场数据失败: {e}")
-                            continue
-                
-                time.sleep(60)  # 每分钟更新一次
-                
-            except Exception as e:
-                logger.error(f"市场数据更新错误: {e}")
-                time.sleep(60)
-                
-    def _sentiment_update_loop(self):
-        """情感分析数据更新循环"""
-        logger.info("😊 情感分析数据更新循环开始...")
-        
-        while self.running:
-            try:
-                # 更新市场情感数据
-                if hasattr(sentiment_monitor, 'update_sentiment_data'):
-                    sentiment_monitor.update_sentiment_data()
-                
-                time.sleep(300)  # 每5分钟更新一次
-                
-            except Exception as e:
-                logger.error(f"情感分析更新错误: {e}")
-                time.sleep(300)
-                
-    def _main_loop(self):
-        """主循环"""
-        logger.info("🔄 进入主循环...")
-        
-        while self.running:
-            try:
-                # 更新性能统计
-                self._update_performance_stats()
-                
-                # 检查系统状态
-                self._check_system_status()
-                
-                # 等待下一轮
-                time.sleep(60)
-                
-            except KeyboardInterrupt:
-                logger.info("🛑 收到停止信号...")
-                self.stop_system()
-                break
-            except Exception as e:
-                logger.error(f"主循环错误: {e}")
-                time.sleep(60)
-                
-    def _update_performance_stats(self):
-        """更新性能统计"""
-        try:
-            current_time = datetime.now(timezone.utc)
-            uptime = current_time - self.start_time
-            
-            self.performance_stats = {
-                'uptime_seconds': uptime.total_seconds(),
-                'uptime_hours': uptime.total_seconds() / 3600,
-                'system_status': 'running' if self.running else 'stopped',
-                'active_components': len([k for k, v in self.system_components.items() if v is not None]),
-                'last_update': current_time.isoformat()
-            }
-            
-            # 添加交易统计
-            if 'signal_generator' in self.system_components:
-                signal_stats = production_signal_generator.get_performance_stats()
-                self.performance_stats.update(signal_stats)
-                
-            # 添加交易所统计
-            if 'exchange_manager' in self.system_components:
-                trading_stats = multi_exchange_manager.get_trading_summary()
-                self.performance_stats.update(trading_stats)
-                
-        except Exception as e:
-            logger.error(f"更新性能统计错误: {e}")
-            
-    def _check_system_status(self):
-        """检查系统状态"""
-        try:
-            # 检查关键组件状态
-            critical_components = ['ai_fusion', 'risk_control', 'hardware_monitor']
-            
-            for component in critical_components:
-                if component not in self.system_components or self.system_components[component] is None:
-                    logger.warning(f"⚠️ 关键组件 {component} 不可用")
-                    
-        except Exception as e:
-            logger.error(f"系统状态检查错误: {e}")
-            
-    def stop_system(self):
+    
+    async def stop_system(self):
         """停止系统"""
-        logger.info("🛑 正在停止AI量化交易系统...")
-        
-        self.running = False
-        
         try:
-            # 停止信号生成器
-            if 'signal_generator' in self.system_components:
-                production_signal_generator.stop_generation()
-                
-            # 保存系统状态
-            self._save_system_state()
+            logger.info("🛑 正在停止猎狐AI量化交易系统...")
             
-            logger.success("✅ AI量化交易系统已安全停止")
+            self.running = False
+            
+            # 停止组件
+            if 'order_manager' in self.components:
+                await self.components['order_manager'].stop()
+            
+            if 'trading_engine' in self.components:
+                await self.components['trading_engine'].stop()
+            
+            if 'ai_scheduler' in self.components:
+                await self.components['ai_scheduler'].stop()
+            
+            logger.success("✅ 系统已安全停止")
             
         except Exception as e:
-            logger.error(f"❌ 系统停止过程中出现错误: {e}")
-            
-    def _save_system_state(self):
-        """保存系统状态"""
+            logger.error(f"❌ 系统停止异常: {e}")
+    
+    async def run(self):
+        """运行系统主循环"""
         try:
-            state_data = {
-                'stop_time': datetime.now(timezone.utc).isoformat(),
-                'uptime_seconds': (datetime.now(timezone.utc) - self.start_time).total_seconds(),
-                'performance_stats': self.performance_stats,
-                'system_components': list(self.system_components.keys())
-            }
+            # 初始化组件
+            await self.initialize_components()
             
-            # 这里可以保存到文件或数据库
-            logger.info("💾 系统状态已保存")
+            # 启动系统
+            await self.start_system()
+            
+            # 主循环
+            while self.running:
+                try:
+                    # 等待1秒
+                    await asyncio.sleep(1)
+                    
+                except KeyboardInterrupt:
+                    logger.info("📝 收到停止信号，正在安全关闭系统...")
+                    break
+                except Exception as e:
+                    logger.error(f"❌ 主循环异常: {e}")
+                    await asyncio.sleep(5)
             
         except Exception as e:
-            logger.error(f"保存系统状态错误: {e}")
-            
-    def get_system_info(self) -> Dict[str, Any]:
-        """获取系统信息"""
-        return {
-            'start_time': self.start_time.isoformat(),
-            'running': self.running,
-            'uptime_seconds': (datetime.now(timezone.utc) - self.start_time).total_seconds(),
-            'components': list(self.system_components.keys()),
-            'performance_stats': self.performance_stats
-        }
+            logger.error(f"❌ 系统运行异常: {e}")
+        finally:
+            await self.stop_system()
 
-def main():
+def setup_signal_handlers(system: FoxAITradingSystem):
+    """设置信号处理器"""
+    def signal_handler(signum, frame):
+        logger.info(f"📝 收到信号 {signum}，正在安全关闭系统...")
+        system.running = False
+    
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+async def main():
     """主函数"""
     try:
-        # 创建系统实例
-        trading_system = QuantTradingSystem()
+        # 显示启动横幅
+        print("""
+🦊 =============================================== 🦊
+   猎狐AI量化交易系统 - Fox AI Trading System
+   史诗级AI驱动的量化交易平台
+   
+   🧠 8大AI智能体 | ⚡ <50ms超低延迟
+   🛡️ 五层风控矩阵 | 🌟 豪华黑金界面
+🦊 =============================================== 🦊
+        """)
         
-        # 启动系统
-        trading_system.start_system()
+        # 创建系统实例
+        system = FoxAITradingSystem()
+        
+        # 设置信号处理器
+        setup_signal_handlers(system)
+        
+        # 运行系统
+        await system.run()
         
     except KeyboardInterrupt:
-        logger.info("🛑 用户中断程序")
+        logger.info("📝 用户中断，系统退出")
     except Exception as e:
-        logger.error(f"❌ 程序运行错误: {e}")
-        return 1
-        
-    return 0
+        logger.error(f"❌ 系统异常: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # 运行主程序
+    asyncio.run(main())
