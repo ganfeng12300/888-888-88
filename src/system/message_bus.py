@@ -191,7 +191,7 @@ class InMemoryMessageBus:
                 logger.error(f"消息处理失败: {e}")
                 time.sleep(0.1)
     
-    def publish(self, message: Message) -> bool:
+    async def publish(self, message: Message) -> bool:
         """发布消息"""
         try:
             # 检查TTL
@@ -214,7 +214,7 @@ class InMemoryMessageBus:
             logger.error(f"发布消息失败: {e}")
             return False
     
-    def subscribe(self, topic: str, handler: Callable[[Message], Any], 
+    async def subscribe(self, topic: str, handler: Callable[[Message], Any], 
                   subscriber_id: str, filter_func: Optional[Callable[[Message], bool]] = None) -> bool:
         """订阅主题"""
         try:
@@ -235,7 +235,7 @@ class InMemoryMessageBus:
             logger.error(f"订阅失败: {e}")
             return False
     
-    def unsubscribe(self, topic: str, subscriber_id: str) -> bool:
+    async def unsubscribe(self, topic: str, subscriber_id: str) -> bool:
         """取消订阅"""
         try:
             if topic in self.subscriptions:

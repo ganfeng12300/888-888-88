@@ -25,6 +25,7 @@ from src.core.system_manager import SystemManager
 from src.core.config import Settings
 from src.utils.hardware_monitor import HardwareMonitor
 from src.utils.timezone_handler import TimezoneHandler
+from src.web.main_server import run_server
 
 console = Console()
 app = typer.Typer(rich_markup_mode="rich")
@@ -168,6 +169,20 @@ def signal_handler(signum, frame):
     asyncio.create_task(trading_system.stop_trading())
 
 @app.command()
+def web(
+    host: str = typer.Option("0.0.0.0", "--host", "-h", help="Web服务器主机地址"),
+    port: int = typer.Option(8000, "--port", "-p", help="Web服务器端口"),
+    workers: int = typer.Option(1, "--workers", "-w", help="工作进程数量")
+):
+    """🌐 启动Web服务器"""
+    console.print(Panel.fit(
+        "[bold gold1]🌐 启动Web服务器[/bold gold1]",
+        border_style="gold1"
+    ))
+    
+    run_server(host=host, port=port, workers=workers)
+
+@app.command()
 def start(
     config_file: Optional[str] = typer.Option(None, "--config", "-c", help="配置文件路径"),
     debug: bool = typer.Option(False, "--debug", "-d", help="启用调试模式"),
@@ -184,8 +199,19 @@ def start(
         if not await trading_system.initialize():
             sys.exit(1)
         
-        # 启动交易
+        # 启动交易系统
         await trading_system.start_trading()
+        
+        # 启动Web服务器（在后台线程中运行）
+        import threading
+        web_thread = threading.Thread(
+            target=run_server,
+            kwargs={"host": "0.0.0.0", "port": 8000, "workers": 1},
+            daemon=True
+        )
+        web_thread.start()
+        
+        console.print("[bold green]🌐 Web服务器已启动: http://0.0.0.0:8000[/bold green]")
         
         # 保持运行
         try:
