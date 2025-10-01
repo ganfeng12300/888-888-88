@@ -198,10 +198,10 @@ USER trader
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD python3 -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # 暴露端口
 EXPOSE 8000 8001 8002 9090 3000
 
 # 启动命令
-CMD ["python3", "start.py"]
+CMD ["python3", "start.py", "web", "--host", "0.0.0.0", "--port", "8000"]
