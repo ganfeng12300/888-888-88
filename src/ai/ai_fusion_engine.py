@@ -195,9 +195,19 @@ class AIFusionEngine:
         # 特征工程
         data = self._feature_engineering(data)
         
-        # 标签生成（未来收益率）
-        data['future_return'] = data['close'].pct_change().shift(-1)
-        data['label'] = (data['future_return'] > 0).astype(int)
+        # 标签生成（基于当前可用信息的预测标签）
+        # 使用技术指标组合生成交易信号，避免未来数据泄露
+        data['price_momentum'] = data['close'].pct_change(5)  # 5期价格动量
+        data['volume_surge'] = data['volume'] / data['volume'].rolling(20).mean() - 1
+        data['volatility'] = data['close'].pct_change().rolling(10).std()
+        
+        # 基于当前技术指标生成标签（不使用未来信息）
+        conditions = [
+            (data['price_momentum'] > 0.02) & (data['volume_surge'] > 0.5),  # 强势上涨
+            (data['price_momentum'] < -0.02) & (data['volume_surge'] > 0.5), # 强势下跌
+        ]
+        choices = [1, 0]  # 1=买入信号, 0=卖出信号
+        data['label'] = np.select(conditions, choices, default=0.5)  # 默认中性
         
         return data.dropna()
         
