@@ -521,8 +521,9 @@ class AIEngine:
                             'allocated_gb': torch.cuda.memory_allocated(i) / 1e9,
                             'cached_gb': torch.cuda.memory_reserved(i) / 1e9
                         }
-            except:
-                pass
+            except Exception as e:
+                logger.warning(f"GPU内存检查失败: {e}")
+                gpu_memory = {}
             
             return {
                 'total_memory_gb': memory.total / 1e9,
