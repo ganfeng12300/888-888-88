@@ -1,0 +1,190 @@
+# GPU加速相关依赖
+# 专用于GPU计算和深度学习加速的Python包
+
+# CUDA支持
+cupy-cuda12x==12.2.0
+pycuda==2023.1
+
+# PyTorch GPU版本
+torch==2.1.0+cu121
+torchvision==0.16.0+cu121
+torchaudio==2.1.0+cu121
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+# TensorFlow GPU版本
+tensorflow[and-cuda]==2.13.0
+
+# RAPIDS生态系统（GPU加速数据科学）
+cudf-cu12==23.10.0
+cuml-cu12==23.10.0
+cugraph-cu12==23.10.0
+cuspatial-cu12==23.10.0
+cupy-cuda12x==12.2.0
+
+# Numba CUDA支持
+numba[cuda]==0.58.0
+
+# OpenCL支持
+pyopencl==2023.1.4
+
+# GPU内存管理
+rmm-cu12==23.10.0
+
+# 分布式GPU计算
+dask-cuda==23.10.0
+dask-cudf==23.10.0
+
+# GPU加速的机器学习
+xgboost[gpu]==1.7.6
+lightgbm[gpu]==4.1.0
+
+# GPU监控
+pynvml==11.5.0
+nvidia-ml-py==12.535.108
+GPUtil==1.4.0
+
+# CUDA工具包Python绑定
+cuda-python==12.2.0
+
+# GPU加速的信号处理
+cusignal-cu12==23.10.0
+
+# GPU加速的图像处理
+cucim-cu12==23.10.0
+
+# GPU加速的字符串处理
+custrings-cu12==23.10.0
+
+# Triton（GPU内核编程）
+triton==2.1.0
+
+# JAX GPU支持
+jax[cuda12_pip]==0.4.16
+jaxlib==0.4.16+cuda12.cudnn89
+--find-links https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+
+# GPU加速的线性代数
+cusolverdn-cu12==11.4.5.107
+cublas-cu12==12.1.3.1
+cufft-cu12==11.0.2.54
+curand-cu12==10.3.2.106
+cusparse-cu12==12.1.0.106
+
+# GPU内存池
+memory-pool-allocator==0.1.0
+
+# NCCL（多GPU通信）
+nccl-cu12==2.18.1
+
+# CuDNN
+cudnn-cu12==8.9.2.26
+
+# CUDA运行时
+cuda-runtime-cu12==12.1.105
+
+# NVTX（性能分析）
+nvtx==0.2.5
+
+# GPU加速的数据加载
+nvidia-dali-cuda120==1.30.0
+
+# TensorRT（推理优化）
+tensorrt==8.6.1.post1
+
+# GPU加速的优化器
+apex @ git+https://github.com/NVIDIA/apex.git
+
+# Horovod（分布式训练）
+horovod[pytorch,tensorflow]==0.28.1
+
+# DeepSpeed（大模型训练优化）
+deepspeed==0.10.3
+
+# FairScale（模型并行）
+fairscale==0.4.13
+
+# Accelerate（Hugging Face加速库）
+accelerate==0.23.0
+
+# GPU加速的数据预处理
+albumentations==1.3.1
+
+# GPU内存分析
+memory-profiler==0.61.0
+pympler==0.9
+
+# CUDA事件和流管理
+cuda-python==12.2.0
+
+# GPU加速的随机数生成
+curand==10.3.2.106
+
+# GPU加速的排序
+cub==2.1.0
+
+# GPU加速的扫描操作
+thrust==2.1.0
+
+# GPU性能分析
+nsight-compute==2023.2.2
+nsight-systems==2023.3.1
+
+# GPU集群管理
+slurm-pipeline==3.1.5
+
+# GPU资源调度
+kubernetes==27.2.0
+
+# GPU虚拟化
+nvidia-docker==2.13.0
+
+# GPU监控和管理
+py3nvml==0.2.7
+pynvml==11.5.0
+
+# GPU加速的网络通信
+nccl==2.18.1
+mpi4py==3.1.4
+
+# GPU加速的文件I/O
+cuio==23.10.0
+
+# GPU加速的压缩
+nvcomp==3.0.4
+
+# GPU加速的加密
+cuda-crypto==1.0.0
+
+# GPU加速的哈希
+cuda-hash==1.0.0
+
+# GPU内存映射
+cuda-memmap==1.0.0
+
+# GPU加速的字符串匹配
+cuda-string==1.0.0
+
+# GPU加速的正则表达式
+cuda-regex==1.0.0
+
+# GPU加速的JSON解析
+cuda-json==1.0.0
+
+# GPU加速的XML解析
+cuda-xml==1.0.0
+
+# GPU加速的CSV解析
+cuda-csv==1.0.0
+
+# GPU加速的Parquet读写
+cuda-parquet==1.0.0
+
+# GPU加速的Arrow
+cuda-arrow==1.0.0
+
+# GPU加速的ORC
+cuda-orc==1.0.0
+
+# GPU加速的Avro
+cuda-avro==1.0.0
+

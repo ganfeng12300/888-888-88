@@ -1,64 +1,10 @@
-# 🚀 AI量化交易系统 - 生产级Docker Compose配置
-# 支持完整的微服务架构和数据库集群
-
 version: '3.8'
 
 services:
-  # 🔥 主应用服务
-  ai-trading-system:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: ai-trading-system
-    restart: unless-stopped
-    ports:
-      - "8000:8000"  # 主API服务
-      - "8001:8001"  # WebSocket服务
-      - "8002:8002"  # 管理界面
-    volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
-      - ./config:/app/config
-      - ./models:/app/models
-      - /dev/shm:/dev/shm  # 共享内存加速
-    environment:
-      - PYTHONPATH=/app
-      - CUDA_VISIBLE_DEVICES=0
-      - REDIS_URL=redis://redis:6379/0
-      - POSTGRES_URL=postgresql://trader:trading123@postgres:5432/trading_db
-      - CLICKHOUSE_URL=clickhouse://clickhouse:8123/trading_db
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - PROMETHEUS_URL=http://prometheus:9090
-      - GRAFANA_URL=http://grafana:3000
-    depends_on:
-      - redis
-      - postgres
-      - clickhouse
-      - kafka
-      - prometheus
-    deploy:
-      resources:
-        limits:
-          cpus: '18.0'  # 使用18个CPU核心
-          memory: 120G   # 使用120GB内存
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    networks:
-      - trading-network
-    healthcheck:
-      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:8000/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-
-  # 📊 Redis缓存数据库
+  # Redis缓存服务
   redis:
-    image: redis:7.2-alpine
-    container_name: redis-cache
+    image: redis:7-alpine
+    container_name: quant_redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -66,131 +12,149 @@ services:
       - redis_data:/data
       - ./config/redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 8G
-        reservations:
-          cpus: '1.0'
-          memory: 4G
-    networks:
-      - trading-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
-      timeout: 5s
+      timeout: 3s
       retries: 3
+    networks:
+      - quant_network
 
-  # 🗄️ PostgreSQL主数据库
+  # PostgreSQL数据库
   postgres:
     image: postgres:15-alpine
-    container_name: postgres-main
+    container_name: quant_postgres
     restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-quant_trading}
+      POSTGRES_USER: ${POSTGRES_USER:-quant_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-quant_password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
-    environment:
-      - POSTGRES_DB=trading_db
-      - POSTGRES_USER=trader
-      - POSTGRES_PASSWORD=trading123
-      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
-    deploy:
-      resources:
-        limits:
-          cpus: '4.0'
-          memory: 16G
-        reservations:
-          cpus: '2.0'
-          memory: 8G
-    networks:
-      - trading-network
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U trader -d trading_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-quant_user} -d ${POSTGRES_DB:-quant_trading}"]
       interval: 10s
       timeout: 5s
-      retries: 3
-
-  # 📈 ClickHouse时序数据库
-  clickhouse:
-    image: clickhouse/clickhouse-server:23.8-alpine
-    container_name: clickhouse-timeseries
-    restart: unless-stopped
-    ports:
-      - "8123:8123"  # HTTP接口
-      - "9000:9000"  # Native接口
-    volumes:
-      - clickhouse_data:/var/lib/clickhouse
-      - ./config/clickhouse-config.xml:/etc/clickhouse-server/config.xml
-      - ./config/clickhouse-users.xml:/etc/clickhouse-server/users.xml
-    environment:
-      - CLICKHOUSE_DB=trading_db
-      - CLICKHOUSE_USER=trader
-      - CLICKHOUSE_PASSWORD=trading123
-    deploy:
-      resources:
-        limits:
-          cpus: '6.0'
-          memory: 32G
-        reservations:
-          cpus: '4.0'
-          memory: 16G
+      retries: 5
     networks:
-      - trading-network
+      - quant_network
+
+  # InfluxDB时序数据库
+  influxdb:
+    image: influxdb:2.7-alpine
+    container_name: quant_influxdb
+    restart: unless-stopped
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUX_USERNAME:-admin}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUX_PASSWORD:-admin123456}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUX_ORG:-quant_trading}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUX_BUCKET:-market_data}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUX_TOKEN:-quant_trading_token_2024}
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - influxdb_config:/etc/influxdb2
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      test: ["CMD", "influx", "ping"]
       interval: 10s
-      timeout: 5s
+      timeout: 3s
       retries: 3
+    networks:
+      - quant_network
 
-  # 🔄 Apache Kafka消息队列
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.4.0
-    container_name: zookeeper
+  # Grafana监控面板
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: quant_grafana
     restart: unless-stopped
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    volumes:
-      - zookeeper_data:/var/lib/zookeeper/data
-      - zookeeper_logs:/var/lib/zookeeper/log
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 2G
-    networks:
-      - trading-network
-
-  kafka:
-    image: confluentinc/cp-kafka:7.4.0
-    container_name: kafka-broker
-    restart: unless-stopped
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123456}
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,grafana-worldmap-panel
     ports:
-      - "9092:9092"
-      - "9101:9101"
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
     depends_on:
-      - zookeeper
+      - influxdb
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - quant_network
+
+  # 量化交易核心服务
+  quant_core:
+    build:
+      context: .
+      dockerfile: Dockerfile.core
+      args:
+        PYTHON_VERSION: 3.11
+    container_name: quant_core
+    restart: unless-stopped
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_JMX_PORT: 9101
-      KAFKA_JMX_HOSTNAME: localhost
-      KAFKA_NUM_PARTITIONS: 12  # 匹配CPU核心数
-      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
-      KAFKA_LOG_RETENTION_HOURS: 168  # 7天
-      KAFKA_LOG_SEGMENT_BYTES: 1073741824  # 1GB
+      # 数据库配置
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-quant_trading}
+      POSTGRES_USER: ${POSTGRES_USER:-quant_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-quant_password}
+      
+      # Redis配置
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      
+      # InfluxDB配置
+      INFLUX_HOST: influxdb
+      INFLUX_PORT: 8086
+      INFLUX_ORG: ${INFLUX_ORG:-quant_trading}
+      INFLUX_BUCKET: ${INFLUX_BUCKET:-market_data}
+      INFLUX_TOKEN: ${INFLUX_TOKEN:-quant_trading_token_2024}
+      
+      # 应用配置
+      APP_ENV: production
+      LOG_LEVEL: INFO
+      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production}
+      
+      # GPU配置
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      
+      # 性能优化
+      PYTHONUNBUFFERED: 1
+      PYTHONOPTIMIZE: 1
+      OMP_NUM_THREADS: 4
+      CUDA_VISIBLE_DEVICES: 0
+      
+    ports:
+      - "8000:8000"  # FastAPI服务
+      - "8001:8001"  # WebSocket服务
+      - "8002:8002"  # 监控端口
     volumes:
-      - kafka_data:/var/lib/kafka/data
+      - ./src:/app/src
+      - ./config:/app/config
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - /dev/shm:/dev/shm  # 共享内存优化
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -199,25 +163,125 @@ services:
         reservations:
           cpus: '2.0'
           memory: 4G
-    networks:
-      - trading-network
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
       retries: 3
+      start_period: 60s
+    networks:
+      - quant_network
+    runtime: nvidia  # GPU支持
 
-  # 📊 Prometheus监控
+  # Web前端服务
+  quant_frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NODE_VERSION: 18
+    container_name: quant_frontend
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: http://localhost:8000
+      REACT_APP_WS_URL: ws://localhost:8001
+      NODE_ENV: production
+    ports:
+      - "3001:80"
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - quant_core
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - quant_network
+
+  # 数据采集服务
+  data_collector:
+    build:
+      context: .
+      dockerfile: Dockerfile.collector
+    container_name: quant_data_collector
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-quant_trading}
+      POSTGRES_USER: ${POSTGRES_USER:-quant_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-quant_password}
+      INFLUX_HOST: influxdb
+      INFLUX_PORT: 8086
+      INFLUX_ORG: ${INFLUX_ORG:-quant_trading}
+      INFLUX_BUCKET: ${INFLUX_BUCKET:-market_data}
+      INFLUX_TOKEN: ${INFLUX_TOKEN:-quant_trading_token_2024}
+      
+      # 交易所API配置
+      BINANCE_API_KEY: ${BINANCE_API_KEY:-}
+      BINANCE_SECRET_KEY: ${BINANCE_SECRET_KEY:-}
+      OKEX_API_KEY: ${OKEX_API_KEY:-}
+      OKEX_SECRET_KEY: ${OKEX_SECRET_KEY:-}
+      OKEX_PASSPHRASE: ${OKEX_PASSPHRASE:-}
+      
+      LOG_LEVEL: INFO
+    volumes:
+      - ./src:/app/src
+      - ./config:/app/config
+      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      influxdb:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '1.0'
+          memory: 2G
+    networks:
+      - quant_network
+
+  # Nginx反向代理
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: quant_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - ./ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - quant_core
+      - quant_frontend
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - quant_network
+
+  # Prometheus监控
   prometheus:
     image: prom/prometheus:v2.47.0
-    container_name: prometheus-monitor
+    container_name: quant_prometheus
     restart: unless-stopped
     ports:
       - "9090:9090"
     volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./config/prometheus/rules:/etc/prometheus/rules
       - prometheus_data:/prometheus
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./config/alert_rules.yml:/etc/prometheus/alert_rules.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -225,159 +289,97 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--storage.tsdb.retention.time=30d'
       - '--web.enable-lifecycle'
-      - '--storage.tsdb.retention.size=50GB'
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 4G
-    networks:
-      - trading-network
+      - '--web.enable-admin-api'
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  # 📈 Grafana可视化
-  grafana:
-    image: grafana/grafana:10.1.0
-    container_name: grafana-dashboard
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./config/grafana/provisioning:/etc/grafana/provisioning
-      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=trading123
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
-    depends_on:
-      - prometheus
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 2G
-    networks:
-      - trading-network
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  # 🔍 Elasticsearch日志存储
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
-    container_name: elasticsearch-logs
-    restart: unless-stopped
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 8G
-        reservations:
-          cpus: '1.0'
-          memory: 4G
-    networks:
-      - trading-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  # 📋 Kibana日志可视化
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.9.0
-    container_name: kibana-logs
-    restart: unless-stopped
-    ports:
-      - "5601:5601"
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    depends_on:
-      - elasticsearch
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 2G
-    networks:
-      - trading-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - quant_network
 
-  # 🔄 Nginx反向代理
-  nginx:
-    image: nginx:1.25-alpine
-    container_name: nginx-proxy
+  # AlertManager告警
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: quant_alertmanager
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "9093:9093"
     volumes:
-      - ./config/nginx.conf:/etc/nginx/nginx.conf
-      - ./config/ssl:/etc/nginx/ssl
-      - ./web/static:/var/www/static
+      - ./config/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
     depends_on:
-      - ai-trading-system
-      - grafana
-      - kibana
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-    networks:
-      - trading-network
+      - prometheus
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
       retries: 3
+    networks:
+      - quant_network
 
-# 📦 数据卷定义
+  # Node Exporter系统监控
+  node_exporter:
+    image: prom/node-exporter:v1.6.1
+    container_name: quant_node_exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - quant_network
+
+  # cAdvisor容器监控
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    container_name: quant_cadvisor
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    networks:
+      - quant_network
+
 volumes:
   redis_data:
     driver: local
   postgres_data:
     driver: local
-  clickhouse_data:
+  influxdb_data:
     driver: local
-  kafka_data:
-    driver: local
-  zookeeper_data:
-    driver: local
-  zookeeper_logs:
-    driver: local
-  prometheus_data:
+  influxdb_config:
     driver: local
   grafana_data:
     driver: local
-  elasticsearch_data:
+  prometheus_data:
+    driver: local
+  alertmanager_data:
     driver: local
 
-# 🌐 网络定义
 networks:
-  trading-network:
+  quant_network:
     driver: bridge
     ipam:
       config:
         - subnet: 172.20.0.0/16
+
