@@ -1,0 +1,104 @@
+# 量化交易核心服务Dockerfile
+ARG PYTHON_VERSION=3.11
+FROM nvidia/cuda:12.2-devel-ubuntu22.04 as base
+
+# 设置环境变量
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PIP_NO_CACHE_DIR=1
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    python${PYTHON_VERSION} \
+    python${PYTHON_VERSION}-dev \
+    python3-pip \
+    build-essential \
+    cmake \
+    git \
+    curl \
+    wget \
+    vim \
+    htop \
+    redis-tools \
+    postgresql-client \
+    libpq-dev \
+    libhdf5-dev \
+    libopenblas-dev \
+    liblapack-dev \
+    libblas-dev \
+    gfortran \
+    pkg-config \
+    libffi-dev \
+    libssl-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libfreetype6-dev \
+    libxft-dev \
+    libncurses5-dev \
+    libgdbm-dev \
+    libnss3-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libbz2-dev \
+    liblzma-dev \
+    zlib1g-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libcurl4-openssl-dev \
+    libzmq3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 创建Python软链接
+RUN ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python3 && \
+    ln -sf /usr/bin/python3 /usr/bin/python
+
+# 升级pip
+RUN python -m pip install --upgrade pip setuptools wheel
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制requirements文件
+COPY requirements.txt .
+COPY requirements-gpu.txt .
+
+# 安装Python依赖
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r requirements-gpu.txt
+
+# 安装CUDA相关包
+RUN pip install --no-cache-dir \
+    cupy-cuda12x \
+    pycuda \
+    numba[cuda] \
+    rapids-cudf-cu12 \
+    rapids-cuml-cu12
+
+# 复制应用代码
+COPY src/ ./src/
+COPY config/ ./config/
+COPY scripts/ ./scripts/
+
+# 创建必要的目录
+RUN mkdir -p /app/logs /app/data /app/tmp
+
+# 设置权限
+RUN chmod +x /app/scripts/*.sh
+
+# 创建非root用户
+RUN groupadd -r quant && useradd -r -g quant quant
+RUN chown -R quant:quant /app
+USER quant
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# 暴露端口
+EXPOSE 8000 8001 8002
+
+# 启动命令
+CMD ["/app/scripts/start_core.sh"]
+
