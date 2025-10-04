@@ -117,7 +117,7 @@ class ProductionSystemLauncher:
                     logger.info(f"  GPU {i}: {gpu_name}")
                 gpu_available = True
         except ImportError:
-            pass
+            logger.warning("⚠️ PyTorch未安装，无法使用GPU加速")
         
         if not gpu_available:
             logger.info("🔄 未检测到GPU，将使用CPU模式")
@@ -360,7 +360,7 @@ class ProductionSystemLauncher:
                     status = await service.health_check()
                     health_status['ai_engine'] = status.get('healthy', False)
         except:
-            pass
+            logger.warning("⚠️ AI引擎健康检查失败")
         
         # 检查Web界面
         try:
@@ -369,7 +369,7 @@ class ProductionSystemLauncher:
                 response = await client.get("http://localhost:8000/health")
                 health_status['web_interface'] = response.status_code == 200
         except:
-            pass
+            logger.warning("⚠️ Web界面健康检查失败")
         
         # 显示健康状态
         logger.info("📋 系统健康状态:")
