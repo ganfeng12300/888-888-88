@@ -24,6 +24,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from src.config.api_config_manager import APIConfigManager
 from src.risk_management.risk_manager import get_risk_manager
 from src.monitoring.system_monitor import SystemMonitor
+from src.trading.real_trading_manager import get_real_trading_manager
+from src.ai.ai_status_monitor import get_ai_status_monitor
 
 
 class WebApp:
@@ -42,6 +44,8 @@ class WebApp:
         self.api_config = APIConfigManager()
         self.risk_manager = get_risk_manager()
         self.system_monitor = SystemMonitor()
+        self.trading_manager = get_real_trading_manager()
+        self.ai_monitor = get_ai_status_monitor()
         
         # WebSocket连接管理
         self.websocket_connections: List[WebSocket] = []
@@ -78,71 +82,206 @@ class WebApp:
                 <meta charset="utf-8">
                 <style>
                     body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-                    .container { max-width: 1200px; margin: 0 auto; }
+                    .container { max-width: 1400px; margin: 0 auto; }
                     .header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
                     .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-                    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-                    .metric { text-align: center; padding: 15px; background: #ecf0f1; border-radius: 5px; }
+                    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+                    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+                    .metric { text-align: center; padding: 15px; background: #ecf0f1; border-radius: 5px; margin-bottom: 10px; }
+                    .metric-small { text-align: center; padding: 10px; background: #ecf0f1; border-radius: 5px; margin-bottom: 8px; }
                     .metric-value { font-size: 2em; font-weight: bold; color: #27ae60; }
-                    .metric-label { color: #7f8c8d; margin-top: 5px; }
+                    .metric-value-small { font-size: 1.5em; font-weight: bold; color: #27ae60; }
+                    .metric-label { color: #7f8c8d; margin-top: 5px; font-size: 0.9em; }
                     .status-good { color: #27ae60; }
                     .status-warning { color: #f39c12; }
                     .status-error { color: #e74c3c; }
-                    button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+                    .status-info { color: #3498db; }
+                    button { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
                     button:hover { background: #2980b9; }
                     .log-container { height: 300px; overflow-y: auto; background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; font-family: monospace; }
+                    .positions-table { width: 100%; border-collapse: collapse; }
+                    .positions-table th, .positions-table td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+                    .positions-table th { background-color: #f2f2f2; }
+                    .ai-model { background: #e8f5e8; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+                    .ai-model-name { font-weight: bold; color: #27ae60; }
+                    .ai-model-stats { font-size: 0.9em; color: #666; }
                 </style>
             </head>
             <body>
                 <div class="container">
                     <div class="header">
                         <h1>🚀 888-888-88 量化交易系统</h1>
-                        <p>生产级实盘交易管理平台</p>
+                        <p>生产级实盘交易管理平台 | 实时AI决策 | 多交易所支持</p>
+                        <div style="margin-top: 10px;">
+                            <span id="connection-status" class="status-good">🟢 已连接</span>
+                            <span style="margin-left: 20px;">最后更新: <span id="last-update">--</span></span>
+                        </div>
                     </div>
                     
+                    <!-- 第一行：核心指标 -->
                     <div class="grid">
                         <div class="card">
-                            <h3>📊 系统状态</h3>
-                            <div id="system-status">
-                                <div class="metric">
-                                    <div class="metric-value status-good" id="system-health">运行中</div>
-                                    <div class="metric-label">系统健康状态</div>
+                            <h3>💰 账户资产</h3>
+                            <div class="metric">
+                                <div class="metric-value" id="total-balance">$0.00</div>
+                                <div class="metric-label">总资产 (USDT)</div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="metric-small">
+                                    <div class="metric-value-small" id="available-balance">$0.00</div>
+                                    <div class="metric-label">可用余额</div>
+                                </div>
+                                <div class="metric-small">
+                                    <div class="metric-value-small" id="used-balance">$0.00</div>
+                                    <div class="metric-label">已用余额</div>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="card">
-                            <h3>💰 交易概览</h3>
-                            <div id="trading-overview">
-                                <div class="metric">
-                                    <div class="metric-value" id="total-balance">$100,000</div>
-                                    <div class="metric-label">总资产</div>
+                            <h3>📈 持仓概览</h3>
+                            <div class="metric">
+                                <div class="metric-value" id="positions-count">0</div>
+                                <div class="metric-label">当前持仓数</div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="metric-small">
+                                    <div class="metric-value-small status-good" id="total-pnl">$0.00</div>
+                                    <div class="metric-label">总盈亏</div>
+                                </div>
+                                <div class="metric-small">
+                                    <div class="metric-value-small" id="leverage-ratio">1.0x</div>
+                                    <div class="metric-label">平均杠杆</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>🤖 AI模型状态</h3>
+                            <div class="metric">
+                                <div class="metric-value status-info" id="ai-status">运行中</div>
+                                <div class="metric-label">AI引擎状态</div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="metric-small">
+                                    <div class="metric-value-small" id="active-models">0</div>
+                                    <div class="metric-label">活跃模型</div>
+                                </div>
+                                <div class="metric-small">
+                                    <div class="metric-value-small" id="prediction-accuracy">0%</div>
+                                    <div class="metric-label">预测准确率</div>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="card">
                             <h3>🛡️ 风险管理</h3>
-                            <div id="risk-metrics">
-                                <div class="metric">
-                                    <div class="metric-value status-good" id="risk-level">低风险</div>
-                                    <div class="metric-label">当前风险等级</div>
+                            <div class="metric">
+                                <div class="metric-value status-good" id="risk-level">低风险</div>
+                                <div class="metric-label">风险等级</div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="metric-small">
+                                    <div class="metric-value-small" id="max-drawdown">0%</div>
+                                    <div class="metric-label">最大回撤</div>
                                 </div>
+                                <div class="metric-small">
+                                    <div class="metric-value-small" id="var-95">$0.00</div>
+                                    <div class="metric-label">VaR(95%)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第二行：详细信息 -->
+                    <div class="grid-2">
+                        <div class="card">
+                            <h3>📊 当前持仓</h3>
+                            <div id="positions-container">
+                                <table class="positions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>交易对</th>
+                                            <th>方向</th>
+                                            <th>数量</th>
+                                            <th>开仓价</th>
+                                            <th>当前价</th>
+                                            <th>盈亏</th>
+                                            <th>杠杆</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="positions-table-body">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center; color: #999;">暂无持仓</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                         
                         <div class="card">
-                            <h3>🔧 快速操作</h3>
-                            <button onclick="startSystem()">启动系统</button>
-                            <button onclick="stopSystem()">停止系统</button>
-                            <button onclick="refreshData()">刷新数据</button>
+                            <h3>🤖 AI模型详情</h3>
+                            <div id="ai-models-container">
+                                <div class="ai-model">
+                                    <div class="ai-model-name">LSTM模型</div>
+                                    <div class="ai-model-stats">准确率: <span id="lstm-accuracy">--</span> | 信心度: <span id="lstm-confidence">--</span></div>
+                                </div>
+                                <div class="ai-model">
+                                    <div class="ai-model-name">Transformer模型</div>
+                                    <div class="ai-model-stats">准确率: <span id="transformer-accuracy">--</span> | 信心度: <span id="transformer-confidence">--</span></div>
+                                </div>
+                                <div class="ai-model">
+                                    <div class="ai-model-name">CNN模型</div>
+                                    <div class="ai-model-stats">准确率: <span id="cnn-accuracy">--</span> | 信心度: <span id="cnn-confidence">--</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 第三行：交易历史和控制面板 -->
+                    <div class="grid-2">
+                        <div class="card">
+                            <h3>📈 最近交易</h3>
+                            <div id="trades-container">
+                                <table class="positions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>时间</th>
+                                            <th>交易对</th>
+                                            <th>方向</th>
+                                            <th>数量</th>
+                                            <th>价格</th>
+                                            <th>手续费</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="trades-table-body">
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; color: #999;">暂无交易记录</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <h3>🔧 系统控制</h3>
+                            <div style="margin-bottom: 20px;">
+                                <button onclick="startSystem()">🚀 启动系统</button>
+                                <button onclick="stopSystem()">⏹️ 停止系统</button>
+                                <button onclick="refreshData()">🔄 刷新数据</button>
+                                <button onclick="emergencyStop()">🚨 紧急停止</button>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value-small status-info" id="system-uptime">00:00:00</div>
+                                <div class="metric-label">系统运行时间</div>
+                            </div>
                         </div>
                     </div>
                     
                     <div class="card">
                         <h3>📝 系统日志</h3>
                         <div class="log-container" id="system-logs">
-                            <div>系统启动中...</div>
+                            <div>[系统启动] 888-888-88量化交易系统正在初始化...</div>
                         </div>
                     </div>
                 </div>
@@ -150,6 +289,7 @@ class WebApp:
                 <script>
                     // WebSocket连接
                     const ws = new WebSocket('ws://localhost:8888/ws');
+                    let startTime = Date.now();
                     
                     ws.onmessage = function(event) {
                         const data = JSON.parse(event.data);
@@ -158,39 +298,224 @@ class WebApp:
                     
                     function updateDashboard(data) {
                         if (data.type === 'system_status') {
-                            document.getElementById('system-health').textContent = data.status;
+                            document.getElementById('connection-status').innerHTML = '🟢 已连接';
                         } else if (data.type === 'log') {
-                            const logContainer = document.getElementById('system-logs');
-                            const logEntry = document.createElement('div');
-                            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${data.message}`;
-                            logContainer.appendChild(logEntry);
-                            logContainer.scrollTop = logContainer.scrollHeight;
+                            addLogEntry(data.message);
+                        } else if (data.type === 'data_update') {
+                            updateAllData(data);
                         }
+                        
+                        // 更新最后更新时间
+                        document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+                    }
+                    
+                    function updateAllData(data) {
+                        // 更新账户信息
+                        if (data.account) {
+                            document.getElementById('total-balance').textContent = `$${data.account.total_balance.toFixed(2)}`;
+                            document.getElementById('available-balance').textContent = `$${data.account.available_balance.toFixed(2)}`;
+                            document.getElementById('used-balance').textContent = `$${data.account.used_balance.toFixed(2)}`;
+                        }
+                        
+                        // 更新持仓信息
+                        if (data.positions) {
+                            updatePositionsTable(data.positions);
+                            document.getElementById('positions-count').textContent = Object.keys(data.positions).length;
+                            
+                            // 计算总盈亏和平均杠杆
+                            let totalPnl = 0;
+                            let totalLeverage = 0;
+                            let count = 0;
+                            
+                            for (const pos of Object.values(data.positions)) {
+                                totalPnl += pos.unrealized_pnl;
+                                totalLeverage += pos.leverage;
+                                count++;
+                            }
+                            
+                            document.getElementById('total-pnl').textContent = `$${totalPnl.toFixed(2)}`;
+                            document.getElementById('total-pnl').className = totalPnl >= 0 ? 'metric-value-small status-good' : 'metric-value-small status-error';
+                            document.getElementById('leverage-ratio').textContent = count > 0 ? `${(totalLeverage/count).toFixed(1)}x` : '1.0x';
+                        }
+                        
+                        // 更新AI状态
+                        if (data.ai_status) {
+                            document.getElementById('ai-status').textContent = data.ai_status.status;
+                            document.getElementById('active-models').textContent = data.ai_status.active_models.length;
+                            
+                            if (data.ai_status.signal_stats) {
+                                const accuracy = (data.ai_status.signal_stats.signal_accuracy * 100).toFixed(1);
+                                document.getElementById('prediction-accuracy').textContent = `${accuracy}%`;
+                            }
+                            
+                            // 更新模型详情
+                            updateAIModels(data.ai_status.model_performance);
+                        }
+                        
+                        // 更新交易历史
+                        if (data.trades) {
+                            updateTradesTable(data.trades);
+                        }
+                        
+                        // 更新风险指标
+                        if (data.risk) {
+                            document.getElementById('max-drawdown').textContent = `${(data.risk.max_drawdown * 100).toFixed(2)}%`;
+                            document.getElementById('var-95').textContent = `$${data.risk.var_95.toFixed(2)}`;
+                        }
+                    }
+                    
+                    function updatePositionsTable(positions) {
+                        const tbody = document.getElementById('positions-table-body');
+                        tbody.innerHTML = '';
+                        
+                        if (Object.keys(positions).length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">暂无持仓</td></tr>';
+                            return;
+                        }
+                        
+                        for (const [key, pos] of Object.entries(positions)) {
+                            const row = document.createElement('tr');
+                            const pnlClass = pos.unrealized_pnl >= 0 ? 'status-good' : 'status-error';
+                            
+                            row.innerHTML = `
+                                <td>${pos.symbol}</td>
+                                <td><span class="${pos.side === 'long' ? 'status-good' : 'status-error'}">${pos.side.toUpperCase()}</span></td>
+                                <td>${pos.size.toFixed(4)}</td>
+                                <td>$${pos.entry_price.toFixed(4)}</td>
+                                <td>$${pos.current_price.toFixed(4)}</td>
+                                <td><span class="${pnlClass}">$${pos.unrealized_pnl.toFixed(2)}</span></td>
+                                <td>${pos.leverage.toFixed(1)}x</td>
+                            `;
+                            tbody.appendChild(row);
+                        }
+                    }
+                    
+                    function updateTradesTable(trades) {
+                        const tbody = document.getElementById('trades-table-body');
+                        tbody.innerHTML = '';
+                        
+                        if (trades.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">暂无交易记录</td></tr>';
+                            return;
+                        }
+                        
+                        // 显示最近10笔交易
+                        const recentTrades = trades.slice(-10).reverse();
+                        
+                        for (const trade of recentTrades) {
+                            const row = document.createElement('tr');
+                            const sideClass = trade.side === 'buy' ? 'status-good' : 'status-error';
+                            const time = new Date(trade.timestamp).toLocaleTimeString();
+                            
+                            row.innerHTML = `
+                                <td>${time}</td>
+                                <td>${trade.symbol}</td>
+                                <td><span class="${sideClass}">${trade.side.toUpperCase()}</span></td>
+                                <td>${trade.amount.toFixed(4)}</td>
+                                <td>$${trade.price.toFixed(4)}</td>
+                                <td>$${trade.fee.toFixed(4)}</td>
+                            `;
+                            tbody.appendChild(row);
+                        }
+                    }
+                    
+                    function updateAIModels(modelPerformance) {
+                        if (modelPerformance.LSTM) {
+                            document.getElementById('lstm-accuracy').textContent = `${(modelPerformance.LSTM.accuracy * 100).toFixed(1)}%`;
+                            document.getElementById('lstm-confidence').textContent = `${(modelPerformance.LSTM.avg_confidence * 100).toFixed(1)}%`;
+                        }
+                        
+                        if (modelPerformance.Transformer) {
+                            document.getElementById('transformer-accuracy').textContent = `${(modelPerformance.Transformer.accuracy * 100).toFixed(1)}%`;
+                            document.getElementById('transformer-confidence').textContent = `${(modelPerformance.Transformer.avg_confidence * 100).toFixed(1)}%`;
+                        }
+                        
+                        if (modelPerformance.CNN) {
+                            document.getElementById('cnn-accuracy').textContent = `${(modelPerformance.CNN.accuracy * 100).toFixed(1)}%`;
+                            document.getElementById('cnn-confidence').textContent = `${(modelPerformance.CNN.avg_confidence * 100).toFixed(1)}%`;
+                        }
+                    }
+                    
+                    function addLogEntry(message) {
+                        const logContainer = document.getElementById('system-logs');
+                        const logEntry = document.createElement('div');
+                        logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                        logContainer.appendChild(logEntry);
+                        logContainer.scrollTop = logContainer.scrollHeight;
+                        
+                        // 限制日志条数
+                        while (logContainer.children.length > 100) {
+                            logContainer.removeChild(logContainer.firstChild);
+                        }
+                    }
+                    
+                    function updateUptime() {
+                        const uptime = Date.now() - startTime;
+                        const hours = Math.floor(uptime / 3600000);
+                        const minutes = Math.floor((uptime % 3600000) / 60000);
+                        const seconds = Math.floor((uptime % 60000) / 1000);
+                        
+                        document.getElementById('system-uptime').textContent = 
+                            `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                     }
                     
                     function startSystem() {
                         fetch('/api/system/start', {method: 'POST'})
                             .then(response => response.json())
-                            .then(data => console.log('系统启动:', data));
+                            .then(data => {
+                                addLogEntry('系统启动命令已发送');
+                                console.log('系统启动:', data);
+                            });
                     }
                     
                     function stopSystem() {
                         fetch('/api/system/stop', {method: 'POST'})
                             .then(response => response.json())
-                            .then(data => console.log('系统停止:', data));
+                            .then(data => {
+                                addLogEntry('系统停止命令已发送');
+                                console.log('系统停止:', data);
+                            });
+                    }
+                    
+                    function emergencyStop() {
+                        if (confirm('确定要执行紧急停止吗？这将立即停止所有交易活动。')) {
+                            fetch('/api/emergency/stop', {method: 'POST'})
+                                .then(response => response.json())
+                                .then(data => {
+                                    addLogEntry('🚨 紧急停止已执行');
+                                    console.log('紧急停止:', data);
+                                });
+                        }
                     }
                     
                     function refreshData() {
-                        fetch('/api/status')
-                            .then(response => response.json())
-                            .then(data => {
-                                console.log('状态更新:', data);
-                                // 更新界面数据
+                        Promise.all([
+                            fetch('/api/status').then(r => r.json()),
+                            fetch('/api/trading/data').then(r => r.json()),
+                            fetch('/api/ai/status').then(r => r.json())
+                        ]).then(([status, trading, ai]) => {
+                            updateAllData({
+                                account: trading.account_info,
+                                positions: trading.positions,
+                                trades: trading.trades,
+                                ai_status: ai,
+                                risk: status.risk_management
                             });
+                            addLogEntry('数据刷新完成');
+                        }).catch(err => {
+                            addLogEntry(`数据刷新失败: ${err.message}`);
+                        });
                     }
                     
                     // 定期刷新数据
                     setInterval(refreshData, 30000);
+                    setInterval(updateUptime, 1000);
+                    
+                    // 页面加载完成后立即刷新数据
+                    window.onload = function() {
+                        addLogEntry('Web界面已加载');
+                        setTimeout(refreshData, 1000);
+                    };
                 </script>
             </body>
             </html>
@@ -285,6 +610,63 @@ class WebApp:
                 return {"exchanges": exchanges}
             except Exception as e:
                 logger.error(f"❌ 获取交易所配置失败: {e}")
+                raise HTTPException(status_code=500, detail=str(e))
+        
+        @self.app.get("/api/trading/data")
+        async def get_trading_data():
+            """获取真实交易数据"""
+            try:
+                # 初始化交易管理器
+                await self.trading_manager.initialize_exchanges()
+                
+                # 获取所有交易数据
+                data = await self.trading_manager.update_all_data()
+                
+                return {
+                    "account_info": data.get('account_info').__dict__ if data.get('account_info') else None,
+                    "positions": {k: v.__dict__ for k, v in data.get('positions', {}).items()},
+                    "trades": [t.__dict__ for t in data.get('trades', [])],
+                    "trading_summary": self.trading_manager.get_trading_summary(),
+                    "update_time": data.get('update_time')
+                }
+            except Exception as e:
+                logger.error(f"❌ 获取交易数据失败: {e}")
+                return {
+                    "account_info": None,
+                    "positions": {},
+                    "trades": [],
+                    "trading_summary": {},
+                    "error": str(e)
+                }
+        
+        @self.app.get("/api/ai/status")
+        async def get_ai_status():
+            """获取AI状态"""
+            try:
+                # 启动AI监控
+                if not self.ai_monitor.monitoring:
+                    self.ai_monitor.start_monitoring()
+                
+                return self.ai_monitor.get_ai_status_report()
+            except Exception as e:
+                logger.error(f"❌ 获取AI状态失败: {e}")
+                raise HTTPException(status_code=500, detail=str(e))
+        
+        @self.app.post("/api/emergency/stop")
+        async def emergency_stop():
+            """紧急停止"""
+            try:
+                # 停止所有交易活动
+                self.risk_manager.emergency_stop = True
+                
+                await self._broadcast_message({
+                    "type": "log",
+                    "message": "🚨 紧急停止已激活，所有交易活动已暂停"
+                })
+                
+                return {"status": "success", "message": "紧急停止已执行"}
+            except Exception as e:
+                logger.error(f"❌ 紧急停止失败: {e}")
                 raise HTTPException(status_code=500, detail=str(e))
         
         @self.app.websocket("/ws")
@@ -382,4 +764,3 @@ if __name__ == "__main__":
     # 启动Web应用
     app = WebApp()
     app.run()
-

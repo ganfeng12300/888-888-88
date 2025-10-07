@@ -162,6 +162,51 @@ def start_monitoring():
         logger.error(f"❌ 系统监控启动失败: {e}")
         return None
 
+def start_ai_monitoring():
+    """启动AI监控系统"""
+    logger.info("🤖 启动AI监控系统...")
+    
+    try:
+        from src.ai.ai_status_monitor import get_ai_status_monitor
+        
+        ai_monitor = get_ai_status_monitor()
+        ai_monitor.start_monitoring()
+        
+        logger.info("✅ AI监控系统启动成功")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ AI监控系统启动失败: {e}")
+        return False
+
+def initialize_trading_manager():
+    """初始化真实交易管理器"""
+    logger.info("💰 初始化真实交易管理器...")
+    
+    try:
+        from src.trading.real_trading_manager import get_real_trading_manager
+        
+        trading_manager = get_real_trading_manager()
+        
+        # 异步初始化交易所连接
+        import asyncio
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        success = loop.run_until_complete(trading_manager.initialize_exchanges())
+        loop.close()
+        
+        if success:
+            logger.info("✅ 真实交易管理器初始化成功")
+            return True
+        else:
+            logger.warning("⚠️ 交易管理器初始化部分成功")
+            return True  # 继续启动，即使没有配置交易所
+        
+    except Exception as e:
+        logger.error(f"❌ 真实交易管理器初始化失败: {e}")
+        return False
+
 def start_web_server():
     """启动Web服务器"""
     logger.info("🌐 启动Web服务器...")
@@ -265,6 +310,14 @@ def main():
     monitor = start_monitoring()
     if not monitor:
         logger.warning("⚠️ 监控系统启动失败，继续启动其他组件")
+    
+    # 5.5. 启动AI监控
+    if not start_ai_monitoring():
+        logger.warning("⚠️ AI监控系统启动失败，继续启动其他组件")
+    
+    # 5.6. 初始化真实交易管理器
+    if not initialize_trading_manager():
+        logger.warning("⚠️ 交易管理器初始化失败，继续启动其他组件")
     
     # 6. 启动Web服务器
     if not start_web_server():
