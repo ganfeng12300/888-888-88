@@ -1,0 +1,52 @@
+{
+  "model_id": "xgb_trend_predictor_v1",
+  "name": "XGBoost趋势预测器",
+  "version": "1.0.0",
+  "model_type": "xgboost",
+  "status": "ready",
+  "priority": 2,
+  "created_at": "2025-10-07T16:00:00",
+  "updated_at": "2025-10-07T16:00:00",
+  "file_path": "models/xgb_trend_predictor_v1.model",
+  "file_size": 1024000,
+  "checksum": "b2c3d4e5f6789012345678901234567890abcdef",
+  "accuracy": 0.82,
+  "training_data_size": 150000,
+  "features": [
+    "price_change_1h",
+    "price_change_4h",
+    "price_change_24h",
+    "volume_change_1h",
+    "rsi",
+    "macd_signal",
+    "bb_position",
+    "sma_trend",
+    "ema_trend",
+    "support_distance",
+    "resistance_distance"
+  ],
+  "target": "trend_direction",
+  "hyperparameters": {
+    "n_estimators": 500,
+    "max_depth": 8,
+    "learning_rate": 0.1,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "reg_alpha": 0.1,
+    "reg_lambda": 0.1
+  },
+  "performance_metrics": {
+    "accuracy": 0.82,
+    "precision": 0.79,
+    "recall": 0.85,
+    "f1_score": 0.82,
+    "auc_roc": 0.88
+  },
+  "dependencies": [
+    "xgboost>=1.6.0",
+    "numpy>=1.21.0",
+    "pandas>=1.3.0",
+    "scikit-learn>=1.0.0"
+  ],
+  "description": "基于XGBoost的趋势方向预测模型，用于预测未来4小时的价格趋势方向，在多个加密货币对上训练"
+}

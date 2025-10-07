@@ -1,468 +1,270 @@
 #!/usr/bin/env python3
 """
-🚀 888-888-88 量化交易系统一键启动脚本
-生产级实盘交易系统完整启动程序
-包含依赖检查、环境配置、系统初始化和服务启动
+🚀 888-888-88 生产级系统启动脚本
+Production-Grade System Startup Script
 """
 
 import os
 import sys
-import subprocess
 import asyncio
-import time
-import json
-import logging
+import signal
 from pathlib import Path
-from typing import Dict, List, Any
-import platform
+from typing import Dict, Any
+from datetime import datetime
+from loguru import logger
 
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('system_startup.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-logger = logging.getLogger(__name__)
+# 添加项目根目录到Python路径
+sys.path.insert(0, str(Path(__file__).parent))
 
-class ProductionSystemLauncher:
-    """生产系统启动器"""
+class ProductionSystemManager:
+    """生产级系统管理器"""
     
     def __init__(self):
-        self.system_root = Path(__file__).parent
-        self.python_executable = sys.executable
-        self.required_dirs = [
-            'models', 'logs', 'data', 'config', 
-            'backups', 'temp', 'cache'
-        ]
-        self.services = []
+        self.components = {}
+        self.is_running = False
+        self.startup_time = None
         
-    async def start_production_system(self):
-        """启动生产系统"""
+        # 配置日志
+        self._setup_logging()
+        logger.info("🚀 生产级系统管理器初始化")
+    
+    def _setup_logging(self):
+        """配置日志系统"""
         try:
-            logger.info("🚀 开始启动888-888-88量化交易系统")
+            # 创建日志目录
+            log_dir = Path("logs")
+            log_dir.mkdir(exist_ok=True)
             
-            # 1. 系统环境检查
-            await self.check_system_requirements()
+            # 配置loguru
+            logger.remove()  # 移除默认处理器
             
-            # 2. 创建必要目录
-            await self.create_directories()
+            # 控制台输出
+            logger.add(
+                sys.stdout,
+                format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> - <level>{message}</level>",
+                level="INFO"
+            )
             
-            # 3. 安装依赖
-            await self.install_dependencies()
+            # 文件输出
+            logger.add(
+                log_dir / "system_{time:YYYY-MM-DD}.log",
+                format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name} - {message}",
+                level="DEBUG",
+                rotation="1 day",
+                retention="30 days"
+            )
             
-            # 4. 初始化配置
-            await self.initialize_configuration()
+        except Exception as e:
+            print(f"❌ 配置日志系统失败: {e}")
+    
+    async def initialize_components(self):
+        """初始化所有组件"""
+        try:
+            logger.info("🔧 开始初始化系统组件...")
             
-            # 5. 启动核心服务
-            await self.start_core_services()
+            # 导入核心组件
+            from src.core.error_handling_system import error_handler
+            from src.monitoring.system_monitor import system_monitor
+            from src.ai.ai_model_manager import ai_model_manager
+            from src.ai.ai_performance_monitor import ai_performance_monitor
+            from src.ai.enhanced_ai_fusion_engine import enhanced_ai_fusion_engine
             
-            # 6. 启动AI引擎
-            await self.start_ai_engines()
+            # 1. 初始化错误处理系统
+            self.components['error_handler'] = error_handler
+            logger.info("✅ 错误处理系统已就绪")
             
-            # 7. 启动交易引擎
-            await self.start_trading_engines()
+            # 2. 初始化系统监控
+            self.components['system_monitor'] = system_monitor
+            await system_monitor.start_monitoring()
+            logger.info("✅ 系统监控已启动")
             
-            # 8. 启动Web界面
-            await self.start_web_interface()
+            # 3. 初始化AI模型管理器
+            self.components['ai_model_manager'] = ai_model_manager
+            await ai_model_manager.initialize()
+            logger.info("✅ AI模型管理器已初始化")
             
-            # 9. 启动监控系统
-            await self.start_monitoring()
+            # 4. 初始化AI性能监控器
+            self.components['ai_performance_monitor'] = ai_performance_monitor
+            logger.info("✅ AI性能监控器已就绪")
             
-            # 10. 系统健康检查
-            await self.perform_health_check()
+            # 5. 初始化AI融合引擎
+            self.components['ai_fusion_engine'] = enhanced_ai_fusion_engine
+            await enhanced_ai_fusion_engine.initialize()
+            logger.info("✅ AI融合引擎已初始化")
             
-            logger.info("✅ 888-888-88量化交易系统启动完成！")
-            await self.display_system_status()
+            logger.info("🎉 所有系统组件初始化完成")
+            
+        except Exception as e:
+            logger.error(f"❌ 组件初始化失败: {e}")
+            raise
+    
+    async def start_system(self):
+        """启动系统"""
+        try:
+            self.startup_time = datetime.now()
+            logger.info("🚀 启动888-888-88量化交易系统...")
+            
+            # 检查环境
+            await self._check_environment()
+            
+            # 初始化组件
+            await self.initialize_components()
+            
+            # 启动主循环
+            self.is_running = True
+            
+            # 注册信号处理器
+            self._register_signal_handlers()
+            
+            logger.info("🎉 系统启动完成！")
+            logger.info(f"📊 启动时间: {self.startup_time}")
+            logger.info(f"🔧 组件数量: {len(self.components)}")
+            
+            # 启动主循环
+            await self._main_loop()
             
         except Exception as e:
             logger.error(f"❌ 系统启动失败: {e}")
-            await self.cleanup_on_failure()
+            await self.shutdown_system()
             raise
     
-    async def check_system_requirements(self):
-        """检查系统要求"""
-        logger.info("🔍 检查系统要求...")
-        
-        # 检查Python版本
-        python_version = sys.version_info
-        if python_version < (3, 8):
-            raise RuntimeError(f"需要Python 3.8+，当前版本: {python_version}")
-        
-        # 检查操作系统
-        os_name = platform.system()
-        logger.info(f"操作系统: {os_name} {platform.release()}")
-        
-        # 检查内存
+    async def _check_environment(self):
+        """检查环境配置"""
         try:
-            import psutil
-            memory = psutil.virtual_memory()
-            if memory.total < 4 * 1024**3:  # 4GB
-                logger.warning("⚠️ 建议至少4GB内存以获得最佳性能")
-            logger.info(f"系统内存: {memory.total / 1024**3:.1f}GB")
-        except ImportError:
-            logger.warning("无法检查内存，请确保系统有足够内存")
-        
-        # 检查GPU
-        gpu_available = False
+            logger.info("🔍 检查环境配置...")
+            
+            # 检查目录结构
+            required_dirs = ['logs', 'models', 'data', 'config']
+            for dir_name in required_dirs:
+                Path(dir_name).mkdir(exist_ok=True)
+            
+            logger.info("✅ 环境检查完成")
+            
+        except Exception as e:
+            logger.error(f"❌ 环境检查失败: {e}")
+            raise
+    
+    def _register_signal_handlers(self):
+        """注册信号处理器"""
         try:
-            import torch
-            if torch.cuda.is_available():
-                gpu_count = torch.cuda.device_count()
-                logger.info(f"✅ 检测到 {gpu_count} 个GPU设备")
-                for i in range(gpu_count):
-                    gpu_name = torch.cuda.get_device_name(i)
-                    logger.info(f"  GPU {i}: {gpu_name}")
-                gpu_available = True
-        except ImportError:
-            logger.warning("⚠️ PyTorch未安装，无法使用GPU加速")
-        
-        if not gpu_available:
-            logger.info("🔄 未检测到GPU，将使用CPU模式")
-        
-        logger.info("✅ 系统要求检查完成")
+            def signal_handler(signum, frame):
+                logger.info(f"📡 收到信号 {signum}，开始优雅关闭...")
+                asyncio.create_task(self.shutdown_system())
+            
+            signal.signal(signal.SIGINT, signal_handler)
+            signal.signal(signal.SIGTERM, signal_handler)
+            
+            logger.info("📡 信号处理器已注册")
+            
+        except Exception as e:
+            logger.error(f"❌ 注册信号处理器失败: {e}")
     
-    async def create_directories(self):
-        """创建必要目录"""
-        logger.info("📁 创建系统目录...")
-        
-        for dir_name in self.required_dirs:
-            dir_path = self.system_root / dir_name
-            dir_path.mkdir(exist_ok=True)
-            logger.info(f"  ✅ {dir_name}/")
-        
-        # 创建子目录
-        subdirs = {
-            'logs': ['trading', 'ai', 'system', 'errors'],
-            'data': ['market', 'historical', 'real_time'],
-            'models': ['trained', 'checkpoints', 'exports'],
-            'config': ['production', 'development', 'templates']
-        }
-        
-        for parent, children in subdirs.items():
-            for child in children:
-                subdir = self.system_root / parent / child
-                subdir.mkdir(exist_ok=True)
-        
-        logger.info("✅ 目录创建完成")
+    async def _main_loop(self):
+        """主循环"""
+        try:
+            logger.info("🔄 进入主循环...")
+            
+            while self.is_running:
+                try:
+                    # 定期健康检查
+                    await asyncio.sleep(300)  # 每5分钟
+                    
+                    if self.is_running:
+                        await self._periodic_health_check()
+                    
+                except asyncio.CancelledError:
+                    break
+                except Exception as e:
+                    logger.error(f"❌ 主循环错误: {e}")
+                    await asyncio.sleep(60)  # 错误后等待1分钟
+            
+        except Exception as e:
+            logger.error(f"❌ 主循环异常: {e}")
+        finally:
+            logger.info("🔄 主循环已退出")
     
-    async def install_dependencies(self):
-        """安装依赖包"""
-        logger.info("📦 检查并安装依赖包...")
-        
-        # 检查requirements.txt
-        requirements_file = self.system_root / "requirements.txt"
-        if not requirements_file.exists():
-            logger.error("❌ requirements.txt文件不存在")
-            raise FileNotFoundError("requirements.txt not found")
-        
-        # 安装基础依赖
-        logger.info("安装基础依赖...")
-        result = subprocess.run([
-            self.python_executable, "-m", "pip", "install", "-r", str(requirements_file)
-        ], capture_output=True, text=True)
-        
-        if result.returncode != 0:
-            logger.error(f"依赖安装失败: {result.stderr}")
-            raise RuntimeError("Failed to install dependencies")
-        
-        # 检查GPU依赖
-        gpu_requirements = self.system_root / "requirements-gpu.txt"
-        if gpu_requirements.exists():
-            logger.info("安装GPU依赖...")
-            subprocess.run([
-                self.python_executable, "-m", "pip", "install", "-r", str(gpu_requirements)
-            ], capture_output=True, text=True)
-        
-        logger.info("✅ 依赖安装完成")
+    async def _periodic_health_check(self):
+        """定期健康检查"""
+        try:
+            # 获取系统统计
+            stats = await self._collect_system_stats()
+            
+            # 记录统计信息
+            logger.debug(f"📊 系统统计: {stats}")
+            
+        except Exception as e:
+            logger.error(f"❌ 定期健康检查失败: {e}")
     
-    async def initialize_configuration(self):
-        """初始化配置"""
-        logger.info("⚙️ 初始化系统配置...")
-        
-        # 创建生产配置文件
-        config = {
-            "system": {
-                "name": "888-888-88",
-                "version": "1.0.0",
-                "environment": "production",
-                "debug": False
-            },
-            "trading": {
-                "enabled": True,
-                "max_position_size": 0.1,
-                "risk_limit": 0.02,
-                "stop_loss": 0.05,
-                "take_profit": 0.15
-            },
-            "ai": {
-                "models_enabled": ["xgboost", "lstm", "random_forest"],
-                "ensemble_voting": True,
-                "confidence_threshold": 0.6,
-                "retrain_interval": 3600
-            },
-            "data": {
-                "sources": ["binance", "okx"],
-                "update_interval": 1,
-                "history_days": 365
-            },
-            "monitoring": {
-                "enabled": True,
-                "alert_email": "admin@example.com",
-                "metrics_retention": 30
+    async def _collect_system_stats(self) -> Dict[str, Any]:
+        """收集系统统计信息"""
+        try:
+            stats = {
+                "uptime_seconds": (datetime.now() - self.startup_time).total_seconds() if self.startup_time else 0,
+                "components_count": len(self.components),
+                "is_running": self.is_running
             }
-        }
-        
-        config_file = self.system_root / "config" / "production" / "config.json"
-        config_file.parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(config_file, 'w', encoding='utf-8') as f:
-            json.dump(config, f, indent=2, ensure_ascii=False)
-        
-        logger.info("✅ 配置初始化完成")
-    
-    async def start_core_services(self):
-        """启动核心服务"""
-        logger.info("🔧 启动核心服务...")
-        
-        # 启动数据库服务
-        await self.start_database_service()
-        
-        # 启动缓存服务
-        await self.start_cache_service()
-        
-        # 启动消息队列
-        await self.start_message_queue()
-        
-        logger.info("✅ 核心服务启动完成")
-    
-    async def start_database_service(self):
-        """启动数据库服务"""
-        logger.info("  🗄️ 启动数据库服务...")
-        # 这里应该启动PostgreSQL或其他数据库
-        # 暂时跳过，假设数据库已经运行
-        logger.info("  ✅ 数据库服务就绪")
-    
-    async def start_cache_service(self):
-        """启动缓存服务"""
-        logger.info("  🚀 启动Redis缓存...")
-        # 这里应该启动Redis
-        # 暂时跳过，假设Redis已经运行
-        logger.info("  ✅ 缓存服务就绪")
-    
-    async def start_message_queue(self):
-        """启动消息队列"""
-        logger.info("  📨 启动消息队列...")
-        # 这里应该启动Celery或其他消息队列
-        logger.info("  ✅ 消息队列就绪")
-    
-    async def start_ai_engines(self):
-        """启动AI引擎"""
-        logger.info("🤖 启动AI引擎...")
-        
-        try:
-            # 启动AI决策引擎
-            from src.ai.ai_engine import AIDecisionEngine
             
-            ai_engine = AIDecisionEngine()
-            await ai_engine.initialize_models()
-            
-            # 在后台启动AI决策循环
-            asyncio.create_task(ai_engine.start_decision_loop())
-            
-            self.services.append(('ai_engine', ai_engine))
-            logger.info("  ✅ AI决策引擎启动完成")
+            return stats
             
         except Exception as e:
-            logger.error(f"  ❌ AI引擎启动失败: {e}")
-            raise
+            logger.error(f"❌ 收集系统统计失败: {e}")
+            return {}
     
-    async def start_trading_engines(self):
-        """启动交易引擎"""
-        logger.info("💹 启动交易引擎...")
-        
+    async def shutdown_system(self):
+        """关闭系统"""
         try:
-            # 启动智能订单路由
-            logger.info("  🎯 启动智能订单路由...")
+            if not self.is_running:
+                return
             
-            # 启动低延迟执行引擎
-            logger.info("  ⚡ 启动低延迟执行引擎...")
+            logger.info("🛑 开始关闭系统...")
+            self.is_running = False
             
-            # 启动滑点优化器
-            logger.info("  📊 启动滑点优化器...")
+            # 关闭各组件
+            shutdown_order = [
+                'ai_fusion_engine',
+                'ai_model_manager', 
+                'system_monitor'
+            ]
             
-            logger.info("  ✅ 交易引擎启动完成")
+            for component_name in shutdown_order:
+                if component_name in self.components:
+                    try:
+                        component = self.components[component_name]
+                        if hasattr(component, 'shutdown'):
+                            await component.shutdown()
+                        logger.info(f"✅ {component_name} 已关闭")
+                    except Exception as e:
+                        logger.error(f"❌ 关闭 {component_name} 失败: {e}")
+            
+            logger.info("🎯 系统已完全关闭")
             
         except Exception as e:
-            logger.error(f"  ❌ 交易引擎启动失败: {e}")
-            raise
-    
-    async def start_web_interface(self):
-        """启动Web界面"""
-        logger.info("🌐 启动Web界面...")
-        
-        try:
-            # 启动FastAPI服务器
-            web_process = subprocess.Popen([
-                self.python_executable, "-m", "uvicorn", 
-                "web.app:app", 
-                "--host", "0.0.0.0", 
-                "--port", "8000",
-                "--workers", "4"
-            ])
-            
-            self.services.append(('web_server', web_process))
-            
-            # 等待服务启动
-            await asyncio.sleep(3)
-            
-            logger.info("  ✅ Web界面启动完成 - http://localhost:8000")
-            
-        except Exception as e:
-            logger.error(f"  ❌ Web界面启动失败: {e}")
-            raise
-    
-    async def start_monitoring(self):
-        """启动监控系统"""
-        logger.info("📊 启动监控系统...")
-        
-        try:
-            # 启动Prometheus监控
-            logger.info("  📈 启动性能监控...")
-            
-            # 启动告警管理器
-            logger.info("  🚨 启动告警系统...")
-            
-            logger.info("  ✅ 监控系统启动完成")
-            
-        except Exception as e:
-            logger.error(f"  ❌ 监控系统启动失败: {e}")
-            raise
-    
-    async def perform_health_check(self):
-        """执行健康检查"""
-        logger.info("🏥 执行系统健康检查...")
-        
-        health_status = {
-            'ai_engine': False,
-            'trading_engine': False,
-            'web_interface': False,
-            'database': False,
-            'cache': False
-        }
-        
-        # 检查AI引擎
-        try:
-            for service_name, service in self.services:
-                if service_name == 'ai_engine':
-                    status = await service.health_check()
-                    health_status['ai_engine'] = status.get('healthy', False)
-        except:
-            logger.warning("⚠️ AI引擎健康检查失败")
-        
-        # 检查Web界面
-        try:
-            import httpx
-            async with httpx.AsyncClient() as client:
-                response = await client.get("http://localhost:8000/health")
-                health_status['web_interface'] = response.status_code == 200
-        except:
-            logger.warning("⚠️ Web界面健康检查失败")
-        
-        # 显示健康状态
-        logger.info("📋 系统健康状态:")
-        for component, status in health_status.items():
-            status_icon = "✅" if status else "❌"
-            logger.info(f"  {status_icon} {component}")
-        
-        overall_health = all(health_status.values())
-        if overall_health:
-            logger.info("✅ 系统整体健康状态良好")
-        else:
-            logger.warning("⚠️ 部分组件可能存在问题")
-    
-    async def display_system_status(self):
-        """显示系统状态"""
-        status_message = """
-╔══════════════════════════════════════════════════════════════╗
-║                 888-888-88 量化交易系统                       ║
-║                    🚀 系统启动完成 🚀                         ║
-╚══════════════════════════════════════════════════════════════╝
-
-🌐 Web管理界面: http://localhost:8000
-📊 系统监控面板: http://localhost:8000/monitoring
-📈 交易仪表板: http://localhost:8000/trading
-🤖 AI模型状态: http://localhost:8000/ai-status
-
-📋 系统信息:
-  • 运行模式: 生产环境
-  • AI引擎: 已启动
-  • 交易引擎: 已启动
-  • 实时数据: 已连接
-  • 风险控制: 已激活
-
-⚠️  重要提醒:
-  • 请确保已配置正确的API密钥
-  • 建议先在模拟环境测试
-  • 定期检查系统日志
-  • 保持充足的资金余额
-
-🔧 管理命令:
-  • 停止系统: Ctrl+C
-  • 查看日志: tail -f logs/system/*.log
-  • 重启服务: python start_production_system.py
-
-系统已准备就绪，可以开始实盘交易！
-        """
-        
-        print(status_message)
-        logger.info("系统状态显示完成")
-    
-    async def cleanup_on_failure(self):
-        """失败时清理"""
-        logger.info("🧹 清理失败的服务...")
-        
-        for service_name, service in self.services:
-            try:
-                if hasattr(service, 'terminate'):
-                    service.terminate()
-                elif hasattr(service, 'shutdown'):
-                    await service.shutdown()
-            except Exception as e:
-                logger.error(f"清理服务 {service_name} 失败: {e}")
-    
-    def signal_handler(self, signum, frame):
-        """信号处理器"""
-        logger.info("接收到停止信号，正在关闭系统...")
-        asyncio.create_task(self.cleanup_on_failure())
-        sys.exit(0)
+            logger.error(f"❌ 系统关闭失败: {e}")
 
 async def main():
     """主函数"""
-    launcher = ProductionSystemLauncher()
-    
-    # 注册信号处理器
-    import signal
-    signal.signal(signal.SIGINT, launcher.signal_handler)
-    signal.signal(signal.SIGTERM, launcher.signal_handler)
-    
     try:
-        await launcher.start_production_system()
+        # 创建系统管理器
+        system_manager = ProductionSystemManager()
         
-        # 保持系统运行
-        logger.info("系统运行中... 按Ctrl+C停止")
-        while True:
-            await asyncio.sleep(60)
-            logger.info("💓 系统心跳检查 - 运行正常")
-            
+        # 启动系统
+        await system_manager.start_system()
+        
     except KeyboardInterrupt:
-        logger.info("用户中断，正在关闭系统...")
+        logger.info("👋 用户中断，正在关闭系统...")
     except Exception as e:
-        logger.error(f"系统运行错误: {e}")
-    finally:
-        await launcher.cleanup_on_failure()
+        logger.error(f"❌ 系统运行失败: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        # 设置事件循环策略（Windows兼容性）
+        if sys.platform == "win32":
+            asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+        
+        # 运行主函数
+        asyncio.run(main())
+        
+    except Exception as e:
+        print(f"❌ 启动失败: {e}")
+        sys.exit(1)
