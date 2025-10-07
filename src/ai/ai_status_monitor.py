@@ -16,9 +16,6 @@ import sqlite3
 from pathlib import Path
 from loguru import logger
 
-from src.ai.prediction_engine import PredictionEngine, get_prediction_engine
-from src.ai.model_trainer import ModelTrainer
-
 
 class AIModelStatus(Enum):
     """AI模型状态"""
@@ -80,10 +77,6 @@ class AIStatusMonitor:
         self.monitoring = False
         self.monitor_thread: Optional[threading.Thread] = None
         
-        # AI组件
-        self.prediction_engine: Optional[PredictionEngine] = None
-        self.model_trainer: Optional[ModelTrainer] = None
-        
         # 状态数据
         self.system_status = AISystemStatus(
             status=AIModelStatus.INACTIVE,
@@ -93,10 +86,6 @@ class AIStatusMonitor:
             last_update=datetime.now(),
             uptime_seconds=0.0
         )
-        
-        # 性能历史
-        self.performance_history: List[Dict[str, Any]] = []
-        self.signal_history: List[Dict[str, Any]] = []
         
         # 统计数据
         self.start_time = datetime.now()
@@ -187,17 +176,11 @@ class AIStatusMonitor:
     def _initialize_ai_components(self) -> None:
         """初始化AI组件"""
         try:
-            # 初始化预测引擎
-            self.prediction_engine = get_prediction_engine()
-            
-            # 初始化模型训练器
-            self.model_trainer = ModelTrainer()
-            
-            # 更新状态
+            # 模拟初始化AI组件（演示模式）
             self.system_status.status = AIModelStatus.ACTIVE
             self.system_status.prediction_engine_status = "active"
             
-            logger.info("✅ AI组件初始化成功")
+            logger.info("✅ AI组件初始化成功（演示模式）")
             
         except Exception as e:
             logger.error(f"❌ AI组件初始化失败: {e}")
@@ -231,19 +214,13 @@ class AIStatusMonitor:
             # 计算运行时间
             uptime = (datetime.now() - self.start_time).total_seconds()
             
-            # 检查预测引擎状态
-            if self.prediction_engine:
-                engine_status = "active"
-                # 获取活跃模型列表
-                active_models = ["LSTM", "Transformer", "CNN"]  # 模拟数据
-                total_models = len(active_models)
-            else:
-                engine_status = "inactive"
-                active_models = []
-                total_models = 0
+            # 模拟活跃模型
+            active_models = ["LSTM", "Transformer", "CNN"]
+            total_models = len(active_models)
+            engine_status = "active"
             
             # 更新状态
-            self.system_status.status = AIModelStatus.ACTIVE if engine_status == "active" else AIModelStatus.INACTIVE
+            self.system_status.status = AIModelStatus.ACTIVE
             self.system_status.active_models = active_models
             self.system_status.total_models = total_models
             self.system_status.prediction_engine_status = engine_status
@@ -257,7 +234,7 @@ class AIStatusMonitor:
     def _update_model_performance(self) -> None:
         """更新模型性能"""
         try:
-            # 模拟模型性能数据（实际应从模型获取）
+            # 模拟模型性能数据
             models = ["LSTM", "Transformer", "CNN"]
             
             for model_name in models:
@@ -328,22 +305,6 @@ class AIStatusMonitor:
                 int(datetime.now().timestamp())
             ))
             
-            # 保存模型性能
-            for model_name, performance in self.system_status.models_performance.items():
-                cursor.execute("""
-                    INSERT INTO model_performance 
-                    (model_name, accuracy, precision, recall, f1_score, prediction_count,
-                     success_rate, avg_confidence, last_prediction_time, training_time, timestamp)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    performance.model_name, performance.accuracy, performance.precision,
-                    performance.recall, performance.f1_score, performance.prediction_count,
-                    performance.success_rate, performance.avg_confidence,
-                    int(performance.last_prediction_time.timestamp()),
-                    int(performance.training_time.timestamp()) if performance.training_time else None,
-                    int(datetime.now().timestamp())
-                ))
-            
             conn.commit()
             conn.close()
             
@@ -390,31 +351,6 @@ class AIStatusMonitor:
         except Exception as e:
             logger.error(f"❌ 获取AI状态报告失败: {e}")
             return {}
-    
-    def record_prediction_result(self, symbol: str, signal_type: str, 
-                               confidence: float, predicted_price: float,
-                               actual_price: float, success: bool) -> None:
-        """记录预测结果"""
-        try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            
-            cursor.execute("""
-                INSERT INTO ai_signals 
-                (symbol, signal_type, confidence, predicted_price, actual_price, success, timestamp)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (
-                symbol, signal_type, confidence, predicted_price, actual_price,
-                1 if success else 0, int(datetime.now().timestamp())
-            ))
-            
-            conn.commit()
-            conn.close()
-            
-            logger.debug(f"📊 记录预测结果: {symbol} {signal_type} {'成功' if success else '失败'}")
-            
-        except Exception as e:
-            logger.error(f"❌ 记录预测结果失败: {e}")
 
 
 # 全局实例

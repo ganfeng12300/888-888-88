@@ -660,3 +660,13 @@ if __name__ == "__main__":
     
     # asyncio.run(test_prediction_engine())
 
+
+# 全局实例
+_prediction_engine = None
+
+def get_prediction_engine() -> PredictionEngine:
+    """获取预测引擎实例"""
+    global _prediction_engine
+    if _prediction_engine is None:
+        _prediction_engine = PredictionEngine()
+    return _prediction_engine
