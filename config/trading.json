@@ -1,0 +1,21 @@
+{
+  "max_position_size": 0.1,
+  "max_daily_trades": 50,
+  "risk_per_trade": 0.02,
+  "stop_loss_pct": 0.02,
+  "take_profit_pct": 0.04,
+  "min_trade_amount": 10.0,
+  "max_trade_amount": 1000.0,
+  "allowed_symbols": [
+    "BTC/USDT",
+    "ETH/USDT",
+    "BNB/USDT",
+    "ADA/USDT",
+    "SOL/USDT",
+    "DOGE/USDT",
+    "XRP/USDT",
+    "MATIC/USDT",
+    "DOT/USDT",
+    "AVAX/USDT"
+  ]
+}
