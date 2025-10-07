@@ -1,0 +1,26 @@
+{
+  "startup_time": "2025-10-07T14:45:23.858974",
+  "system_status": "running",
+  "components": {
+    "risk_management": "active",
+    "monitoring": "active",
+    "web_server": "active",
+    "api_config": "configured"
+  },
+  "web_interface": {
+    "url": "http://localhost:8888",
+    "features": [
+      "实时系统状态监控",
+      "交易概览和资产管理",
+      "风险指标实时显示",
+      "系统日志查看",
+      "快速操作控制面板"
+    ]
+  },
+  "next_steps": [
+    "访问 http://localhost:8888 查看Web界面",
+    "检查系统状态和风险指标",
+    "配置交易策略参数",
+    "开始实盘交易"
+  ]
+}
