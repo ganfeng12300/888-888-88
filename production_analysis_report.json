@@ -1,0 +1,147 @@
+{
+  "timestamp": "2025-10-07T16:04:08.321992",
+  "project_name": "888-888-88 量化交易系统",
+  "analysis_version": "1.0.0",
+  "overall_score": 59.31541290316972,
+  "categories": {
+    "code_quality": {
+      "score": 72.41568252998023,
+      "total_files": 154,
+      "total_lines": 73099,
+      "total_functions": 1763,
+      "documented_functions": 1458,
+      "function_doc_coverage": 82.69994327850256,
+      "total_classes": 657,
+      "documented_classes": 641,
+      "class_doc_coverage": 97.56468797564688,
+      "error_handling_coverage": 36.982416335791264,
+      "total_methods": 1633
+    },
+    "ai_components": {
+      "score": 30,
+      "ai_files": 67,
+      "total_components": 15,
+      "ai_models": 14,
+      "ai_engines": 0,
+      "ai_predictors": 1,
+      "ai_traders": 0,
+      "model_list": [
+        "ModelType",
+        "ModelStatus",
+        "ModelType",
+        "ModelType",
+        "AIModelType",
+        "ModelType",
+        "LSTMModel",
+        "TransformerModel",
+        "AIModelStatus",
+        "AIModelStatus"
+      ],
+      "engine_list": [],
+      "predictor_list": [
+        "TransformerPredictor"
+      ],
+      "trader_list": []
+    },
+    "trading_features": {
+      "score": 100,
+      "trading_features": 59,
+      "real_trading_indicators": 11,
+      "feature_list": [
+        "class MultiExchangeManager:",
+        "class TradingLSTM(nn.Module):",
+        "class ExchangeLiquidity:",
+        "testnet.*=.*False",
+        "def get_balance_summary(",
+        "class BaseExchange(ABC):",
+        "class ExchangeSettings(PydanticBaseSettings):",
+        "class TradingSignal:",
+        "class TradingState:",
+        "def.*get_positions.*\\("
+      ]
+    },
+    "performance": {
+      "score": 100.0,
+      "cpu_usage": 0.0,
+      "memory_usage": 4.3,
+      "disk_usage": 16.6,
+      "gpu_info": "N/A",
+      "available_memory_gb": 5.740085601806641,
+      "total_memory_gb": 6.0
+    },
+    "security": {
+      "score": 80,
+      "security_issues": 3,
+      "env_usage_files": 6,
+      "issues": [
+        {
+          "type": "hardcoded_secret",
+          "file": "setup_real_trading_api.py",
+          "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+          "severity": "high"
+        },
+        {
+          "type": "hardcoded_secret",
+          "file": "src/data_collection/exchange_connector.py",
+          "pattern": "api_key\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+          "severity": "high"
+        },
+        {
+          "type": "hardcoded_secret",
+          "file": "src/data_collection/exchange_connector.py",
+          "pattern": "secret\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+          "severity": "high"
+        }
+      ]
+    },
+    "testing": {
+      "score": 7.792207792207792,
+      "test_files": 6,
+      "test_coverage": 3.896103896103896,
+      "unit_tests": 3,
+      "integration_tests": 3
+    },
+    "production_readiness": {
+      "score": 25.0,
+      "checks": {
+        "config_management": true,
+        "logging_system": true,
+        "error_handling": false,
+        "monitoring": false,
+        "database_connection": false,
+        "api_documentation": false,
+        "deployment_config": false,
+        "environment_separation": false
+      },
+      "config_files": 7
+    }
+  },
+  "issues": [],
+  "recommendations": [
+    {
+      "category": "错误处理",
+      "priority": "高",
+      "description": "错误处理覆盖率不足70%，建议增加异常处理",
+      "action": "为关键函数添加try-except错误处理"
+    },
+    {
+      "category": "测试覆盖",
+      "priority": "中",
+      "description": "测试覆盖率不足50%，建议增加单元测试",
+      "action": "为核心功能模块编写单元测试"
+    },
+    {
+      "category": "安全性",
+      "priority": "高",
+      "description": "发现3个安全问题",
+      "action": "修复硬编码密钥，使用环境变量管理敏感信息"
+    }
+  ],
+  "statistics": {
+    "total_python_files": 154,
+    "total_lines_of_code": 73099,
+    "total_ai_components": 15,
+    "analysis_duration": "完成",
+    "grade": "C (原型级)"
+  }
+}

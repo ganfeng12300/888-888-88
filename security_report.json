@@ -1,0 +1,272 @@
+{
+  "timestamp": "2025-10-07T16:08:32.053856",
+  "project_name": "888-888-88 量化交易系统",
+  "hardcoded_secrets": [
+    {
+      "type": "hardcoded_secret",
+      "file": "src/web/api_server.py",
+      "line": 45,
+      "secret_type": "Key",
+      "content": "SECRET_KEY = \"your-secret-key-change-in-production\"",
+      "severity": "high"
+    }
+  ],
+  "environment_variables": {
+    "env_variables_used": 21,
+    "files_using_env": 5,
+    "env_variables": [
+      "MAX_SINGLE_POSITION",
+      "BINANCE_SECRET_KEY",
+      "MAX_ORDER_SIZE",
+      "MAX_TOTAL_POSITION",
+      "CLICKHOUSE_URL",
+      "DEBUG",
+      "REDIS_URL",
+      "MAX_DAILY_ORDERS",
+      "BINANCE_SANDBOX",
+      "DEFAULT_MASTER_PASSWORD",
+      "POSTGRES_URL",
+      "ENVIRONMENT",
+      "GRAFANA_URL",
+      "MASTER_ENCRYPTION_KEY",
+      "BINANCE_TEST_API_KEY",
+      "CPU_CORES",
+      "MAX_DAILY_LOSS",
+      "BINANCE_API_KEY",
+      "PROMETHEUS_URL",
+      "GPU_MEMORY_GB",
+      "BINANCE_TEST_API_SECRET"
+    ],
+    "missing_env_template": false,
+    "missing_env_example": false
+  },
+  "file_permissions": [
+    {
+      "type": "file_permission",
+      "file": ".env",
+      "permission": "644",
+      "severity": "medium"
+    }
+  ],
+  "sql_injection_risks": [],
+  "logging_security": [
+    {
+      "type": "sensitive_logging",
+      "file": "start_system.py",
+      "line": 167,
+      "content": "print(\"❌ Secret Key不能为空，请重新输入\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "start_system.py",
+      "line": 265,
+      "content": "logger.warning(f\"⚠️ 缺少API密钥: {api_key}\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "start_system.py",
+      "line": 269,
+      "content": "logger.success(f\"✅ {api_key}: {key_preview}\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "start_system.py",
+      "line": 286,
+      "content": "print(f\"  • API Key: {config['api_key_env']}\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "start_system.py",
+      "line": 287,
+      "content": "print(f\"  • Secret: {config['secret_env']}\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "start_system.py",
+      "line": 294,
+      "content": "print(\"   BINANCE_API_KEY=your_real_binance_api_key\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "start_system.py",
+      "line": 295,
+      "content": "print(\"   BINANCE_SECRET_KEY=your_real_binance_secret_key\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "start_system.py",
+      "line": 311,
+      "content": "print(f\"\\n{Fore.CYAN}📝 {api_key}:{Style.RESET_ALL}\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "start_system.py",
+      "line": 318,
+      "content": "print(\"2. 添加: API_KEY=your_key_here\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "start_system.py",
+      "line": 341,
+      "content": "print(f\"\\n{Fore.CYAN}配置 {api_key}:{Style.RESET_ALL}\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "start_system.py",
+      "line": 351,
+      "content": "print(f\"✅ {api_key} 已添加到配置\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "setup_real_trading_api.py",
+      "line": 35,
+      "content": "print(\"❌ API Secret不能为空\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "setup_real_trading_api.py",
+      "line": 63,
+      "content": "print(\"⚠️ 使用默认密码，生产环境请设置 DEFAULT_MASTER_PASSWORD 环境变量\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "security_check.py",
+      "line": 171,
+      "content": "r'log.*password',",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "security_check.py",
+      "line": 172,
+      "content": "r'log.*api_key',",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "security_check.py",
+      "line": 173,
+      "content": "r'log.*secret',",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "security_check.py",
+      "line": 174,
+      "content": "r'log.*token',",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "security_check.py",
+      "line": 175,
+      "content": "r'print.*password',",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "security_check.py",
+      "line": 176,
+      "content": "r'print.*api_key',",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "security_check.py",
+      "line": 177,
+      "content": "r'print.*secret',",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "security_check.py",
+      "line": 178,
+      "content": "r'print.*token'",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "security_check.py",
+      "line": 305,
+      "content": "print(f\"  🔑 硬编码密钥: {len(results['hardcoded_secrets'])} 个\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "security_check.py",
+      "line": 314,
+      "content": "print(f\"  ❌ {issue['file']}:{issue['line']} - {issue['secret_type']}\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "monitoring/alert_manager.py",
+      "line": 114,
+      "content": "server.login(self.username, self.password)",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "src/config/api_config_manager.py",
+      "line": 474,
+      "content": "print(\"❌ API Secret不能为空\")",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "src/security/api_security_manager.py",
+      "line": 457,
+      "content": "def _log_api_access(self, exchange: str, api_key_hash: str, endpoint: str,",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "src/web/api_server.py",
+      "line": 312,
+      "content": "@app.post(\"/auth/login\", response_model=TokenResponse)",
+      "severity": "medium"
+    },
+    {
+      "type": "sensitive_logging",
+      "file": "src/web/api_server.py",
+      "line": 317,
+      "content": "if user_login.username == \"admin\" and user_login.password == \"admin123\":",
+      "severity": "medium"
+    }
+  ],
+  "recommendations": [
+    {
+      "category": "密钥管理",
+      "priority": "高",
+      "description": "发现1个硬编码密钥",
+      "action": "将所有硬编码密钥移至环境变量，使用.env文件管理"
+    },
+    {
+      "category": "文件权限",
+      "priority": "中",
+      "description": "发现1个文件权限问题",
+      "action": "修改敏感文件权限为600或更严格"
+    },
+    {
+      "category": "日志安全",
+      "priority": "中",
+      "description": "发现28个敏感信息日志记录",
+      "action": "避免在日志中记录敏感信息，使用脱敏处理"
+    }
+  ],
+  "security_score": 0,
+  "security_grade": "F (危险)"
+}

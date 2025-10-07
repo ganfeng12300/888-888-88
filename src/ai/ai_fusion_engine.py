@@ -261,6 +261,13 @@ class AIFusionEngine:
             # 数据预处理
             if len(data) < 100:
                 logger.warning(f"数据量不足，跳过模型训练: {len(data)}")
+                return False
+        except Exception as e:
+            logger.error(f"LSTM模型训练失败: {e}")
+            return False
+
+    async def _train_transformer_model(self, model_name: str, data: pd.DataFrame):
+        """训练Transformer模型"""
         try:
             logger.info(f"开始训练Transformer模型: {model_name}")
             
