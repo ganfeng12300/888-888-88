@@ -600,8 +600,8 @@ async def main():
     # 配置测试交易所（使用测试网）
     binance_config = ExchangeConfig(
         exchange_type=ExchangeType.BINANCE,
-        api_key="test_api_key",
-        api_secret="test_api_secret",
+        api_key=os.getenv("BINANCE_TEST_API_KEY", "your_test_api_key"),
+        api_secret=os.getenv("BINANCE_TEST_API_SECRET", "your_test_api_secret"),
         sandbox=True
     )
     

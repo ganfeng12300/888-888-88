@@ -25,7 +25,7 @@ from src.config.api_config_manager import APIConfigManager
 from src.risk_management.risk_manager import get_risk_manager
 from src.monitoring.system_monitor import SystemMonitor
 from src.trading.real_trading_manager import get_real_trading_manager
-from src.ai.ai_status_monitor import get_ai_status_monitor
+from src.ai.enhanced_ai_status_monitor import get_enhanced_ai_status_monitor
 
 
 class WebApp:

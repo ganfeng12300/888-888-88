@@ -167,9 +167,9 @@ def start_ai_monitoring():
     logger.info("🤖 启动AI监控系统...")
     
     try:
-        from src.ai.ai_status_monitor import get_ai_status_monitor
+        from src.ai.enhanced_ai_status_monitor import get_enhanced_ai_status_monitor
         
-        ai_monitor = get_ai_status_monitor()
+        ai_monitor = get_enhanced_ai_status_monitor()
         ai_monitor.start_monitoring()
         
         logger.info("✅ AI监控系统启动成功")

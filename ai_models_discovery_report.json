@@ -1,0 +1,1310 @@
+{
+  "discovery_time": "2025-10-07T15:20:00",
+  "summary": {
+    "total_ai_classes": 145,
+    "ai_models": 128,
+    "ai_engines": 9,
+    "ai_predictors": 1,
+    "ai_traders": 7
+  },
+  "categories": {
+    "AI模型": {
+      "ModelPrediction": {
+        "name": "ModelPrediction",
+        "file_path": "src/ai/ensemble_brain_trust.py",
+        "functionality": [
+          "预测",
+          "训练",
+          "拟合"
+        ],
+        "category": "AI组件",
+        "description": "单个模型预测结果"
+      },
+      "BaseMLModel": {
+        "name": "BaseMLModel",
+        "file_path": "src/ai/ensemble_brain_trust.py",
+        "functionality": [
+          "预测",
+          "训练",
+          "拟合"
+        ],
+        "category": "AI组件",
+        "description": "机器学习模型基类"
+      },
+      "PredictionResult": {
+        "name": "PredictionResult",
+        "file_path": "src/ai/time_series_prophet.py",
+        "functionality": [
+          "预测"
+        ],
+        "category": "AI组件",
+        "description": "预测结果"
+      },
+      "MarketFeatures": {
+        "name": "MarketFeatures",
+        "file_path": "src/ai/time_series_prophet.py",
+        "functionality": [
+          "预测"
+        ],
+        "category": "AI组件",
+        "description": "市场特征"
+      },
+      "TransformerPredictor": {
+        "name": "TransformerPredictor",
+        "file_path": "src/ai/time_series_prophet.py",
+        "functionality": [
+          "预测"
+        ],
+        "category": "深度学习模型",
+        "description": "基于Transformer的价格预测模型"
+      },
+      "PositionalEncoding": {
+        "name": "PositionalEncoding",
+        "file_path": "src/ai/time_series_prophet.py",
+        "functionality": [
+          "预测"
+        ],
+        "category": "AI组件",
+        "description": "位置编码"
+      },
+      "LearningMetrics": {
+        "name": "LearningMetrics",
+        "file_path": "src/ai/real_time_learning.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "学习指标"
+      },
+      "AdaptationEvent": {
+        "name": "AdaptationEvent",
+        "file_path": "src/ai/real_time_learning.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "适应事件"
+      },
+      "ProductionGPUMemoryOptimizer": {
+        "name": "ProductionGPUMemoryOptimizer",
+        "file_path": "src/ai/gpu_memory_optimizer.py",
+        "functionality": [
+          "优化"
+        ],
+        "category": "AI组件",
+        "description": "生产级GPU内存优化器"
+      },
+      "ModelTask": {
+        "name": "ModelTask",
+        "file_path": "src/ai/gpu_model_scheduler.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "模型任务类"
+      },
+      "ProductionGPUModelScheduler": {
+        "name": "ProductionGPUModelScheduler",
+        "file_path": "src/ai/gpu_model_scheduler.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "生产级GPU模型调度器"
+      },
+      "TradingLSTM": {
+        "name": "TradingLSTM",
+        "file_path": "src/ai/gpu_model_scheduler.py",
+        "functionality": [],
+        "category": "深度学习模型",
+        "description": "TradingLSTM AI组件"
+      },
+      "TradingCNN": {
+        "name": "TradingCNN",
+        "file_path": "src/ai/gpu_model_scheduler.py",
+        "functionality": [],
+        "category": "深度学习模型",
+        "description": "TradingCNN AI组件"
+      },
+      "AIModelStatus": {
+        "name": "AIModelStatus",
+        "file_path": "src/system/ai_scheduler.py",
+        "functionality": [],
+        "category": "AI监控",
+        "description": "AI模型状态"
+      },
+      "MetaDecision": {
+        "name": "MetaDecision",
+        "file_path": "src/ai/meta_learning_commander.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "元决策结果"
+      },
+      "MetaLearningNetwork": {
+        "name": "MetaLearningNetwork",
+        "file_path": "src/ai/meta_learning_commander.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "元学习神经网络"
+      },
+      "MetaLearningCommander": {
+        "name": "MetaLearningCommander",
+        "file_path": "src/ai/meta_learning_commander.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "元学习AI指挥官"
+      },
+      "ProductionAIEvolutionSystem": {
+        "name": "ProductionAIEvolutionSystem",
+        "file_path": "src/ai/ai_evolution_system.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "生产级AI进化系统"
+      },
+      "BaseAIEvolution": {
+        "name": "BaseAIEvolution",
+        "file_path": "src/ai/ai_evolution_system.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "BaseAIEvolution AI组件"
+      },
+      "Factor": {
+        "name": "Factor",
+        "file_path": "src/ai/quantitative_factor_mining_engine.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "量化因子"
+      },
+      "FactorPerformance": {
+        "name": "FactorPerformance",
+        "file_path": "src/ai/quantitative_factor_mining_engine.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "因子性能评估"
+      },
+      "FactorMiningResult": {
+        "name": "FactorMiningResult",
+        "file_path": "src/ai/quantitative_factor_mining_engine.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "因子挖掘结果"
+      },
+      "FactorGenerator": {
+        "name": "FactorGenerator",
+        "file_path": "src/ai/quantitative_factor_mining_engine.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "因子生成器"
+      },
+      "FactorEvaluator": {
+        "name": "FactorEvaluator",
+        "file_path": "src/ai/quantitative_factor_mining_engine.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "因子评估器"
+      },
+      "RiskLevel": {
+        "name": "RiskLevel",
+        "file_path": "src/ai/expert_system_guardian.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "风险等级"
+      },
+      "ActionType": {
+        "name": "ActionType",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "动作类型"
+      },
+      "Rule": {
+        "name": "Rule",
+        "file_path": "src/ai/expert_system_guardian.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "交易规则"
+      },
+      "RuleEvaluation": {
+        "name": "RuleEvaluation",
+        "file_path": "src/ai/expert_system_guardian.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "规则评估结果"
+      },
+      "GuardianDecision": {
+        "name": "GuardianDecision",
+        "file_path": "src/ai/expert_system_guardian.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "守护者决策"
+      },
+      "ExpertSystemGuardian": {
+        "name": "ExpertSystemGuardian",
+        "file_path": "src/ai/expert_system_guardian.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "专家系统守护者"
+      },
+      "AIDecision": {
+        "name": "AIDecision",
+        "file_path": "src/ai/ai_decision_fusion.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI决策"
+      },
+      "MarketDomain": {
+        "name": "MarketDomain",
+        "file_path": "src/ai/transfer_learning_adapter.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "市场领域定义"
+      },
+      "TransferResult": {
+        "name": "TransferResult",
+        "file_path": "src/ai/transfer_learning_adapter.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "迁移学习结果"
+      },
+      "DomainAdversarialNetwork": {
+        "name": "DomainAdversarialNetwork",
+        "file_path": "src/ai/transfer_learning_adapter.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "领域对抗网络"
+      },
+      "GradientReversalLayer": {
+        "name": "GradientReversalLayer",
+        "file_path": "src/ai/transfer_learning_adapter.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "梯度反转层"
+      },
+      "TransferLearningAdapter": {
+        "name": "TransferLearningAdapter",
+        "file_path": "src/ai/transfer_learning_adapter.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "迁移学习适配器"
+      },
+      "AILevel": {
+        "name": "AILevel",
+        "file_path": "src/monitoring/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI等级"
+      },
+      "PerformanceMetric": {
+        "name": "PerformanceMetric",
+        "file_path": "src/ai/ai_level_evolution.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "性能指标类型"
+      },
+      "AIPerformanceData": {
+        "name": "AIPerformanceData",
+        "file_path": "src/ai/ai_level_evolution.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI性能数据"
+      },
+      "AILevelInfo": {
+        "name": "AILevelInfo",
+        "file_path": "src/ai/ai_level_evolution.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI等级信息"
+      },
+      "EvolutionEvent": {
+        "name": "EvolutionEvent",
+        "file_path": "src/ai/ai_level_evolution.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "进化事件"
+      },
+      "AILevelCalculator": {
+        "name": "AILevelCalculator",
+        "file_path": "src/ai/ai_level_evolution.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI等级计算器"
+      },
+      "Experience": {
+        "name": "Experience",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "经验回放数据"
+      },
+      "PPONetwork": {
+        "name": "PPONetwork",
+        "file_path": "src/ai/reinforcement_trader.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "PPO网络"
+      },
+      "SignalType": {
+        "name": "SignalType",
+        "file_path": "src/ai/prediction_engine.py",
+        "functionality": [
+          "预测",
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "信号类型"
+      },
+      "ConfidenceLevel": {
+        "name": "ConfidenceLevel",
+        "file_path": "src/ai/ai_decision_fusion.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "置信度等级"
+      },
+      "PredictionSignal": {
+        "name": "PredictionSignal",
+        "file_path": "src/ai/prediction_engine.py",
+        "functionality": [
+          "预测",
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "预测信号"
+      },
+      "MarketRegime": {
+        "name": "MarketRegime",
+        "file_path": "src/ai/prediction_engine.py",
+        "functionality": [
+          "预测",
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "市场状态"
+      },
+      "MarketRegimeAnalyzer": {
+        "name": "MarketRegimeAnalyzer",
+        "file_path": "src/ai/prediction_engine.py",
+        "functionality": [
+          "预测",
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "市场状态分析器"
+      },
+      "MockModel": {
+        "name": "MockModel",
+        "file_path": "src/ai/prediction_engine.py",
+        "functionality": [
+          "预测",
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "MockModel AI组件"
+      },
+      "ModelType": {
+        "name": "ModelType",
+        "file_path": "performance/gpu/gpu_model_scheduler.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "模型类型"
+      },
+      "FeatureType": {
+        "name": "FeatureType",
+        "file_path": "src/ai_enhanced/auto_feature_engineering.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "特征类型"
+      },
+      "TrainingConfig": {
+        "name": "TrainingConfig",
+        "file_path": "src/ai_models/reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "训练配置"
+      },
+      "ModelMetrics": {
+        "name": "ModelMetrics",
+        "file_path": "src/ai_models/reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "模型指标"
+      },
+      "LSTMModel": {
+        "name": "LSTMModel",
+        "file_path": "src/ai/model_trainer.py",
+        "functionality": [
+          "预测",
+          "训练"
+        ],
+        "category": "深度学习模型",
+        "description": "LSTM预测模型"
+      },
+      "TransformerModel": {
+        "name": "TransformerModel",
+        "file_path": "src/ai/model_trainer.py",
+        "functionality": [
+          "预测",
+          "训练"
+        ],
+        "category": "深度学习模型",
+        "description": "Transformer预测模型"
+      },
+      "ModelTrainer": {
+        "name": "ModelTrainer",
+        "file_path": "src/ai/model_trainer.py",
+        "functionality": [
+          "预测",
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "AI模型训练器"
+      },
+      "ModelPerformance": {
+        "name": "ModelPerformance",
+        "file_path": "src/ai/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "模型性能指标"
+      },
+      "AISignalStats": {
+        "name": "AISignalStats",
+        "file_path": "src/ai/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI信号统计"
+      },
+      "AISystemStatus": {
+        "name": "AISystemStatus",
+        "file_path": "src/ai/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI监控",
+        "description": "AI系统状态"
+      },
+      "AIStatusMonitor": {
+        "name": "AIStatusMonitor",
+        "file_path": "src/monitoring/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI监控",
+        "description": "AI状态监控器主类"
+      },
+      "SentimentData": {
+        "name": "SentimentData",
+        "file_path": "src/ai_enhanced/sentiment_analysis.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "情感数据"
+      },
+      "MarketSentiment": {
+        "name": "MarketSentiment",
+        "file_path": "src/ai/sentiment_analysis_scout.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "市场情感分析结果"
+      },
+      "SentimentTransformer": {
+        "name": "SentimentTransformer",
+        "file_path": "src/ai/sentiment_analysis_scout.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "深度学习模型",
+        "description": "情感分析Transformer模型"
+      },
+      "SentimentAnalysisScout": {
+        "name": "SentimentAnalysisScout",
+        "file_path": "src/ai/sentiment_analysis_scout.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "情感分析侦察兵"
+      },
+      "DecisionType": {
+        "name": "DecisionType",
+        "file_path": "src/ai/ai_decision_fusion.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "决策类型"
+      },
+      "FusedDecision": {
+        "name": "FusedDecision",
+        "file_path": "src/ai/ai_decision_fusion.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "融合决策"
+      },
+      "ModelWeightCalculator": {
+        "name": "ModelWeightCalculator",
+        "file_path": "src/ai/ai_decision_fusion.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "模型权重计算器"
+      },
+      "AIModelStats": {
+        "name": "AIModelStats",
+        "file_path": "src/ai_models/ai_evolution_system.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI模型统计数据"
+      },
+      "EvolutionConfig": {
+        "name": "EvolutionConfig",
+        "file_path": "src/ai_models/ai_evolution_system.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "进化配置"
+      },
+      "AIEvolutionSystem": {
+        "name": "AIEvolutionSystem",
+        "file_path": "src/ai_models/ai_evolution_system.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI进化系统核心"
+      },
+      "ActorNetwork": {
+        "name": "ActorNetwork",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "Actor网络 - 策略网络"
+      },
+      "CriticNetwork": {
+        "name": "CriticNetwork",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "Critic网络 - 价值网络"
+      },
+      "PPOAgent": {
+        "name": "PPOAgent",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "PPO智能体"
+      },
+      "RLTrainer": {
+        "name": "RLTrainer",
+        "file_path": "src/ai_models/reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "强化学习训练器"
+      },
+      "ScalingMethod": {
+        "name": "ScalingMethod",
+        "file_path": "src/ai_enhanced/auto_feature_engineering.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "缩放方法"
+      },
+      "FeatureInfo": {
+        "name": "FeatureInfo",
+        "file_path": "src/ai_enhanced/auto_feature_engineering.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "特征信息"
+      },
+      "FeatureSet": {
+        "name": "FeatureSet",
+        "file_path": "src/ai_enhanced/auto_feature_engineering.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "特征集合"
+      },
+      "TechnicalIndicatorGenerator": {
+        "name": "TechnicalIndicatorGenerator",
+        "file_path": "src/ai_enhanced/auto_feature_engineering.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "技术指标生成器"
+      },
+      "StatisticalFeatureGenerator": {
+        "name": "StatisticalFeatureGenerator",
+        "file_path": "src/ai_enhanced/auto_feature_engineering.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "统计特征生成器"
+      },
+      "TimeSeriesFeatureGenerator": {
+        "name": "TimeSeriesFeatureGenerator",
+        "file_path": "src/ai_enhanced/auto_feature_engineering.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "时间序列特征生成器"
+      },
+      "CrossFeatureGenerator": {
+        "name": "CrossFeatureGenerator",
+        "file_path": "src/ai_enhanced/auto_feature_engineering.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "交叉特征生成器"
+      },
+      "FeatureSelector": {
+        "name": "FeatureSelector",
+        "file_path": "src/ai_enhanced/auto_feature_engineering.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "特征选择器"
+      },
+      "FeatureTransformer": {
+        "name": "FeatureTransformer",
+        "file_path": "src/ai_enhanced/auto_feature_engineering.py",
+        "functionality": [],
+        "category": "深度学习模型",
+        "description": "特征变换器"
+      },
+      "RLAlgorithm": {
+        "name": "RLAlgorithm",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "强化学习算法类型"
+      },
+      "ExperienceReplay": {
+        "name": "ExperienceReplay",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "经验回放缓冲区"
+      },
+      "SACAgent": {
+        "name": "SACAgent",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "AI组件",
+        "description": "SAC智能体"
+      },
+      "SentimentType": {
+        "name": "SentimentType",
+        "file_path": "src/ai_enhanced/sentiment_analysis.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "情感类型"
+      },
+      "DataSource": {
+        "name": "DataSource",
+        "file_path": "src/ai_enhanced/sentiment_analysis.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "数据源类型"
+      },
+      "SentimentIndex": {
+        "name": "SentimentIndex",
+        "file_path": "src/ai_enhanced/sentiment_analysis.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "情感指数"
+      },
+      "TextPreprocessor": {
+        "name": "TextPreprocessor",
+        "file_path": "src/ai_enhanced/sentiment_analysis.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "文本预处理器"
+      },
+      "SentimentAnalyzer": {
+        "name": "SentimentAnalyzer",
+        "file_path": "src/ai_enhanced/sentiment_analysis.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "情感分析器"
+      },
+      "NewsCollector": {
+        "name": "NewsCollector",
+        "file_path": "src/ai_enhanced/sentiment_analysis.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "新闻收集器"
+      },
+      "SocialMediaCollector": {
+        "name": "SocialMediaCollector",
+        "file_path": "src/ai_enhanced/sentiment_analysis.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "社交媒体收集器"
+      },
+      "TechnicalSentimentAnalyzer": {
+        "name": "TechnicalSentimentAnalyzer",
+        "file_path": "src/ai_enhanced/sentiment_analysis.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "技术指标情感分析器"
+      },
+      "SentimentAggregator": {
+        "name": "SentimentAggregator",
+        "file_path": "src/ai_enhanced/sentiment_analysis.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI组件",
+        "description": "情感聚合器"
+      },
+      "SentimentMonitor": {
+        "name": "SentimentMonitor",
+        "file_path": "src/ai_enhanced/sentiment_analysis.py",
+        "functionality": [
+          "分析"
+        ],
+        "category": "AI监控",
+        "description": "情感监控器"
+      },
+      "AIModelPriority": {
+        "name": "AIModelPriority",
+        "file_path": "src/system/ai_scheduler.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI模型优先级"
+      },
+      "AIModelInfo": {
+        "name": "AIModelInfo",
+        "file_path": "src/system/ai_scheduler.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI模型信息"
+      },
+      "SchedulingTask": {
+        "name": "SchedulingTask",
+        "file_path": "src/system/ai_scheduler.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "调度任务"
+      },
+      "ResourceManager": {
+        "name": "ResourceManager",
+        "file_path": "src/system/ai_scheduler.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "资源管理器"
+      },
+      "AIScheduler": {
+        "name": "AIScheduler",
+        "file_path": "src/system/ai_scheduler.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "🦊 猎狐AI - AI模型调度中心"
+      },
+      "StartupPhase": {
+        "name": "StartupPhase",
+        "file_path": "src/system/startup_manager.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "启动阶段"
+      },
+      "ComponentStatus": {
+        "name": "ComponentStatus",
+        "file_path": "src/system/startup_manager.py",
+        "functionality": [],
+        "category": "AI监控",
+        "description": "组件状态"
+      },
+      "StartupComponent": {
+        "name": "StartupComponent",
+        "file_path": "src/system/startup_manager.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "启动组件"
+      },
+      "StartupManager": {
+        "name": "StartupManager",
+        "file_path": "src/system/startup_manager.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "🦊 猎狐AI - 60秒启动管理器"
+      },
+      "AIModelType": {
+        "name": "AIModelType",
+        "file_path": "src/monitoring/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI模型类型"
+      },
+      "AIStatus": {
+        "name": "AIStatus",
+        "file_path": "src/monitoring/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI监控",
+        "description": "AI状态"
+      },
+      "AIModelMetrics": {
+        "name": "AIModelMetrics",
+        "file_path": "src/monitoring/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI模型指标"
+      },
+      "AIEvolutionEvent": {
+        "name": "AIEvolutionEvent",
+        "file_path": "src/monitoring/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI进化事件"
+      },
+      "AIDecisionMetrics": {
+        "name": "AIDecisionMetrics",
+        "file_path": "src/monitoring/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI决策指标"
+      },
+      "AILevelManager": {
+        "name": "AILevelManager",
+        "file_path": "src/monitoring/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI等级管理器"
+      },
+      "AIPerformanceTracker": {
+        "name": "AIPerformanceTracker",
+        "file_path": "src/monitoring/ai_status_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "AI性能跟踪器"
+      },
+      "TradeType": {
+        "name": "TradeType",
+        "file_path": "src/monitoring/trading_performance_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "交易类型"
+      },
+      "TradeStatus": {
+        "name": "TradeStatus",
+        "file_path": "src/monitoring/trading_performance_monitor.py",
+        "functionality": [],
+        "category": "AI监控",
+        "description": "交易状态"
+      },
+      "PerformanceMetrics": {
+        "name": "PerformanceMetrics",
+        "file_path": "src/monitoring/trading_performance_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "绩效指标"
+      },
+      "RiskMetrics": {
+        "name": "RiskMetrics",
+        "file_path": "src/monitoring/trading_performance_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "风险指标"
+      },
+      "PerformanceCalculator": {
+        "name": "PerformanceCalculator",
+        "file_path": "src/monitoring/trading_performance_monitor.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "绩效计算器"
+      },
+      "GPUMemoryType": {
+        "name": "GPUMemoryType",
+        "file_path": "performance/gpu/gpu_memory_optimizer.py",
+        "functionality": [
+          "优化"
+        ],
+        "category": "AI组件",
+        "description": "GPU内存类型"
+      },
+      "GPUPriority": {
+        "name": "GPUPriority",
+        "file_path": "performance/gpu/gpu_memory_optimizer.py",
+        "functionality": [
+          "优化"
+        ],
+        "category": "AI组件",
+        "description": "GPU优先级"
+      },
+      "GPUMemoryBlock": {
+        "name": "GPUMemoryBlock",
+        "file_path": "performance/gpu/gpu_memory_optimizer.py",
+        "functionality": [
+          "优化"
+        ],
+        "category": "AI组件",
+        "description": "GPU内存块"
+      },
+      "GPUMemoryPool": {
+        "name": "GPUMemoryPool",
+        "file_path": "performance/gpu/gpu_memory_optimizer.py",
+        "functionality": [
+          "优化"
+        ],
+        "category": "AI组件",
+        "description": "GPU内存池"
+      },
+      "GPUStatus": {
+        "name": "GPUStatus",
+        "file_path": "performance/gpu/gpu_memory_optimizer.py",
+        "functionality": [
+          "优化"
+        ],
+        "category": "AI监控",
+        "description": "GPU状态"
+      },
+      "GPUMemoryManager": {
+        "name": "GPUMemoryManager",
+        "file_path": "performance/gpu/gpu_memory_optimizer.py",
+        "functionality": [
+          "优化"
+        ],
+        "category": "AI组件",
+        "description": "GPU显存管理器"
+      },
+      "ModelStatus": {
+        "name": "ModelStatus",
+        "file_path": "performance/gpu/gpu_model_scheduler.py",
+        "functionality": [],
+        "category": "AI监控",
+        "description": "模型状态"
+      },
+      "ModelConfig": {
+        "name": "ModelConfig",
+        "file_path": "performance/gpu/gpu_model_scheduler.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "模型配置"
+      },
+      "ModelInstance": {
+        "name": "ModelInstance",
+        "file_path": "performance/gpu/gpu_model_scheduler.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "模型实例"
+      },
+      "GPUModelScheduler": {
+        "name": "GPUModelScheduler",
+        "file_path": "performance/gpu/gpu_model_scheduler.py",
+        "functionality": [],
+        "category": "AI组件",
+        "description": "GPU多模型调度器"
+      }
+    },
+    "AI引擎": {
+      "EnsemblePrediction": {
+        "name": "EnsemblePrediction",
+        "file_path": "src/ai/prediction_engine.py",
+        "functionality": [
+          "预测",
+          "分析"
+        ],
+        "category": "机器学习模型",
+        "description": "集成预测结果"
+      },
+      "EnsembleBrainTrust": {
+        "name": "EnsembleBrainTrust",
+        "file_path": "src/ai/ensemble_brain_trust.py",
+        "functionality": [
+          "预测",
+          "训练",
+          "拟合"
+        ],
+        "category": "机器学习模型",
+        "description": "集成学习智囊团"
+      },
+      "RealTimeLearningEngine": {
+        "name": "RealTimeLearningEngine",
+        "file_path": "src/ai/real_time_learning.py",
+        "functionality": [],
+        "category": "AI引擎",
+        "description": "实时学习引擎"
+      },
+      "ProductionAIDecisionFusionEngine": {
+        "name": "ProductionAIDecisionFusionEngine",
+        "file_path": "src/ai/ai_decision_fusion_engine.py",
+        "functionality": [],
+        "category": "AI引擎",
+        "description": "生产级AI决策融合引擎"
+      },
+      "AIEvolutionEngine": {
+        "name": "AIEvolutionEngine",
+        "file_path": "src/ai/ai_level_evolution.py",
+        "functionality": [],
+        "category": "AI引擎",
+        "description": "AI进化引擎"
+      },
+      "PredictionEngine": {
+        "name": "PredictionEngine",
+        "file_path": "src/ai/prediction_engine.py",
+        "functionality": [
+          "预测",
+          "分析"
+        ],
+        "category": "AI引擎",
+        "description": "生产级预测引擎"
+      },
+      "AIEngine": {
+        "name": "AIEngine",
+        "file_path": "src/ai/ai_engine.py",
+        "functionality": [],
+        "category": "AI引擎",
+        "description": "AI决策引擎"
+      },
+      "DecisionFusionEngine": {
+        "name": "DecisionFusionEngine",
+        "file_path": "src/ai/ai_decision_fusion.py",
+        "functionality": [],
+        "category": "AI引擎",
+        "description": "决策融合引擎"
+      },
+      "AutoFeatureEngineer": {
+        "name": "AutoFeatureEngineer",
+        "file_path": "src/ai_enhanced/auto_feature_engineering.py",
+        "functionality": [],
+        "category": "AI引擎",
+        "description": "自动特征工程主类"
+      }
+    },
+    "AI预测器": {
+      "TimeSeriesProphet": {
+        "name": "TimeSeriesProphet",
+        "file_path": "src/ai/time_series_prophet.py",
+        "functionality": [
+          "预测"
+        ],
+        "category": "AI组件",
+        "description": "时间序列预测先知"
+      }
+    },
+    "AI交易器": {
+      "TradingState": {
+        "name": "TradingState",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "交易AI",
+        "description": "交易状态"
+      },
+      "TradingAction": {
+        "name": "TradingAction",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "交易AI",
+        "description": "交易动作"
+      },
+      "TradingEnvironment": {
+        "name": "TradingEnvironment",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "交易AI",
+        "description": "交易环境"
+      },
+      "ReinforcementTrader": {
+        "name": "ReinforcementTrader",
+        "file_path": "src/ai/reinforcement_trader.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "交易AI",
+        "description": "强化学习交易员"
+      },
+      "RLTradingSystem": {
+        "name": "RLTradingSystem",
+        "file_path": "src/ai_enhanced/deep_reinforcement_learning.py",
+        "functionality": [
+          "训练"
+        ],
+        "category": "交易AI",
+        "description": "强化学习交易系统"
+      },
+      "TradeRecord": {
+        "name": "TradeRecord",
+        "file_path": "src/monitoring/trading_performance_monitor.py",
+        "functionality": [],
+        "category": "交易AI",
+        "description": "交易记录"
+      },
+      "TradingPerformanceMonitor": {
+        "name": "TradingPerformanceMonitor",
+        "file_path": "src/monitoring/trading_performance_monitor.py",
+        "functionality": [],
+        "category": "交易AI",
+        "description": "交易绩效监控器主类"
+      }
+    }
+  },
+  "all_discovered_classes": [
+    "AIDecision",
+    "AIDecisionMetrics",
+    "AIEngine",
+    "AIEvolutionEngine",
+    "AIEvolutionEvent",
+    "AIEvolutionSystem",
+    "AILevel",
+    "AILevelCalculator",
+    "AILevelInfo",
+    "AILevelManager",
+    "AIModelInfo",
+    "AIModelMetrics",
+    "AIModelPriority",
+    "AIModelStats",
+    "AIModelStatus",
+    "AIModelType",
+    "AIPerformanceData",
+    "AIPerformanceTracker",
+    "AIScheduler",
+    "AISignalStats",
+    "AIStatus",
+    "AIStatusMonitor",
+    "AISystemStatus",
+    "ActionType",
+    "ActorNetwork",
+    "AdaptationEvent",
+    "AutoFeatureEngineer",
+    "BaseAIEvolution",
+    "BaseMLModel",
+    "ComponentStatus",
+    "ConfidenceLevel",
+    "CriticNetwork",
+    "CrossFeatureGenerator",
+    "DataSource",
+    "DecisionFusionEngine",
+    "DecisionType",
+    "DomainAdversarialNetwork",
+    "EnsembleBrainTrust",
+    "EnsemblePrediction",
+    "EvolutionConfig",
+    "EvolutionEvent",
+    "Experience",
+    "ExperienceReplay",
+    "ExpertSystemGuardian",
+    "Factor",
+    "FactorEvaluator",
+    "FactorGenerator",
+    "FactorMiningResult",
+    "FactorPerformance",
+    "FeatureInfo",
+    "FeatureSelector",
+    "FeatureSet",
+    "FeatureTransformer",
+    "FeatureType",
+    "FusedDecision",
+    "GPUMemoryBlock",
+    "GPUMemoryManager",
+    "GPUMemoryPool",
+    "GPUMemoryType",
+    "GPUModelScheduler",
+    "GPUPriority",
+    "GPUStatus",
+    "GradientReversalLayer",
+    "GuardianDecision",
+    "LSTMModel",
+    "LearningMetrics",
+    "MarketDomain",
+    "MarketFeatures",
+    "MarketRegime",
+    "MarketRegimeAnalyzer",
+    "MarketSentiment",
+    "MetaDecision",
+    "MetaLearningCommander",
+    "MetaLearningNetwork",
+    "MockModel",
+    "ModelConfig",
+    "ModelInstance",
+    "ModelMetrics",
+    "ModelPerformance",
+    "ModelPrediction",
+    "ModelStatus",
+    "ModelTask",
+    "ModelTrainer",
+    "ModelType",
+    "ModelWeightCalculator",
+    "NewsCollector",
+    "PPOAgent",
+    "PPONetwork",
+    "PerformanceCalculator",
+    "PerformanceMetric",
+    "PerformanceMetrics",
+    "PositionalEncoding",
+    "PredictionEngine",
+    "PredictionResult",
+    "PredictionSignal",
+    "ProductionAIDecisionFusionEngine",
+    "ProductionAIEvolutionSystem",
+    "ProductionGPUMemoryOptimizer",
+    "ProductionGPUModelScheduler",
+    "RLAlgorithm",
+    "RLTradingSystem",
+    "RLTrainer",
+    "RealTimeLearningEngine",
+    "ReinforcementTrader",
+    "ResourceManager",
+    "RiskLevel",
+    "RiskMetrics",
+    "Rule",
+    "RuleEvaluation",
+    "SACAgent",
+    "ScalingMethod",
+    "SchedulingTask",
+    "SentimentAggregator",
+    "SentimentAnalysisScout",
+    "SentimentAnalyzer",
+    "SentimentData",
+    "SentimentIndex",
+    "SentimentMonitor",
+    "SentimentTransformer",
+    "SentimentType",
+    "SignalType",
+    "SocialMediaCollector",
+    "StartupComponent",
+    "StartupManager",
+    "StartupPhase",
+    "StatisticalFeatureGenerator",
+    "TechnicalIndicatorGenerator",
+    "TechnicalSentimentAnalyzer",
+    "TextPreprocessor",
+    "TimeSeriesFeatureGenerator",
+    "TimeSeriesProphet",
+    "TradeRecord",
+    "TradeStatus",
+    "TradeType",
+    "TradingAction",
+    "TradingCNN",
+    "TradingEnvironment",
+    "TradingLSTM",
+    "TradingPerformanceMonitor",
+    "TradingState",
+    "TrainingConfig",
+    "TransferLearningAdapter",
+    "TransferResult",
+    "TransformerModel",
+    "TransformerPredictor"
+  ]
+}

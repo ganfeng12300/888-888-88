@@ -59,7 +59,8 @@ def setup_bitget_real_api():
         # 设置主密码
         master_password = input("设置主密码（用于加密API密钥）: ").strip()
         if not master_password:
-            master_password = "Ganfeng888"  # 默认密码
+            master_password = os.getenv('DEFAULT_MASTER_PASSWORD', 'ChangeMeInProduction')
+            print("⚠️ 使用默认密码，生产环境请设置 DEFAULT_MASTER_PASSWORD 环境变量")
         
         # 初始化配置
         if not config_manager.initialize_config(master_password):
@@ -143,4 +144,3 @@ def main():
 if __name__ == "__main__":
     success = main()
     sys.exit(0 if success else 1)
-

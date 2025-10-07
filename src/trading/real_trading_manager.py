@@ -300,6 +300,13 @@ class RealTradingManager:
             logger.error(f"❌ 获取持仓信息失败: {e}")
             return {}
     
+    async def get_positions(self) -> Dict[str, RealPosition]:
+        """获取持仓信息（对外接口）"""
+        # 如果持仓数据为空或过期，重新获取
+        if not self.positions:
+            await self.fetch_positions()
+        return self.positions
+    
     async def fetch_trades_history(self, days: int = 7) -> List[RealTrade]:
         """获取交易历史"""
         try:
@@ -506,4 +513,3 @@ if __name__ == "__main__":
             print("❌ 交易所初始化失败")
     
     asyncio.run(test_real_trading())
-

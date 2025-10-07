@@ -42,7 +42,7 @@ from hardware.memory_pool_manager import MemoryPoolManager
 from hardware.high_frequency_optimizer import HighFrequencyOptimizer
 
 # 配置
-SECRET_KEY = "your-secret-key-change-in-production"
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-me-in-production-environment")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -493,31 +493,32 @@ async def get_orders(current_user: str = Depends(get_current_user)):
 @app.get("/trading/positions", response_model=List[PositionResponse])
 async def get_positions(current_user: str = Depends(get_current_user)):
     """获取持仓信息"""
-    positions = []
-    
-    # 模拟持仓数据（生产环境应该从数据库获取）
-    mock_positions = [
-        {
-            "symbol": "BTCUSDT",
-            "quantity": 0.5,
-            "average_price": 45000.0,
-            "current_price": 46000.0,
-            "unrealized_pnl": 500.0,
-            "realized_pnl": 0.0,
-            "last_updated": datetime.utcnow()
-        },
-        {
-            "symbol": "ETHUSDT",
-            "quantity": 2.0,
-            "average_price": 3000.0,
-            "current_price": 3100.0,
-            "unrealized_pnl": 200.0,
-            "realized_pnl": 0.0,
-            "last_updated": datetime.utcnow()
-        }
-    ]
-    
-    return [PositionResponse(**pos) for pos in mock_positions]
+    try:
+        # 从真实交易管理器获取持仓数据
+        from src.trading.real_trading_manager import RealTradingManager
+        trading_manager = RealTradingManager()
+        
+        # 获取真实持仓
+        real_positions = await trading_manager.get_positions()
+        
+        positions = []
+        for pos in real_positions.values():
+            positions.append({
+                "symbol": pos.symbol,
+                "quantity": pos.size,
+                "average_price": pos.entry_price,
+                "current_price": pos.current_price,
+                "unrealized_pnl": pos.unrealized_pnl,
+                "realized_pnl": pos.realized_pnl,
+                "last_updated": pos.timestamp
+            })
+        
+        return [PositionResponse(**pos) for pos in positions]
+        
+    except Exception as e:
+        logger.error(f"获取持仓信息失败: {e}")
+        # 如果获取失败，返回空列表而不是mock数据
+        return []
 
 @app.get("/market/data/{symbol}", response_model=MarketDataResponse)
 @limiter.limit("1000/minute")
@@ -709,4 +710,3 @@ if __name__ == "__main__":
         log_level="info",
         access_log=True
     )
-

@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-10-07T15:38:55.248136",
+  "overall_score": 78.24391611261903,
+  "production_level": "预生产级",
+  "code_quality": {
+    "total_files": 153,
+    "total_lines": 72549,
+    "python_files": 153,
+    "documented_functions": 1438,
+    "total_functions": 1741,
+    "classes_with_docstrings": 638,
+    "total_classes": 653,
+    "test_files": 9,
+    "config_files": 9,
+    "error_handling_coverage": 0.7581699346405228,
+    "logging_coverage": 0.7973856209150327,
+    "type_hints_coverage": 0.7450980392156863
+  },
+  "architecture": {
+    "ai_models_count": 145,
+    "trading_engines_count": 2,
+    "monitoring_systems_count": 15,
+    "risk_management_systems": 0,
+    "data_pipelines_count": 3,
+    "api_endpoints_count": 7,
+    "database_connections": 4,
+    "external_integrations": 5
+  },
+  "readiness": {
+    "error_handling_score": 75.81699346405229,
+    "logging_score": 79.73856209150327,
+    "monitoring_score": 100,
+    "testing_score": 11.76470588235294,
+    "documentation_score": 82.5962090752441,
+    "security_score": 75.16339869281046,
+    "performance_score": 100,
+    "scalability_score": 100,
+    "reliability_score": 85.18518518518519,
+    "maintainability_score": 78.55300649840638
+  },
+  "strengths": [
+    "✅ 强大的监控系统",
+    "✅ 丰富的AI模型生态",
+    "✅ 高性能系统架构"
+  ],
+  "weaknesses": [
+    "❌ 测试覆盖率不足"
+  ],
+  "recommendations": [
+    "🔧 增加单元测试和集成测试"
+  ],
+  "detailed_analysis": {
+    "code_metrics": {
+      "total_python_files": 153,
+      "total_lines_of_code": 72549,
+      "functions_documented_ratio": "1438/1741",
+      "classes_documented_ratio": "638/653",
+      "error_handling_coverage": "75.8%",
+      "logging_coverage": "79.7%",
+      "type_hints_coverage": "74.5%"
+    },
+    "architecture_analysis": {
+      "ai_models": 145,
+      "trading_engines": 2,
+      "monitoring_systems": 15,
+      "risk_management": 0,
+      "data_pipelines": 3,
+      "api_endpoints": 7,
+      "database_connections": 4,
+      "external_integrations": 5
+    },
+    "readiness_scores": {
+      "error_handling": "75.8/100",
+      "logging": "79.7/100",
+      "monitoring": "100.0/100",
+      "testing": "11.8/100",
+      "documentation": "82.6/100",
+      "security": "75.2/100",
+      "performance": "100.0/100",
+      "scalability": "100.0/100",
+      "reliability": "85.2/100",
+      "maintainability": "78.6/100"
+    }
+  }
+}
