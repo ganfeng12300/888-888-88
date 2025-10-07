@@ -1,0 +1,91 @@
+{
+  "timestamp": 1759845761.161317,
+  "overall_score": 45.0,
+  "grade": "D",
+  "production_ready": false,
+  "test_results": {
+    "api_configuration": {
+      "status": "已完成",
+      "score": 100,
+      "details": [
+        "✅ API配置管理器初始化成功",
+        "✅ 已配置交易所: bitget",
+        "✅ bitget 连接测试成功",
+        "✅ 密钥加密功能正常"
+      ]
+    },
+    "data_collection": {
+      "status": "已完成",
+      "score": 20,
+      "details": [
+        "⚠️ src/data_collection/binance_collector.py 不存在",
+        "⚠️ src/data_collection/okx_collector.py 不存在",
+        "⚠️ src/data_collection/data_processor.py 不存在",
+        "⚠️ src/data_collection/market_data_manager.py 不存在",
+        "✅ 数据目录存在"
+      ]
+    },
+    "ai_models": {
+      "status": "已完成",
+      "score": 65,
+      "details": [
+        "✅ src/ai/ai_engine.py 存在",
+        "✅ src/ai/ai_engine.py 无空pass语句",
+        "✅ src/ai/ai_fusion_engine.py 存在",
+        "⚠️ src/ai/ai_fusion_engine.py 包含pass语句",
+        "❌ src/ai/model_trainer.py 不存在",
+        "❌ src/ai/prediction_engine.py 不存在",
+        "✅ 模型目录存在"
+      ]
+    },
+    "trading_engine": {
+      "status": "已完成",
+      "score": 75,
+      "details": [
+        "✅ src/trading/trading_engine.py 存在",
+        "✅ src/trading/order_manager.py 存在",
+        "✅ src/trading/position_manager.py 存在",
+        "⚠️ src/trading/strategy_executor.py 不存在"
+      ]
+    },
+    "risk_management": {
+      "status": "已完成",
+      "score": 0,
+      "details": [
+        "⚠️ src/risk_management/risk_manager.py 不存在",
+        "⚠️ src/risk_management/position_sizer.py 不存在",
+        "⚠️ src/risk_management/drawdown_monitor.py 不存在"
+      ]
+    },
+    "monitoring": {
+      "status": "已完成",
+      "score": 10,
+      "details": [
+        "⚠️ src/monitoring/system_monitor.py 不存在",
+        "⚠️ src/monitoring/performance_tracker.py 不存在",
+        "⚠️ src/monitoring/alert_manager.py 不存在",
+        "✅ 日志目录存在"
+      ]
+    },
+    "web_interface": {
+      "status": "已完成",
+      "score": 0,
+      "details": [
+        "⚠️ src/web/app.py 不存在",
+        "⚠️ src/web/api_routes.py 不存在",
+        "⚠️ src/web/dashboard.py 不存在"
+      ]
+    },
+    "system_integration": {
+      "status": "已完成",
+      "score": 100,
+      "details": [
+        "✅ start_production_system.py 存在",
+        "✅ launch_production_system.py 存在",
+        "✅ setup_bitget_config.py 存在",
+        "✅ 配置目录存在",
+        "✅ API配置文件存在"
+      ]
+    }
+  }
+}

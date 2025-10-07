@@ -98,6 +98,12 @@ class APIConfigManager:
                 "api_url": "https://api.kucoin.com",
                 "testnet_url": "https://openapi-sandbox.kucoin.com",
                 "requires_passphrase": True
+            },
+            "bitget": {
+                "name": "Bitget",
+                "api_url": "https://api.bitget.com",
+                "testnet_url": "https://api.bitget.com",
+                "requires_passphrase": True
             }
         }
     
@@ -318,22 +324,27 @@ class APIConfigManager:
             # 暂时返回True，实际实现中应该调用交易所API
             logger.info(f"🔍 测试 {exchange_name} 连接...")
             
-            # TODO: 实现真实的API连接测试
-            import asyncio
-            import aiohttp
+            # 使用CCXT进行真实的API连接测试
+            import ccxt
             
-            async def test_connection():
-                exchange_info = self.supported_exchanges[exchange_name]
-                test_url = exchange_info["testnet_url"] if credentials.sandbox else exchange_info["api_url"]
+            try:
+                # 创建交易所实例
+                exchange_class = getattr(ccxt, exchange_name)
+                exchange = exchange_class({
+                    'apiKey': credentials.api_key,
+                    'secret': credentials.api_secret,
+                    'password': credentials.passphrase if hasattr(credentials, 'passphrase') else None,
+                    'sandbox': credentials.sandbox,
+                    'enableRateLimit': True,
+                })
                 
-                async with aiohttp.ClientSession() as session:
-                    try:
-                        async with session.get(f"{test_url}/api/v3/ping", timeout=5) as response:
-                            return response.status == 200
-                    except:
-                        return False
-            
-            result = asyncio.run(test_connection())
+                # 测试连接 - 获取市场信息
+                markets = exchange.load_markets()
+                result = len(markets) > 0
+                
+            except Exception as e:
+                logger.error(f"❌ CCXT连接测试异常: {e}")
+                result = False
             
             if result:
                 logger.info(f"✅ {exchange_name} 连接测试成功")
