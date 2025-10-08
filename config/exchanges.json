@@ -1,35 +1,41 @@
 {
   "binance": {
     "name": "binance",
-    "api_key": "",
-    "secret": "",
+    "api_key": "demo_binance_api_key_12345",
+    "secret": "demo_binance_secret_key_67890",
     "passphrase": null,
     "sandbox": true,
-    "testnet": false,
+    "testnet": true,
     "rate_limit": 1200,
     "timeout": 30000,
-    "enable_rate_limit": true
+    "enable_rate_limit": true,
+    "base_url": "https://testnet.binance.vision",
+    "description": "币安交易所 - 测试网络"
   },
   "okx": {
     "name": "okx",
-    "api_key": "",
-    "secret": "",
-    "passphrase": "",
+    "api_key": "demo_okx_api_key_12345",
+    "secret": "demo_okx_secret_key_67890",
+    "passphrase": "demo_okx_passphrase_abc",
     "sandbox": true,
-    "testnet": false,
+    "testnet": true,
     "rate_limit": 600,
     "timeout": 30000,
-    "enable_rate_limit": true
+    "enable_rate_limit": true,
+    "base_url": "https://www.okx.com",
+    "description": "OKX交易所 - 沙盒环境"
   },
   "bitget": {
     "name": "bitget",
-    "api_key": "",
-    "secret": "",
-    "passphrase": "",
-    "sandbox": true,
+    "api_key": "bg_361f925c6f2139ad15bff1e662995fdd",
+    "secret": "6b9f6868b5c6e90b4a866d1a626c3722a169e557dfcfd2175fbeb5fa84085c43",
+    "passphrase": "Ganfeng321",
+    "sandbox": false,
     "testnet": false,
     "rate_limit": 600,
     "timeout": 30000,
-    "enable_rate_limit": true
+    "enable_rate_limit": true,
+    "base_url": "https://api.bitget.com",
+    "description": "Bitget交易所 - 真实环境"
   }
 }
