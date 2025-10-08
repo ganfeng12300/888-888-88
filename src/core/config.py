@@ -199,20 +199,20 @@ class Settings(PydanticBaseSettings):
             "binance": {
                 "api_key": self.exchange.binance_api_key,
                 "secret": self.exchange.binance_secret_key,
-                "sandbox": self.environment != "production",
+                "sandbox": False,  # 强制生产环境
                 "enableRateLimit": True,
             },
             "okx": {
                 "api_key": self.exchange.okx_api_key,
                 "secret": self.exchange.okx_secret_key,
                 "password": self.exchange.okx_passphrase,
-                "sandbox": self.environment != "production",
+                "sandbox": False,  # 强制生产环境
                 "enableRateLimit": True,
             },
             "bybit": {
                 "api_key": self.exchange.bybit_api_key,
                 "secret": self.exchange.bybit_secret_key,
-                "testnet": self.environment != "production",
+                "testnet": False,  # 强制生产环境
                 "enableRateLimit": True,
             }
         }

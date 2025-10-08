@@ -145,7 +145,7 @@ class APIConfigManager:
                         name="binance",
                         api_key=os.getenv("BINANCE_API_KEY", ""),
                         secret=os.getenv("BINANCE_SECRET", ""),
-                        sandbox=True,  # 默认使用沙盒环境
+                        sandbox=False,  # 生产环境实盘交易
                         rate_limit=1200
                     ),
                     "okx": ExchangeConfig(
@@ -153,7 +153,7 @@ class APIConfigManager:
                         api_key=os.getenv("OKX_API_KEY", ""),
                         secret=os.getenv("OKX_SECRET", ""),
                         passphrase=os.getenv("OKX_PASSPHRASE", ""),
-                        sandbox=True,
+                        sandbox=False,  # 生产环境实盘交易
                         rate_limit=600
                     ),
                     "bitget": ExchangeConfig(
@@ -161,7 +161,7 @@ class APIConfigManager:
                         api_key=os.getenv("BITGET_API_KEY", ""),
                         secret=os.getenv("BITGET_SECRET", ""),
                         passphrase=os.getenv("BITGET_PASSPHRASE", ""),
-                        sandbox=True,
+                        sandbox=False,  # 生产环境实盘交易
                         rate_limit=600
                     )
                 }

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-🚀 888-888-88 真实实盘交易启动器
-Real Trading System Launcher
+🚀 888-888-88 生产级实盘交易系统启动器
+Production Real Trading System Launcher
+专为20核CPU + GTX3060 12GB + 128GB内存 + 1TB NVMe SSD优化
 """
 
 import os
@@ -10,6 +11,8 @@ import asyncio
 import json
 import subprocess
 import time
+import psutil
+import GPUtil
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any
@@ -18,18 +21,36 @@ from loguru import logger
 # 添加项目根目录到Python路径
 sys.path.insert(0, str(Path(__file__).parent))
 
+# 导入生产级模块
+from src.hardware.production_resource_manager import initialize_production_resources
+from src.data.intelligent_data_cleaner import initialize_data_cleaner
+
 class RealTradingLauncher:
-    """真实实盘交易启动器"""
+    """生产级实盘交易启动器"""
     
     def __init__(self):
         self.start_time = datetime.now()
         self.processes = []
         self.system_status = {}
+        self.resource_manager = None
+        self.data_cleaner = None
         
         # 配置日志
         self._setup_logging()
         
-        logger.info("🚀 888-888-88 真实实盘交易启动器初始化")
+        logger.info("🚀 888-888-88 生产级实盘交易系统启动器初始化")
+        logger.info(f"💻 硬件配置检测: {psutil.cpu_count()}核CPU, {psutil.virtual_memory().total//1024**3}GB内存")
+        
+        # 检测GPU
+        try:
+            gpus = GPUtil.getGPUs()
+            if gpus:
+                gpu = gpus[0]
+                logger.info(f"🎮 GPU检测: {gpu.name}, {gpu.memoryTotal}MB显存")
+            else:
+                logger.warning("⚠️ 未检测到GPU")
+        except Exception as e:
+            logger.warning(f"⚠️ GPU检测失败: {e}")
     
     def _setup_logging(self):
         """配置日志"""
@@ -60,7 +81,7 @@ class RealTradingLauncher:
             print(f"❌ 配置日志失败: {e}")
     
     async def launch_real_trading(self):
-        """启动真实实盘交易"""
+        """启动生产级实盘交易系统"""
         try:
             logger.info("🎯 开始启动888-888-88真实实盘交易系统")
             
