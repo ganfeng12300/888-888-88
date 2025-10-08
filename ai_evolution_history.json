@@ -1,0 +1,56 @@
+[
+  {
+    "timestamp": "2025-10-08T11:42:54.908952",
+    "metrics": {
+      "current_level": 1,
+      "level_name": "实时监控AI",
+      "days_at_level": 1,
+      "total_days": 1,
+      "daily_return": 1.2397798167980976,
+      "total_return": 1.2397798167981033,
+      "win_rate": 55.5,
+      "max_drawdown": 9,
+      "sharpe_ratio": 0.8200000000000001,
+      "current_leverage": 1.1428571428571428,
+      "position_size": 5.714285714285714,
+      "confidence_score": 60.5,
+      "trades_today": 5,
+      "successful_trades": 2,
+      "evolution_progress": 14.285714285714285,
+      "next_level_requirements": {
+        "avg_daily_return": 2.0,
+        "max_drawdown": 5.0,
+        "sharpe_ratio": 1.2
+      },
+      "estimated_days_to_next_level": 6
+    },
+    "balance": 50619.889908399055
+  },
+  {
+    "timestamp": "2025-10-08T11:42:59.914998",
+    "metrics": {
+      "current_level": 1,
+      "level_name": "实时监控AI",
+      "days_at_level": 1,
+      "total_days": 1,
+      "daily_return": 1.2300274564121665,
+      "total_return": 2.4850569053559424,
+      "win_rate": 55.5,
+      "max_drawdown": 9,
+      "sharpe_ratio": 0.8200000000000001,
+      "current_leverage": 1.1428571428571428,
+      "position_size": 5.714285714285714,
+      "confidence_score": 60.5,
+      "trades_today": 5,
+      "successful_trades": 2,
+      "evolution_progress": 14.285714285714285,
+      "next_level_requirements": {
+        "avg_daily_return": 2.0,
+        "max_drawdown": 5.0,
+        "sharpe_ratio": 1.2
+      },
+      "estimated_days_to_next_level": 6
+    },
+    "balance": 51242.52845267797
+  }
+]
