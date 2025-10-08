@@ -141,26 +141,26 @@ class APIConfigManager:
             # 默认交易所配置
             if not self.exchanges:
                 default_exchanges = {
+                    "bitget": ExchangeConfig(
+                        name="bitget",
+                        api_key=os.getenv("BITGET_API_KEY", ""),
+                        secret=os.getenv("BITGET_SECRET_KEY", ""),
+                        passphrase=os.getenv("BITGET_PASSPHRASE", ""),
+                        sandbox=False,  # 生产环境实盘交易
+                        rate_limit=600
+                    ),
                     "binance": ExchangeConfig(
                         name="binance",
                         api_key=os.getenv("BINANCE_API_KEY", ""),
-                        secret=os.getenv("BINANCE_SECRET", ""),
+                        secret=os.getenv("BINANCE_SECRET_KEY", ""),
                         sandbox=False,  # 生产环境实盘交易
                         rate_limit=1200
                     ),
                     "okx": ExchangeConfig(
                         name="okx",
                         api_key=os.getenv("OKX_API_KEY", ""),
-                        secret=os.getenv("OKX_SECRET", ""),
+                        secret=os.getenv("OKX_SECRET_KEY", ""),
                         passphrase=os.getenv("OKX_PASSPHRASE", ""),
-                        sandbox=False,  # 生产环境实盘交易
-                        rate_limit=600
-                    ),
-                    "bitget": ExchangeConfig(
-                        name="bitget",
-                        api_key=os.getenv("BITGET_API_KEY", ""),
-                        secret=os.getenv("BITGET_SECRET", ""),
-                        passphrase=os.getenv("BITGET_PASSPHRASE", ""),
                         sandbox=False,  # 生产环境实盘交易
                         rate_limit=600
                     )
