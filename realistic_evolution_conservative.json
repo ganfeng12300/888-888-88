@@ -1,0 +1,142 @@
+[
+  {
+    "timestamp": "2025-10-08T12:29:49.225298",
+    "metrics": {
+      "current_day": 1,
+      "ai_level": 1,
+      "level_name": "基础监控AI",
+      "daily_return": 0.08,
+      "total_return": 0.07999999999999119,
+      "current_balance": 50039.99999999999,
+      "win_rate": 54.181844101102534,
+      "max_drawdown": 0,
+      "sharpe_ratio": 0.4136896319601412,
+      "trades_today": 8,
+      "successful_trades": 4,
+      "avg_trade_size": 938.2499999999999,
+      "execution_cost": 0.15,
+      "market_volatility": 3.7086027973348146,
+      "scenario": "conservative"
+    },
+    "market_constraints": {
+      "btc_daily_volatility": 0.035,
+      "max_realistic_daily_return": 0.08,
+      "execution_slippage": 0.05,
+      "api_latency_ms": 25,
+      "weekend_factor": 0.6
+    },
+    "scenario": "conservative"
+  },
+  {
+    "timestamp": "2025-10-08T12:29:51.230534",
+    "metrics": {
+      "current_day": 2,
+      "ai_level": 1,
+      "level_name": "基础监控AI",
+      "daily_return": 0.08,
+      "total_return": 0.1600639999999709,
+      "current_balance": 50080.031999999985,
+      "win_rate": 54.9939267899577,
+      "max_drawdown": 0,
+      "sharpe_ratio": 0.3924927068775114,
+      "trades_today": 13,
+      "successful_trades": 7,
+      "avg_trade_size": 577.846523076923,
+      "execution_cost": 0.15,
+      "market_volatility": 3.908889259424083,
+      "scenario": "conservative"
+    },
+    "market_constraints": {
+      "btc_daily_volatility": 0.035,
+      "max_realistic_daily_return": 0.08,
+      "execution_slippage": 0.05,
+      "api_latency_ms": 25,
+      "weekend_factor": 0.6
+    },
+    "scenario": "conservative"
+  },
+  {
+    "timestamp": "2025-10-08T12:29:53.238226",
+    "metrics": {
+      "current_day": 3,
+      "ai_level": 1,
+      "level_name": "基础监控AI",
+      "daily_return": 0.08,
+      "total_return": 0.24019205119996112,
+      "current_balance": 50120.09602559998,
+      "win_rate": 56.07260482725968,
+      "max_drawdown": 0,
+      "sharpe_ratio": 0.37484914084982013,
+      "trades_today": 9,
+      "successful_trades": 5,
+      "avg_trade_size": 835.3349337599998,
+      "execution_cost": 0.15,
+      "market_volatility": 4.092874597064788,
+      "scenario": "conservative"
+    },
+    "market_constraints": {
+      "btc_daily_volatility": 0.035,
+      "max_realistic_daily_return": 0.08,
+      "execution_slippage": 0.05,
+      "api_latency_ms": 25,
+      "weekend_factor": 0.6
+    },
+    "scenario": "conservative"
+  },
+  {
+    "timestamp": "2025-10-08T12:29:55.243461",
+    "metrics": {
+      "current_day": 4,
+      "ai_level": 1,
+      "level_name": "基础监控AI",
+      "daily_return": 0.08,
+      "total_return": 0.3203842048409067,
+      "current_balance": 50160.19210242046,
+      "win_rate": 55.023321204631365,
+      "max_drawdown": 0,
+      "sharpe_ratio": 0.3607170852112997,
+      "trades_today": 10,
+      "successful_trades": 5,
+      "avg_trade_size": 752.4028815363068,
+      "execution_cost": 0.15,
+      "market_volatility": 4.253223895444499,
+      "scenario": "conservative"
+    },
+    "market_constraints": {
+      "btc_daily_volatility": 0.035,
+      "max_realistic_daily_return": 0.08,
+      "execution_slippage": 0.05,
+      "api_latency_ms": 25,
+      "weekend_factor": 0.6
+    },
+    "scenario": "conservative"
+  },
+  {
+    "timestamp": "2025-10-08T12:29:57.249794",
+    "metrics": {
+      "current_day": 5,
+      "ai_level": 1,
+      "level_name": "基础监控AI",
+      "daily_return": 0.08,
+      "total_return": 0.40064051220476404,
+      "current_balance": 50200.320256102386,
+      "win_rate": 57.28985575738107,
+      "max_drawdown": 0,
+      "sharpe_ratio": 0.3499931423986048,
+      "trades_today": 12,
+      "successful_trades": 6,
+      "avg_trade_size": 627.5040032012798,
+      "execution_cost": 0.15,
+      "market_volatility": 4.3835445340482915,
+      "scenario": "conservative"
+    },
+    "market_constraints": {
+      "btc_daily_volatility": 0.035,
+      "max_realistic_daily_return": 0.08,
+      "execution_slippage": 0.05,
+      "api_latency_ms": 25,
+      "weekend_factor": 0.6
+    },
+    "scenario": "conservative"
+  }
+]

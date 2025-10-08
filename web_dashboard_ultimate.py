@@ -700,7 +700,7 @@ def run_dashboard():
     """运行仪表板"""
     print("🌟 启动终极黑金Web仪表板...")
     print("🌐 访问地址: http://localhost:8888")
-    socketio.run(app, host='0.0.0.0', port=8888, debug=False)
+    socketio.run(app, host='0.0.0.0', port=8888, debug=False, allow_unsafe_werkzeug=True)
 
 if __name__ == "__main__":
     # 启动后台数据更新
