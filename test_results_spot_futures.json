@@ -1,0 +1,52 @@
+{
+  "timestamp": "2025-10-08T02:48:55.887045",
+  "account_data": {
+    "account_balance": 99.72036779005,
+    "available_balance": 99.72036779005,
+    "used_margin": 0.0,
+    "margin_ratio": 0.0,
+    "spot_account": {
+      "account_type": "spot",
+      "currencies": {
+        "USDT": {
+          "free": 48.82482876005,
+          "used": 0.0,
+          "total": 48.82482876005
+        },
+        "APT": {
+          "free": 0.03976,
+          "used": 0.0,
+          "total": 0.03976
+        }
+      },
+      "total_value": 48.82482876005,
+      "available_balance": 48.82482876005
+    },
+    "futures_account": {
+      "account_type": "futures",
+      "currencies": {
+        "USDT": {
+          "free": 50.89553903,
+          "used": 0.0,
+          "total": 50.89553903
+        }
+      },
+      "total_value": 50.89553903,
+      "available_balance": 50.89553903,
+      "used_margin": 0.0,
+      "margin_ratio": 0.0
+    },
+    "account_summary": {
+      "spot_value": 48.82482876005,
+      "futures_value": 50.89553903,
+      "total_value": 99.72036779005
+    }
+  },
+  "test_results": {
+    "passed_checks": 5,
+    "total_checks": 5,
+    "success_rate": 100.0,
+    "grade": "A+ (完美)",
+    "status": "🟢 完全就绪"
+  }
+}

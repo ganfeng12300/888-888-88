@@ -57,50 +57,150 @@ class RealTradingDashboard:
             logger.error(f"❌ Bitget交易所连接初始化失败: {e}")
     
     async def get_real_account_balance(self) -> Dict[str, Any]:
-        """获取真实账户余额"""
+        """获取真实账户余额（现货+合约）"""
         try:
             if not self.bitget_exchange:
                 return self._get_demo_balance()
             
-            balance = self.bitget_exchange.fetch_balance()
+            # 获取现货账户余额
+            spot_balance = await self._get_spot_balance()
             
-            # 转换为标准格式
+            # 获取合约账户余额
+            futures_balance = await self._get_futures_balance()
+            
+            # 合并账户数据
+            total_spot_value = spot_balance.get('total_value', 0.0)
+            total_futures_value = futures_balance.get('total_value', 0.0)
+            total_account_value = total_spot_value + total_futures_value
+            
             account_data = {
-                'account_balance': 0.0,
-                'available_balance': 0.0,
-                'used_margin': 0.0,
-                'margin_ratio': 0.0,
-                'currencies': {}
+                'account_balance': total_account_value,
+                'available_balance': spot_balance.get('available_balance', 0.0) + futures_balance.get('available_balance', 0.0),
+                'used_margin': futures_balance.get('used_margin', 0.0),
+                'margin_ratio': futures_balance.get('margin_ratio', 0.0),
+                'spot_account': spot_balance,
+                'futures_account': futures_balance,
+                'account_summary': {
+                    'spot_value': total_spot_value,
+                    'futures_value': total_futures_value,
+                    'total_value': total_account_value
+                }
             }
-            
-            total_usdt_value = 0.0
-            for currency, data in balance.items():
-                if currency not in ['info', 'free', 'used', 'total'] and data['total'] > 0:
-                    account_data['currencies'][currency] = {
-                        'free': data['free'],
-                        'used': data['used'],
-                        'total': data['total']
-                    }
-                    
-                    # 计算USDT价值（简化处理，USDT按1:1计算）
-                    if currency == 'USDT':
-                        total_usdt_value += data['total']
-                    else:
-                        # 对于其他币种，需要获取价格转换，这里简化处理
-                        total_usdt_value += data['total'] * 0.1  # 简化估算
-            
-            account_data['account_balance'] = total_usdt_value
-            account_data['available_balance'] = balance.get('USDT', {}).get('free', 0.0)
-            account_data['used_margin'] = balance.get('USDT', {}).get('used', 0.0)
-            
-            if total_usdt_value > 0:
-                account_data['margin_ratio'] = (account_data['used_margin'] / total_usdt_value) * 100
             
             return account_data
             
         except Exception as e:
             logger.error(f"❌ 获取真实账户余额失败: {e}")
             return self._get_demo_balance()
+    
+    async def _get_spot_balance(self) -> Dict[str, Any]:
+        """获取现货账户余额"""
+        try:
+            # 设置为现货账户
+            self.bitget_exchange.options['defaultType'] = 'spot'
+            balance = self.bitget_exchange.fetch_balance()
+            
+            spot_data = {
+                'account_type': 'spot',
+                'currencies': {},
+                'total_value': 0.0,
+                'available_balance': 0.0
+            }
+            
+            total_usdt_value = 0.0
+            available_usdt = 0.0
+            
+            for currency, data in balance.items():
+                if currency not in ['info', 'free', 'used', 'total'] and isinstance(data, dict) and data.get('total', 0) > 0:
+                    spot_data['currencies'][currency] = {
+                        'free': data.get('free', 0.0),
+                        'used': data.get('used', 0.0),
+                        'total': data.get('total', 0.0)
+                    }
+                    
+                    # 计算USDT价值
+                    if currency == 'USDT':
+                        total_usdt_value += data.get('total', 0.0)
+                        available_usdt += data.get('free', 0.0)
+                    else:
+                        # 对于其他币种，需要获取价格转换
+                        try:
+                            if currency in ['BTC', 'ETH', 'SOL', 'BNB']:
+                                ticker = self.bitget_exchange.fetch_ticker(f'{currency}/USDT')
+                                price = ticker.get('last', 0.0)
+                                currency_value = data.get('total', 0.0) * price
+                                total_usdt_value += currency_value
+                                available_usdt += data.get('free', 0.0) * price
+                        except:
+                            # 如果获取价格失败，使用估算值
+                            total_usdt_value += data.get('total', 0.0) * 100  # 简化估算
+            
+            spot_data['total_value'] = total_usdt_value
+            spot_data['available_balance'] = available_usdt
+            
+            return spot_data
+            
+        except Exception as e:
+            logger.error(f"❌ 获取现货账户余额失败: {e}")
+            return {
+                'account_type': 'spot',
+                'currencies': {},
+                'total_value': 0.0,
+                'available_balance': 0.0
+            }
+    
+    async def _get_futures_balance(self) -> Dict[str, Any]:
+        """获取合约账户余额"""
+        try:
+            # 设置为合约账户
+            self.bitget_exchange.options['defaultType'] = 'swap'
+            balance = self.bitget_exchange.fetch_balance()
+            
+            futures_data = {
+                'account_type': 'futures',
+                'currencies': {},
+                'total_value': 0.0,
+                'available_balance': 0.0,
+                'used_margin': 0.0,
+                'margin_ratio': 0.0
+            }
+            
+            total_usdt_value = 0.0
+            available_usdt = 0.0
+            used_margin = 0.0
+            
+            for currency, data in balance.items():
+                if currency not in ['info', 'free', 'used', 'total'] and isinstance(data, dict) and data.get('total', 0) > 0:
+                    futures_data['currencies'][currency] = {
+                        'free': data.get('free', 0.0),
+                        'used': data.get('used', 0.0),
+                        'total': data.get('total', 0.0)
+                    }
+                    
+                    if currency == 'USDT':
+                        total_usdt_value += data.get('total', 0.0)
+                        available_usdt += data.get('free', 0.0)
+                        used_margin += data.get('used', 0.0)
+            
+            futures_data['total_value'] = total_usdt_value
+            futures_data['available_balance'] = available_usdt
+            futures_data['used_margin'] = used_margin
+            
+            if total_usdt_value > 0:
+                futures_data['margin_ratio'] = (used_margin / total_usdt_value) * 100
+            
+            return futures_data
+            
+        except Exception as e:
+            logger.error(f"❌ 获取合约账户余额失败: {e}")
+            return {
+                'account_type': 'futures',
+                'currencies': {},
+                'total_value': 0.0,
+                'available_balance': 0.0,
+                'used_margin': 0.0,
+                'margin_ratio': 0.0
+            }
     
     def _get_demo_balance(self) -> Dict[str, Any]:
         """获取演示余额数据"""
@@ -109,10 +209,30 @@ class RealTradingDashboard:
             'available_balance': 48824.83,
             'used_margin': 1175.17,
             'margin_ratio': 2.35,
-            'currencies': {
-                'USDT': {'free': 48.82, 'used': 0.0, 'total': 48.82},
-                'BTC': {'free': 0.0, 'used': 0.0, 'total': 0.0},
-                'ETH': {'free': 0.0, 'used': 0.0, 'total': 0.0}
+            'spot_account': {
+                'account_type': 'spot',
+                'currencies': {
+                    'USDT': {'free': 25000.0, 'used': 0.0, 'total': 25000.0},
+                    'BTC': {'free': 0.1, 'used': 0.0, 'total': 0.1},
+                    'ETH': {'free': 2.0, 'used': 0.0, 'total': 2.0}
+                },
+                'total_value': 30000.0,
+                'available_balance': 30000.0
+            },
+            'futures_account': {
+                'account_type': 'futures',
+                'currencies': {
+                    'USDT': {'free': 18824.83, 'used': 1175.17, 'total': 20000.0}
+                },
+                'total_value': 20000.0,
+                'available_balance': 18824.83,
+                'used_margin': 1175.17,
+                'margin_ratio': 5.88
+            },
+            'account_summary': {
+                'spot_value': 30000.0,
+                'futures_value': 20000.0,
+                'total_value': 50000.0
             }
         }
     

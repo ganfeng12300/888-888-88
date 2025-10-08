@@ -135,6 +135,64 @@
             right: 20px;
             z-index: 1000;
         }
+        
+        .account-section {
+            border-left: 3px solid #4CAF50;
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .account-section h6 {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .currency-details {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        
+        .currency-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .currency-item:last-child {
+            border-bottom: none;
+        }
+        
+        .currency-name {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .currency-amount {
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        .currency-available {
+            color: #9CA3AF;
+            font-size: 0.9em;
+        }
+        
+        .account-summary {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .account-summary h6 {
+            color: white;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -418,23 +476,88 @@
         }
         
         function updateAccountInfo(riskData) {
-            const html = `
-                <div class="mb-2">
-                    <i class="fas fa-dollar-sign"></i> 账户余额: $${riskData.account_balance.toFixed(2)}
-                </div>
-                <div class="mb-2">
-                    <i class="fas fa-coins"></i> 可用余额: $${riskData.available_balance.toFixed(2)}
-                </div>
-                <div class="mb-2">
-                    <i class="fas fa-shield-alt"></i> 保证金: $${riskData.used_margin.toFixed(2)}
-                </div>
-                <div class="mb-2">
-                    <i class="fas fa-percentage"></i> 保证金率: ${riskData.margin_ratio.toFixed(2)}%
-                </div>
-                <div class="mb-2">
-                    <i class="fas fa-chart-line"></i> 今日盈亏: <span class="${riskData.current_daily_pnl >= 0 ? 'profit-positive' : 'profit-negative'}">$${riskData.current_daily_pnl.toFixed(2)}</span>
+            let html = `
+                <div class="account-summary mb-3">
+                    <h6><i class="fas fa-chart-pie"></i> 账户总览</h6>
+                    <div class="mb-2">
+                        <i class="fas fa-dollar-sign"></i> 总资产: $${riskData.account_balance.toFixed(2)}
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-coins"></i> 总可用: $${riskData.available_balance.toFixed(2)}
+                    </div>
                 </div>
             `;
+            
+            // 现货账户信息
+            if (riskData.spot_account) {
+                html += `
+                    <div class="account-section mb-3">
+                        <h6><i class="fas fa-exchange-alt"></i> 现货账户</h6>
+                        <div class="mb-2">
+                            <i class="fas fa-wallet"></i> 现货资产: $${riskData.spot_account.total_value.toFixed(2)}
+                        </div>
+                        <div class="mb-2">
+                            <i class="fas fa-hand-holding-usd"></i> 可用资金: $${riskData.spot_account.available_balance.toFixed(2)}
+                        </div>
+                `;
+                
+                // 显示现货币种详情
+                if (riskData.spot_account.currencies) {
+                    html += '<div class="currency-details">';
+                    for (const [currency, data] of Object.entries(riskData.spot_account.currencies)) {
+                        if (data.total > 0) {
+                            html += `
+                                <div class="currency-item">
+                                    <span class="currency-name">${currency}:</span>
+                                    <span class="currency-amount">${data.total.toFixed(8)}</span>
+                                    <span class="currency-available">(可用: ${data.free.toFixed(8)})</span>
+                                </div>
+                            `;
+                        }
+                    }
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
+            
+            // 合约账户信息
+            if (riskData.futures_account) {
+                html += `
+                    <div class="account-section mb-3">
+                        <h6><i class="fas fa-chart-line"></i> 合约账户</h6>
+                        <div class="mb-2">
+                            <i class="fas fa-coins"></i> 合约资产: $${riskData.futures_account.total_value.toFixed(2)}
+                        </div>
+                        <div class="mb-2">
+                            <i class="fas fa-hand-holding-usd"></i> 可用保证金: $${riskData.futures_account.available_balance.toFixed(2)}
+                        </div>
+                        <div class="mb-2">
+                            <i class="fas fa-shield-alt"></i> 已用保证金: $${riskData.futures_account.used_margin.toFixed(2)}
+                        </div>
+                        <div class="mb-2">
+                            <i class="fas fa-percentage"></i> 保证金率: ${riskData.futures_account.margin_ratio.toFixed(2)}%
+                        </div>
+                `;
+                
+                // 显示合约币种详情
+                if (riskData.futures_account.currencies) {
+                    html += '<div class="currency-details">';
+                    for (const [currency, data] of Object.entries(riskData.futures_account.currencies)) {
+                        if (data.total > 0) {
+                            html += `
+                                <div class="currency-item">
+                                    <span class="currency-name">${currency}:</span>
+                                    <span class="currency-amount">${data.total.toFixed(2)}</span>
+                                    <span class="currency-available">(可用: ${data.free.toFixed(2)})</span>
+                                </div>
+                            `;
+                        }
+                    }
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
+            
             document.getElementById('account-info').innerHTML = html;
         }
         
