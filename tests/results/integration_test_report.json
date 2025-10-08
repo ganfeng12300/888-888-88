@@ -1,0 +1,108 @@
+{
+  "timestamp": "2025-10-08T17:53:24.046855",
+  "summary": {
+    "total_tests": 9,
+    "passed": 3,
+    "warnings": 0,
+    "failed": 6,
+    "success_rate": 33.33333333333333,
+    "status": "🔴 差",
+    "message": "系统集成存在严重问题，需要立即修复"
+  },
+  "test_results": {
+    "GPU性能优化器测试": {
+      "status": "failed",
+      "message": "缺少optimize_performance方法",
+      "duration": 0.056989192962646484,
+      "details": {},
+      "timestamp": "2025-10-08T17:53:23.707254"
+    },
+    "Bybit交易器测试": {
+      "status": "failed",
+      "message": "缺少必需方法: connect",
+      "duration": 0.24597716331481934,
+      "details": {},
+      "timestamp": "2025-10-08T17:53:23.953352"
+    },
+    "风险控制器测试": {
+      "status": "failed",
+      "message": "测试异常: AdvancedRiskController.calculate_risk_metrics() takes 1 positional argument but 2 were given",
+      "duration": 0.006986141204833984,
+      "details": {},
+      "timestamp": "2025-10-08T17:53:23.960451"
+    },
+    "时区调度器测试": {
+      "status": "failed",
+      "message": "测试异常: 'TimezoneScheduler' object has no attribute 'get_current_market_session'",
+      "duration": 0.07843852043151855,
+      "details": {},
+      "timestamp": "2025-10-08T17:53:24.038984"
+    },
+    "AI融合系统测试": {
+      "status": "failed",
+      "message": "测试异常: 'SixAgentsFusionSystem' object has no attribute 'get_agents_status'",
+      "duration": 0.0043642520904541016,
+      "details": {},
+      "timestamp": "2025-10-08T17:53:24.043474"
+    },
+    "系统启动器测试": {
+      "status": "failed",
+      "message": "测试异常: 'UltimateSystemLauncher' object has no attribute 'get_components_status'",
+      "duration": 0.00131988525390625,
+      "details": {},
+      "timestamp": "2025-10-08T17:53:24.044886"
+    },
+    "数据流集成测试": {
+      "status": "success",
+      "message": "数据流集成正常",
+      "duration": 1.33514404296875e-05,
+      "details": {
+        "stages_completed": [
+          "market_analysis",
+          "risk_assessment",
+          "ai_decision",
+          "total_time"
+        ],
+        "data_integrity": true,
+        "processing_time": 2.6226043701171875e-06
+      },
+      "timestamp": "2025-10-08T17:53:24.044986"
+    },
+    "错误处理测试": {
+      "status": "success",
+      "message": "错误处理机制测试完成",
+      "duration": 0.00042510032653808594,
+      "details": {
+        "scenarios_tested": 3,
+        "results": [
+          "config_error_handled",
+          "network_error_handled",
+          "data_error_handled"
+        ]
+      },
+      "timestamp": "2025-10-08T17:53:24.045486"
+    },
+    "性能基准测试": {
+      "status": "success",
+      "message": "性能评分: 100/100",
+      "duration": 0.0006573200225830078,
+      "details": {
+        "startup_time": 0.0003609657287597656,
+        "data_processing_100x": 6.628036499023438e-05,
+        "avg_processing_time": 6.628036499023437e-07,
+        "memory_usage_mb": 137.390625,
+        "performance_score": 100
+      },
+      "timestamp": "2025-10-08T17:53:24.046239"
+    }
+  },
+  "recommendations": [
+    "修复GPU性能优化器测试的功能问题",
+    "修复Bybit交易器测试的功能问题",
+    "修复风险控制器测试的功能问题",
+    "修复时区调度器测试的功能问题",
+    "修复AI融合系统测试的功能问题",
+    "修复系统启动器测试的功能问题",
+    "建议优先修复失败的测试项"
+  ]
+}

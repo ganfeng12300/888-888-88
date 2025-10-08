@@ -291,21 +291,28 @@ class AdvancedRiskController:
             logger.error(f"检查平仓条件失败: {e}")
             return False, f"检查异常: {str(e)}"
     
-    def calculate_risk_metrics(self) -> RiskMetrics:
+    def calculate_risk_metrics(self, positions: List[Dict[str, Any]] = None) -> Dict[str, Any]:
         """计算风险指标"""
         try:
             with self.lock:
+                # 如果传入了positions参数，使用传入的数据计算
+                if positions:
+                    total_pnl = sum(float(pos.get('pnl', 0)) for pos in positions)
+                    total_exposure = sum(abs(float(pos.get('size', 0)) * float(pos.get('entry_price', 0))) for pos in positions)
+                    position_count = len([pos for pos in positions if float(pos.get('size', 0)) != 0])
+                else:
+                    # 使用内部状态计算
+                    total_pnl = self.daily_pnl
+                    total_exposure = sum(pos.exposure for pos in self.position_risks.values())
+                    position_count = len([pos for pos in self.position_risks.values() if pos.size != 0])
+                
                 # 当前回撤
                 current_drawdown = 0.0
-                if self.account_balance > 0 and self.daily_pnl < 0:
-                    current_drawdown = abs(self.daily_pnl) / self.account_balance
+                if self.account_balance > 0 and total_pnl < 0:
+                    current_drawdown = abs(total_pnl) / self.account_balance
                 
-                # 总敞口
-                total_exposure = sum(pos.exposure for pos in self.position_risks.values())
+                # 敞口比例
                 exposure_pct = total_exposure / self.account_balance if self.account_balance > 0 else 0
-                
-                # 持仓数量
-                position_count = len([pos for pos in self.position_risks.values() if pos.size != 0])
                 
                 # 平均相关性（简化计算）
                 avg_correlation = 0.5  # 需要实际计算
@@ -319,33 +326,359 @@ class AdvancedRiskController:
                 # VaR 95%（简化计算）
                 var_95 = self._calculate_var()
                 
-                return RiskMetrics(
-                    current_drawdown=current_drawdown,
-                    max_drawdown=self.max_drawdown,
-                    daily_pnl=self.daily_pnl,
-                    total_exposure=exposure_pct,
-                    position_count=position_count,
-                    avg_correlation=avg_correlation,
-                    volatility=volatility,
-                    sharpe_ratio=sharpe_ratio,
-                    var_95=var_95,
-                    timestamp=datetime.now()
+                # 风险评分
+                risk_score = self._calculate_overall_risk_score(
+                    current_drawdown, exposure_pct, position_count
                 )
+                
+                return {
+                    'total_exposure': exposure_pct,
+                    'total_pnl': total_pnl,
+                    'max_drawdown': max(self.max_drawdown, current_drawdown),
+                    'current_drawdown': current_drawdown,
+                    'daily_pnl': total_pnl,
+                    'position_count': position_count,
+                    'avg_correlation': avg_correlation,
+                    'volatility': volatility,
+                    'sharpe_ratio': sharpe_ratio,
+                    'var_95': var_95,
+                    'risk_score': risk_score,
+                    'account_balance': self.account_balance,
+                    'emergency_stop': self.emergency_stop,
+                    'timestamp': datetime.now().isoformat()
+                }
                 
         except Exception as e:
             logger.error(f"计算风险指标失败: {e}")
-            return RiskMetrics(
-                current_drawdown=0.0,
-                max_drawdown=0.0,
-                daily_pnl=0.0,
-                total_exposure=0.0,
-                position_count=0,
-                avg_correlation=0.0,
-                volatility=0.0,
-                sharpe_ratio=0.0,
-                var_95=0.0,
-                timestamp=datetime.now()
+            return {
+                'total_exposure': 0.0,
+                'total_pnl': 0.0,
+                'max_drawdown': 0.0,
+                'current_drawdown': 0.0,
+                'daily_pnl': 0.0,
+                'position_count': 0,
+                'avg_correlation': 0.0,
+                'volatility': 0.0,
+                'sharpe_ratio': 0.0,
+                'var_95': 0.0,
+                'risk_score': 50.0,
+                'account_balance': self.account_balance,
+                'emergency_stop': self.emergency_stop,
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            }
+    
+    def _calculate_overall_risk_score(self, drawdown: float, exposure: float, position_count: int) -> float:
+        """计算综合风险评分"""
+        try:
+            # 回撤风险 (0-40分)
+            drawdown_score = min(drawdown * 100 * 2, 40)
+            
+            # 敞口风险 (0-30分)
+            exposure_score = min(exposure * 100, 30)
+            
+            # 仓位数量风险 (0-20分)
+            position_score = min(position_count * 2, 20)
+            
+            # 紧急状态风险 (0-10分)
+            emergency_score = 10 if self.emergency_stop else 0
+            
+            total_score = drawdown_score + exposure_score + position_score + emergency_score
+            
+            return min(total_score, 100.0)
+            
+        except Exception as e:
+            logger.error(f"计算综合风险评分失败: {e}")
+            return 50.0
+    
+    def check_risk_limits(self, position_or_order: Dict[str, Any]) -> Dict[str, Any]:
+        """检查风险限制"""
+        try:
+            symbol = position_or_order.get('symbol', 'unknown')
+            size = float(position_or_order.get('size', 0))
+            price = float(position_or_order.get('entry_price', position_or_order.get('price', 0)))
+            
+            # 计算仓位价值
+            position_value = abs(size) * price
+            
+            # 检查单个仓位限制
+            if self.account_balance > 0:
+                position_ratio = position_value / self.account_balance
+                if position_ratio > self.max_position_size:
+                    return {
+                        'allowed': False,
+                        'reason': f'单个仓位过大: {position_ratio:.2%} > {self.max_position_size:.2%}',
+                        'risk_level': 'high',
+                        'position_ratio': position_ratio
+                    }
+            
+            # 检查日回撤限制
+            if self.daily_pnl < -self.max_daily_drawdown * self.account_balance:
+                return {
+                    'allowed': False,
+                    'reason': f'达到日回撤限制: {abs(self.daily_pnl/self.account_balance):.2%}',
+                    'risk_level': 'high',
+                    'daily_pnl': self.daily_pnl
+                }
+            
+            # 检查紧急停止状态
+            if self.emergency_stop:
+                return {
+                    'allowed': False,
+                    'reason': '系统处于紧急停止状态',
+                    'risk_level': 'high',
+                    'emergency_stop': True
+                }
+            
+            # 检查总敞口
+            current_total_exposure = sum(pos.exposure for pos in self.position_risks.values())
+            new_total_exposure = (current_total_exposure + position_value) / self.account_balance
+            
+            if new_total_exposure > self.max_total_exposure:
+                return {
+                    'allowed': False,
+                    'reason': f'总敞口过大: {new_total_exposure:.2%} > {self.max_total_exposure:.2%}',
+                    'risk_level': 'high',
+                    'total_exposure': new_total_exposure
+                }
+            
+            # 计算风险评分
+            risk_score = self._calculate_position_risk_score(
+                position_ratio if self.account_balance > 0 else 0,
+                position_or_order.get('pnl', 0),
+                position_value * 0.02  # 假设2%的最大损失
             )
+            
+            # 风险等级评估
+            if risk_score < 30:
+                risk_level = 'low'
+            elif risk_score < 70:
+                risk_level = 'medium'
+            else:
+                risk_level = 'high'
+            
+            return {
+                'allowed': True,
+                'reason': '风险检查通过',
+                'risk_level': risk_level,
+                'risk_score': risk_score,
+                'position_ratio': position_ratio if self.account_balance > 0 else 0,
+                'total_exposure': new_total_exposure,
+                'daily_pnl': self.daily_pnl,
+                'account_balance': self.account_balance
+            }
+            
+        except Exception as e:
+            logger.error(f"风险限制检查失败: {e}")
+            return {
+                'allowed': False,
+                'reason': f'风险检查异常: {str(e)}',
+                'risk_level': 'high',
+                'error': str(e)
+            }
+    
+    def suggest_stop_loss(self, position: Dict[str, Any]) -> Dict[str, Any]:
+        """建议止损价格"""
+        try:
+            symbol = position.get('symbol', 'unknown')
+            size = float(position.get('size', 0))
+            entry_price = float(position.get('entry_price', 0))
+            current_price = float(position.get('current_price', entry_price))
+            
+            if size == 0 or entry_price == 0:
+                return {
+                    'status': 'failed',
+                    'reason': '无效的仓位信息',
+                    'symbol': symbol
+                }
+            
+            # 基于配置的止损比例
+            if size > 0:  # 多头仓位
+                stop_loss_price = entry_price * (1 - self.stop_loss_pct)
+                trailing_stop_price = current_price * (1 - self.trailing_stop)
+                recommended_stop = max(stop_loss_price, trailing_stop_price)
+            else:  # 空头仓位
+                stop_loss_price = entry_price * (1 + self.stop_loss_pct)
+                trailing_stop_price = current_price * (1 + self.trailing_stop)
+                recommended_stop = min(stop_loss_price, trailing_stop_price)
+            
+            # 计算潜在损失
+            if size > 0:
+                potential_loss = (entry_price - recommended_stop) * abs(size)
+            else:
+                potential_loss = (recommended_stop - entry_price) * abs(size)
+            
+            # 损失比例
+            loss_percentage = potential_loss / (self.account_balance if self.account_balance > 0 else 1000)
+            
+            return {
+                'status': 'success',
+                'symbol': symbol,
+                'recommended_stop_loss': recommended_stop,
+                'hard_stop_loss': stop_loss_price,
+                'trailing_stop_loss': trailing_stop_price,
+                'potential_loss': potential_loss,
+                'loss_percentage': loss_percentage,
+                'position_side': 'long' if size > 0 else 'short',
+                'urgency': 'high' if loss_percentage > 0.01 else 'medium' if loss_percentage > 0.005 else 'low'
+            }
+            
+        except Exception as e:
+            logger.error(f"生成止损建议失败: {e}")
+            return {
+                'status': 'failed',
+                'reason': f'止损建议生成异常: {str(e)}',
+                'symbol': position.get('symbol', 'unknown'),
+                'error': str(e)
+            }
+    
+    def generate_risk_report(self, positions: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """生成风险报告"""
+        try:
+            # 计算风险指标
+            risk_metrics = self.calculate_risk_metrics(positions)
+            
+            # 分析每个仓位
+            position_analyses = []
+            total_risk_score = 0
+            high_risk_positions = 0
+            
+            for position in positions:
+                risk_check = self.check_risk_limits(position)
+                stop_loss_suggestion = self.suggest_stop_loss(position)
+                
+                analysis = {
+                    'symbol': position.get('symbol'),
+                    'size': position.get('size'),
+                    'pnl': position.get('pnl'),
+                    'risk_check': risk_check,
+                    'stop_loss_suggestion': stop_loss_suggestion
+                }
+                
+                position_analyses.append(analysis)
+                
+                # 累计风险评分
+                if 'risk_score' in risk_check:
+                    total_risk_score += risk_check['risk_score']
+                    if risk_check['risk_level'] == 'high':
+                        high_risk_positions += 1
+            
+            # 综合风险评估
+            avg_risk_score = total_risk_score / len(positions) if positions else 0
+            
+            # 生成建议
+            recommendations = []
+            if high_risk_positions > 0:
+                recommendations.append(f"有{high_risk_positions}个高风险仓位，建议立即关注")
+            
+            if risk_metrics['current_drawdown'] > 0.02:
+                recommendations.append("当前回撤较大，建议减少仓位")
+            
+            if risk_metrics['total_exposure'] > 0.8:
+                recommendations.append("总敞口过高，建议降低杠杆")
+            
+            if not recommendations:
+                recommendations.append("风险状况良好，继续监控")
+            
+            return {
+                'timestamp': datetime.now().isoformat(),
+                'summary': {
+                    'total_positions': len(positions),
+                    'high_risk_positions': high_risk_positions,
+                    'average_risk_score': avg_risk_score,
+                    'overall_risk_level': 'high' if avg_risk_score > 70 else 'medium' if avg_risk_score > 30 else 'low'
+                },
+                'risk_metrics': risk_metrics,
+                'position_analyses': position_analyses,
+                'recommendations': recommendations,
+                'emergency_actions': self._generate_emergency_actions(risk_metrics, high_risk_positions)
+            }
+            
+        except Exception as e:
+            logger.error(f"生成风险报告失败: {e}")
+            return {
+                'timestamp': datetime.now().isoformat(),
+                'error': str(e),
+                'summary': {'total_positions': len(positions) if positions else 0},
+                'recommendations': ['风险报告生成失败，建议手动检查系统状态']
+            }
+    
+    def _generate_emergency_actions(self, risk_metrics: Dict[str, Any], high_risk_count: int) -> List[str]:
+        """生成紧急行动建议"""
+        actions = []
+        
+        if risk_metrics.get('current_drawdown', 0) > 0.05:
+            actions.append("立即停止新开仓")
+            actions.append("考虑平仓部分高风险仓位")
+        
+        if high_risk_count > 3:
+            actions.append("启动紧急风控模式")
+            actions.append("逐步平仓高风险仓位")
+        
+        if risk_metrics.get('total_exposure', 0) > 0.9:
+            actions.append("立即降低总敞口至安全水平")
+        
+        if risk_metrics.get('emergency_stop', False):
+            actions.append("系统已启动紧急停止，等待手动干预")
+        
+        return actions if actions else ["继续正常监控"]
+    
+    def adjust_risk_limits(self, market_volatility: float) -> Dict[str, Any]:
+        """动态调整风险限制"""
+        try:
+            # 基于市场波动率调整风险参数
+            volatility_multiplier = 1.0
+            
+            if market_volatility > 0.05:  # 高波动
+                volatility_multiplier = 0.7  # 降低风险限制
+            elif market_volatility > 0.03:  # 中等波动
+                volatility_multiplier = 0.85
+            elif market_volatility < 0.01:  # 低波动
+                volatility_multiplier = 1.2  # 可以适当放宽
+            
+            # 调整后的限制
+            adjusted_limits = {
+                'max_position_size': self.max_position_size * volatility_multiplier,
+                'max_total_exposure': self.max_total_exposure * volatility_multiplier,
+                'stop_loss_pct': self.stop_loss_pct / volatility_multiplier,  # 波动大时止损更严格
+                'max_daily_drawdown': self.max_daily_drawdown * volatility_multiplier
+            }
+            
+            # 记录调整
+            logger.info(f"基于市场波动率{market_volatility:.3f}调整风险限制，乘数: {volatility_multiplier:.2f}")
+            
+            return {
+                'status': 'success',
+                'market_volatility': market_volatility,
+                'volatility_multiplier': volatility_multiplier,
+                'original_limits': {
+                    'max_position_size': self.max_position_size,
+                    'max_total_exposure': self.max_total_exposure,
+                    'stop_loss_pct': self.stop_loss_pct,
+                    'max_daily_drawdown': self.max_daily_drawdown
+                },
+                'adjusted_limits': adjusted_limits,
+                'adjustment_reason': self._get_volatility_reason(market_volatility)
+            }
+            
+        except Exception as e:
+            logger.error(f"调整风险限制失败: {e}")
+            return {
+                'status': 'failed',
+                'error': str(e),
+                'market_volatility': market_volatility
+            }
+    
+    def _get_volatility_reason(self, volatility: float) -> str:
+        """获取波动率调整原因"""
+        if volatility > 0.05:
+            return "市场高波动，降低风险敞口"
+        elif volatility > 0.03:
+            return "市场中等波动，适度调整风险参数"
+        elif volatility < 0.01:
+            return "市场低波动，可适当放宽风险限制"
+        else:
+            return "市场波动正常，维持标准风险参数"
     
     def _calculate_volatility(self) -> float:
         """计算波动率"""

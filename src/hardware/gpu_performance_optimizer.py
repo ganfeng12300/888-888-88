@@ -100,6 +100,197 @@ class GPUPerformanceOptimizer:
         
         logger.info("🚀 GPU性能优化器初始化完成")
     
+    def optimize_performance(self) -> Dict[str, Any]:
+        """执行性能优化"""
+        try:
+            optimization_results = {}
+            
+            # GPU优化
+            if self.gpu_available:
+                gpu_optimization = self._optimize_gpu_performance()
+                optimization_results['gpu'] = gpu_optimization
+            
+            # CPU优化
+            cpu_optimization = self._optimize_cpu_performance()
+            optimization_results['cpu'] = cpu_optimization
+            
+            # 内存优化
+            memory_optimization = self._optimize_memory_usage()
+            optimization_results['memory'] = memory_optimization
+            
+            return {
+                'status': 'success',
+                'optimizations': optimization_results,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"性能优化失败: {str(e)}")
+            return {
+                'status': 'failed',
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            }
+    
+    def _optimize_gpu_performance(self) -> Dict[str, Any]:
+        """优化GPU性能"""
+        try:
+            if not self.gpu_available:
+                return {'status': 'skipped', 'reason': 'GPU不可用'}
+            
+            # 清理GPU缓存
+            if TORCH_AVAILABLE:
+                torch.cuda.empty_cache()
+            
+            # 获取当前GPU状态
+            gpu_status = self.get_gpu_status()
+            
+            # 动态调整GPU内存分配
+            if gpu_status and gpu_status.utilization > 90:
+                # GPU使用率过高，清理缓存
+                if TORCH_AVAILABLE:
+                    torch.cuda.empty_cache()
+                    torch.cuda.synchronize()
+            
+            return {
+                'status': 'success',
+                'actions': ['cache_cleared', 'memory_optimized'],
+                'gpu_utilization': gpu_status.utilization if gpu_status else 0
+            }
+            
+        except Exception as e:
+            return {'status': 'failed', 'error': str(e)}
+    
+    def _optimize_cpu_performance(self) -> Dict[str, Any]:
+        """优化CPU性能"""
+        try:
+            # 获取CPU使用率
+            cpu_usage = psutil.cpu_percent(interval=1)
+            
+            # 动态调整线程数
+            if cpu_usage > 80:
+                # CPU使用率过高，减少线程数
+                new_threads = max(1, self.cpu_threads // 2)
+            else:
+                # CPU使用率正常，使用最优线程数
+                new_threads = min(self.cpu_threads, 32)
+            
+            if TORCH_AVAILABLE:
+                torch.set_num_threads(new_threads)
+            
+            return {
+                'status': 'success',
+                'actions': ['thread_count_adjusted'],
+                'cpu_usage': cpu_usage,
+                'thread_count': new_threads
+            }
+            
+        except Exception as e:
+            return {'status': 'failed', 'error': str(e)}
+    
+    def _optimize_memory_usage(self) -> Dict[str, Any]:
+        """优化内存使用"""
+        try:
+            # 获取内存信息
+            memory = psutil.virtual_memory()
+            
+            # 如果内存使用率过高，触发垃圾回收
+            if memory.percent > 85:
+                import gc
+                gc.collect()
+                
+                # 如果有GPU，也清理GPU内存
+                if self.gpu_available and TORCH_AVAILABLE:
+                    torch.cuda.empty_cache()
+            
+            return {
+                'status': 'success',
+                'actions': ['garbage_collection', 'gpu_cache_cleared'] if memory.percent > 85 else ['monitoring'],
+                'memory_usage_percent': memory.percent,
+                'available_memory_gb': memory.available / (1024**3)
+            }
+            
+        except Exception as e:
+            return {'status': 'failed', 'error': str(e)}
+    
+    def get_optimization_suggestions(self) -> List[str]:
+        """获取优化建议"""
+        suggestions = []
+        
+        try:
+            # 检查GPU状态
+            if self.gpu_available:
+                gpu_status = self.get_gpu_status()
+                if gpu_status:
+                    if gpu_status.utilization < 30:
+                        suggestions.append("GPU利用率较低，考虑增加批处理大小")
+                    elif gpu_status.utilization > 90:
+                        suggestions.append("GPU利用率过高，考虑减少批处理大小或清理缓存")
+                    
+                    if gpu_status.free_memory < gpu_status.total_memory * 0.1:
+                        suggestions.append("GPU内存不足，建议清理缓存或减少模型大小")
+            else:
+                suggestions.append("未检测到GPU，建议安装CUDA和PyTorch以启用GPU加速")
+            
+            # 检查CPU状态
+            cpu_usage = psutil.cpu_percent(interval=1)
+            if cpu_usage > 80:
+                suggestions.append("CPU使用率过高，考虑优化算法或增加硬件资源")
+            elif cpu_usage < 20:
+                suggestions.append("CPU利用率较低，可以增加并行处理任务")
+            
+            # 检查内存状态
+            memory = psutil.virtual_memory()
+            if memory.percent > 85:
+                suggestions.append("内存使用率过高，建议增加内存或优化内存使用")
+            
+            # 检查PyTorch和CuPy安装
+            if not TORCH_AVAILABLE:
+                suggestions.append("建议安装PyTorch以获得更好的深度学习性能")
+            if not CUPY_AVAILABLE:
+                suggestions.append("建议安装CuPy以获得更好的GPU数值计算性能")
+            
+        except Exception as e:
+            logger.error(f"生成优化建议失败: {str(e)}")
+            suggestions.append("系统状态检查异常，建议重启优化器")
+        
+        return suggestions if suggestions else ["系统运行状态良好，无需特殊优化"]
+    
+    def optimize_gpu_memory(self) -> Dict[str, Any]:
+        """优化GPU内存"""
+        try:
+            if not self.gpu_available:
+                return {
+                    'status': 'skipped',
+                    'reason': 'GPU不可用',
+                    'recommendations': ['安装CUDA和PyTorch以启用GPU功能']
+                }
+            
+            initial_memory = torch.cuda.memory_allocated() if TORCH_AVAILABLE else 0
+            
+            # 清理GPU缓存
+            if TORCH_AVAILABLE:
+                torch.cuda.empty_cache()
+                torch.cuda.synchronize()
+            
+            final_memory = torch.cuda.memory_allocated() if TORCH_AVAILABLE else 0
+            freed_memory = initial_memory - final_memory
+            
+            return {
+                'status': 'success',
+                'initial_memory_mb': initial_memory / (1024**2),
+                'final_memory_mb': final_memory / (1024**2),
+                'freed_memory_mb': freed_memory / (1024**2),
+                'actions': ['cache_cleared', 'memory_synchronized']
+            }
+            
+        except Exception as e:
+            return {
+                'status': 'failed',
+                'error': str(e),
+                'recommendations': ['检查GPU驱动和CUDA安装']
+            }
+    
     def _initialize_hardware(self):
         """初始化硬件检测"""
         # 检测GPU
