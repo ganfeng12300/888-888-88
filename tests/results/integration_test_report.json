@@ -1,61 +1,102 @@
 {
-  "timestamp": "2025-10-08T17:53:24.046855",
+  "timestamp": "2025-10-08T17:58:15.304478",
   "summary": {
     "total_tests": 9,
-    "passed": 3,
+    "passed": 5,
     "warnings": 0,
-    "failed": 6,
-    "success_rate": 33.33333333333333,
+    "failed": 4,
+    "success_rate": 55.55555555555556,
     "status": "🔴 差",
     "message": "系统集成存在严重问题，需要立即修复"
   },
   "test_results": {
     "GPU性能优化器测试": {
       "status": "failed",
-      "message": "缺少optimize_performance方法",
-      "duration": 0.056989192962646484,
+      "message": "测试异常: 'GPUPerformanceOptimizer' object has no attribute 'get_system_info'",
+      "duration": 0.018155336380004883,
       "details": {},
-      "timestamp": "2025-10-08T17:53:23.707254"
+      "timestamp": "2025-10-08T17:58:15.031528"
     },
     "Bybit交易器测试": {
-      "status": "failed",
-      "message": "缺少必需方法: connect",
-      "duration": 0.24597716331481934,
-      "details": {},
-      "timestamp": "2025-10-08T17:53:23.953352"
+      "status": "success",
+      "message": "Bybit交易器结构完整",
+      "duration": 0.2098376750946045,
+      "details": {
+        "methods": [
+          "connect",
+          "get_account_info",
+          "get_positions",
+          "place_order",
+          "cancel_order",
+          "get_market_data"
+        ],
+        "config_valid": true,
+        "connection_status": {
+          "api_connected": true,
+          "websocket_connected": false,
+          "is_running": false,
+          "last_check": "2025-10-08T17:58:15.241394",
+          "server_time": "1759946295"
+        }
+      },
+      "timestamp": "2025-10-08T17:58:15.241603"
     },
     "风险控制器测试": {
-      "status": "failed",
-      "message": "测试异常: AdvancedRiskController.calculate_risk_metrics() takes 1 positional argument but 2 were given",
-      "duration": 0.006986141204833984,
-      "details": {},
-      "timestamp": "2025-10-08T17:53:23.960451"
+      "status": "success",
+      "message": "风险控制器功能正常",
+      "duration": 0.014099597930908203,
+      "details": {
+        "risk_metrics": [
+          "total_exposure",
+          "total_pnl",
+          "max_drawdown",
+          "current_drawdown",
+          "daily_pnl",
+          "position_count",
+          "avg_correlation",
+          "volatility",
+          "sharpe_ratio",
+          "var_95",
+          "risk_score",
+          "account_balance",
+          "emergency_stop",
+          "timestamp"
+        ],
+        "risk_check_result": {
+          "allowed": false,
+          "reason": "风险检查异常: float division by zero",
+          "risk_level": "high",
+          "error": "float division by zero"
+        },
+        "test_position_processed": true
+      },
+      "timestamp": "2025-10-08T17:58:15.255829"
     },
     "时区调度器测试": {
       "status": "failed",
       "message": "测试异常: 'TimezoneScheduler' object has no attribute 'get_current_market_session'",
-      "duration": 0.07843852043151855,
+      "duration": 0.035468339920043945,
       "details": {},
-      "timestamp": "2025-10-08T17:53:24.038984"
+      "timestamp": "2025-10-08T17:58:15.291391"
     },
     "AI融合系统测试": {
       "status": "failed",
       "message": "测试异常: 'SixAgentsFusionSystem' object has no attribute 'get_agents_status'",
-      "duration": 0.0043642520904541016,
+      "duration": 0.010012626647949219,
       "details": {},
-      "timestamp": "2025-10-08T17:53:24.043474"
+      "timestamp": "2025-10-08T17:58:15.301510"
     },
     "系统启动器测试": {
       "status": "failed",
       "message": "测试异常: 'UltimateSystemLauncher' object has no attribute 'get_components_status'",
-      "duration": 0.00131988525390625,
+      "duration": 0.0011937618255615234,
       "details": {},
-      "timestamp": "2025-10-08T17:53:24.044886"
+      "timestamp": "2025-10-08T17:58:15.302806"
     },
     "数据流集成测试": {
       "status": "success",
       "message": "数据流集成正常",
-      "duration": 1.33514404296875e-05,
+      "duration": 1.1682510375976562e-05,
       "details": {
         "stages_completed": [
           "market_analysis",
@@ -64,14 +105,14 @@
           "total_time"
         ],
         "data_integrity": true,
-        "processing_time": 2.6226043701171875e-06
+        "processing_time": 2.1457672119140625e-06
       },
-      "timestamp": "2025-10-08T17:53:24.044986"
+      "timestamp": "2025-10-08T17:58:15.302900"
     },
     "错误处理测试": {
       "status": "success",
       "message": "错误处理机制测试完成",
-      "duration": 0.00042510032653808594,
+      "duration": 0.0003905296325683594,
       "details": {
         "scenarios_tested": 3,
         "results": [
@@ -80,26 +121,24 @@
           "data_error_handled"
         ]
       },
-      "timestamp": "2025-10-08T17:53:24.045486"
+      "timestamp": "2025-10-08T17:58:15.303365"
     },
     "性能基准测试": {
       "status": "success",
       "message": "性能评分: 100/100",
-      "duration": 0.0006573200225830078,
+      "duration": 0.0005152225494384766,
       "details": {
-        "startup_time": 0.0003609657287597656,
-        "data_processing_100x": 6.628036499023438e-05,
-        "avg_processing_time": 6.628036499023437e-07,
-        "memory_usage_mb": 137.390625,
+        "startup_time": 0.00028705596923828125,
+        "data_processing_100x": 6.604194641113281e-05,
+        "avg_processing_time": 6.604194641113281e-07,
+        "memory_usage_mb": 142.52734375,
         "performance_score": 100
       },
-      "timestamp": "2025-10-08T17:53:24.046239"
+      "timestamp": "2025-10-08T17:58:15.303969"
     }
   },
   "recommendations": [
     "修复GPU性能优化器测试的功能问题",
-    "修复Bybit交易器测试的功能问题",
-    "修复风险控制器测试的功能问题",
     "修复时区调度器测试的功能问题",
     "修复AI融合系统测试的功能问题",
     "修复系统启动器测试的功能问题",
