@@ -1,0 +1,128 @@
+{
+  "timestamp": "2025-10-08T17:23:27.641749",
+  "summary": {
+    "total_checks": 7,
+    "passed": 6,
+    "warnings": 1,
+    "failed": 0,
+    "success_rate": 85.71428571428571,
+    "status": "🟡 良好",
+    "message": "系统基本健康，有少量警告"
+  },
+  "results": {
+    "文件结构检查": {
+      "status": "success",
+      "message": "文件结构完整",
+      "duration": 0.0002434253692626953,
+      "details": {
+        "files": [
+          "config.json",
+          "requirements.txt",
+          "start_ultimate_system.py",
+          "README_ULTIMATE_SYSTEM.md"
+        ],
+        "dirs": [
+          "src/hardware",
+          "src/exchange",
+          "src/risk",
+          "src/scheduler",
+          "src/ai"
+        ]
+      }
+    },
+    "配置文件检查": {
+      "status": "success",
+      "message": "配置文件完整，包含15个配置节",
+      "duration": 0.00031256675720214844,
+      "details": {
+        "sections": [
+          "system",
+          "gpu_optimizer",
+          "bybit_trader",
+          "risk_controller",
+          "timezone_scheduler",
+          "fusion_system",
+          "database",
+          "redis",
+          "monitoring",
+          "logging",
+          "security",
+          "performance",
+          "backup",
+          "testing",
+          "ai_evolution"
+        ]
+      }
+    },
+    "依赖包检查": {
+      "status": "success",
+      "message": "所有10个关键依赖已安装",
+      "duration": 0.9303815364837646,
+      "details": {
+        "packages": [
+          "numpy",
+          "pandas",
+          "scipy",
+          "requests",
+          "psutil",
+          "pytz",
+          "loguru",
+          "websocket",
+          "ccxt",
+          "aiohttp"
+        ]
+      }
+    },
+    "核心模块检查": {
+      "status": "success",
+      "message": "所有6个核心模块导入成功",
+      "duration": 0.012536287307739258,
+      "details": {
+        "modules": [
+          "GPU性能优化器",
+          "Bybit交易器",
+          "风险控制器",
+          "时区调度器",
+          "AI融合系统",
+          "系统启动器"
+        ]
+      }
+    },
+    "系统启动器检查": {
+      "status": "success",
+      "message": "系统启动器初始化成功",
+      "duration": 0.0004189014434814453,
+      "details": {
+        "config_sections": 15,
+        "components": [
+          "gpu_optimizer",
+          "bybit_trader",
+          "risk_controller",
+          "timezone_scheduler",
+          "fusion_system"
+        ]
+      }
+    },
+    "GPU支持检查": {
+      "status": "warning",
+      "message": "GPU支持有限: PyTorch未安装，GPU加速功能受限; CuPy未安装，部分GPU计算功能受限; 无法检测GPU硬件信息",
+      "duration": 0.00026226043701171875,
+      "details": {
+        "available": [],
+        "warnings": [
+          "PyTorch未安装，GPU加速功能受限",
+          "CuPy未安装，部分GPU计算功能受限",
+          "无法检测GPU硬件信息"
+        ]
+      }
+    },
+    "日志目录检查": {
+      "status": "success",
+      "message": "日志目录可写",
+      "duration": 0.0004398822784423828,
+      "details": {
+        "path": "/tmp/ganfeng12300/888-888-88/logs"
+      }
+    }
+  }
+}
