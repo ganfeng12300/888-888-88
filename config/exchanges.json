@@ -1,0 +1,35 @@
+{
+  "binance": {
+    "name": "binance",
+    "api_key": "",
+    "secret": "",
+    "passphrase": null,
+    "sandbox": true,
+    "testnet": false,
+    "rate_limit": 1200,
+    "timeout": 30000,
+    "enable_rate_limit": true
+  },
+  "okx": {
+    "name": "okx",
+    "api_key": "",
+    "secret": "",
+    "passphrase": "",
+    "sandbox": true,
+    "testnet": false,
+    "rate_limit": 600,
+    "timeout": 30000,
+    "enable_rate_limit": true
+  },
+  "bitget": {
+    "name": "bitget",
+    "api_key": "",
+    "secret": "",
+    "passphrase": "",
+    "sandbox": true,
+    "testnet": false,
+    "rate_limit": 600,
+    "timeout": 30000,
+    "enable_rate_limit": true
+  }
+}

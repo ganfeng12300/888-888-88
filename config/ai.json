@@ -1,0 +1,7 @@
+{
+  "model_update_interval": 3600,
+  "prediction_threshold": 0.7,
+  "ensemble_weight_decay": 0.95,
+  "max_models_loaded": 10,
+  "batch_prediction_size": 100
+}

@@ -1,0 +1,8 @@
+{
+  "health_check_interval": 60,
+  "performance_log_interval": 300,
+  "alert_email": null,
+  "slack_webhook": null,
+  "telegram_bot_token": null,
+  "telegram_chat_id": null
+}

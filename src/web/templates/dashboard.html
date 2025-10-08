@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>888-888-88 量化交易系统 - 完整管理界面</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #0a0e27;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
+            border-bottom: 2px solid #4a5568;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
+            border: 1px solid #4a5568;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #2d3561 0%, #4a5568 100%);
+            border-bottom: 1px solid #4a5568;
+            font-weight: bold;
+        }
+        
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 10px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-running { background-color: #10b981; }
+        .status-training { background-color: #f59e0b; }
+        .status-completed { background-color: #10b981; }
+        .status-pending { background-color: #6b7280; }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+        }
+        
+        .table-dark {
+            background-color: #1a1f3a;
+        }
+        
+        .table-dark td, .table-dark th {
+            border-color: #4a5568;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            border: none;
+        }
+        
+        .profit-positive { color: #10b981; }
+        .profit-negative { color: #ef4444; }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        
+        .ai-level-expert { color: #fbbf24; }
+        .ai-level-advanced { color: #10b981; }
+        .ai-level-beginner { color: #6b7280; }
+        
+        .grade-a-plus { color: #fbbf24; font-weight: bold; }
+        .grade-a { color: #10b981; font-weight: bold; }
+        .grade-c { color: #6b7280; }
+        
+        .real-time-update {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, #1a1f3a 0%, #2d3561 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .websocket-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <!-- WebSocket连接状态 -->
+    <div id="websocket-status" class="websocket-status">
+        <span class="badge bg-success">
+            <i class="fas fa-wifi"></i> 实时连接
+        </span>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-chart-line"></i> 888-888-88 量化交易系统
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text">
+                    <i class="fas fa-clock"></i> <span id="current-time"></span>
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <div class="col-md-2 sidebar">
+                <h5><i class="fas fa-tachometer-alt"></i> 系统概览</h5>
+                <div id="system-overview" class="mb-4">
+                    <!-- 系统状态将在这里动态加载 -->
+                </div>
+                
+                <h5><i class="fas fa-wallet"></i> 账户信息</h5>
+                <div id="account-info">
+                    <!-- 账户信息将在这里动态加载 -->
+                </div>
+            </div>
+
+            <!-- 主内容区 -->
+            <div class="col-md-10 main-content">
+                <!-- 关键指标卡片 -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value" id="total-profit">$0</div>
+                            <div class="metric-label">总收益</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value" id="win-rate">0%</div>
+                            <div class="metric-label">胜率</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value" id="active-positions">0</div>
+                            <div class="metric-label">活跃持仓</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="metric-card">
+                            <div class="metric-value" id="ai-accuracy">0%</div>
+                            <div class="metric-label">AI准确率</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI训练状态 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-brain"></i> AI模型训练状态</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="ai-training-status">
+                            <!-- AI训练状态将在这里动态加载 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 当前持仓 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-coins"></i> 当前持仓</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>交易对</th>
+                                        <th>方向</th>
+                                        <th>数量</th>
+                                        <th>开仓价</th>
+                                        <th>当前价</th>
+                                        <th>杠杆</th>
+                                        <th>保证金</th>
+                                        <th>未实现盈亏</th>
+                                        <th>盈亏%</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="positions-table">
+                                    <!-- 持仓数据将在这里动态加载 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 交易历史 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-history"></i> 交易历史</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>交易对</th>
+                                        <th>方向</th>
+                                        <th>数量</th>
+                                        <th>开仓价</th>
+                                        <th>平仓价</th>
+                                        <th>杠杆</th>
+                                        <th>盈亏</th>
+                                        <th>盈亏%</th>
+                                        <th>持续时间</th>
+                                        <th>结果</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trade-history-table">
+                                    <!-- 交易历史将在这里动态加载 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 市场数据和AI信号 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-area"></i> 市场数据与AI信号</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>交易对</th>
+                                        <th>当前价格</th>
+                                        <th>24h涨跌</th>
+                                        <th>24h成交量</th>
+                                        <th>AI信号</th>
+                                        <th>置信度</th>
+                                        <th>趋势</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="market-data-table">
+                                    <!-- 市场数据将在这里动态加载 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 收益图表 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line"></i> 收益趋势图</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="profit-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // WebSocket连接
+        let ws;
+        let profitChart;
+        
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/dashboard`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function(event) {
+                console.log('WebSocket连接已建立');
+                updateWebSocketStatus(true);
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.type === 'dashboard_update') {
+                    updateDashboard(data.data);
+                }
+            };
+            
+            ws.onclose = function(event) {
+                console.log('WebSocket连接已关闭');
+                updateWebSocketStatus(false);
+                // 5秒后重连
+                setTimeout(connectWebSocket, 5000);
+            };
+            
+            ws.onerror = function(error) {
+                console.error('WebSocket错误:', error);
+                updateWebSocketStatus(false);
+            };
+        }
+        
+        function updateWebSocketStatus(connected) {
+            const statusElement = document.getElementById('websocket-status');
+            if (connected) {
+                statusElement.innerHTML = '<span class="badge bg-success"><i class="fas fa-wifi"></i> 实时连接</span>';
+            } else {
+                statusElement.innerHTML = '<span class="badge bg-danger"><i class="fas fa-wifi"></i> 连接断开</span>';
+            }
+        }
+        
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('zh-CN');
+        }
+        
+        function updateDashboard(data) {
+            // 更新关键指标
+            document.getElementById('total-profit').textContent = `$${data.trading_stats.overall.net_profit.toFixed(2)}`;
+            document.getElementById('win-rate').textContent = `${data.trading_stats.overall.win_rate.toFixed(1)}%`;
+            document.getElementById('active-positions').textContent = data.positions.length;
+            document.getElementById('ai-accuracy').textContent = `${data.ai_training.overall_stats.avg_accuracy.toFixed(1)}%`;
+            
+            // 更新系统概览
+            updateSystemOverview(data.system_status);
+            
+            // 更新账户信息
+            updateAccountInfo(data.risk_management);
+            
+            // 更新AI训练状态
+            updateAITrainingStatus(data.ai_training);
+            
+            // 更新持仓表格
+            updatePositionsTable(data.positions);
+            
+            // 更新交易历史
+            updateTradeHistoryTable(data.trade_history);
+            
+            // 更新市场数据
+            updateMarketDataTable(data.market_data.symbols);
+        }
+        
+        function updateSystemOverview(systemStatus) {
+            const html = `
+                <div class="mb-2">
+                    <span class="status-indicator status-${systemStatus.status}"></span>
+                    系统状态: ${systemStatus.status === 'running' ? '运行中' : '停止'}
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-microchip"></i> CPU: ${systemStatus.cpu_usage.toFixed(1)}%
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-memory"></i> 内存: ${systemStatus.memory_usage.toFixed(1)}%
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-hdd"></i> 磁盘: ${systemStatus.disk_usage.toFixed(1)}%
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-heartbeat"></i> 健康度: ${systemStatus.health_score.toFixed(1)}%
+                </div>
+            `;
+            document.getElementById('system-overview').innerHTML = html;
+        }
+        
+        function updateAccountInfo(riskData) {
+            const html = `
+                <div class="mb-2">
+                    <i class="fas fa-dollar-sign"></i> 账户余额: $${riskData.account_balance.toFixed(2)}
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-coins"></i> 可用余额: $${riskData.available_balance.toFixed(2)}
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-shield-alt"></i> 保证金: $${riskData.used_margin.toFixed(2)}
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-percentage"></i> 保证金率: ${riskData.margin_ratio.toFixed(2)}%
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-chart-line"></i> 今日盈亏: <span class="${riskData.current_daily_pnl >= 0 ? 'profit-positive' : 'profit-negative'}">$${riskData.current_daily_pnl.toFixed(2)}</span>
+                </div>
+            `;
+            document.getElementById('account-info').innerHTML = html;
+        }
+        
+        function updateAITrainingStatus(aiData) {
+            let html = '';
+            aiData.models.forEach(model => {
+                const statusClass = model.status === '训练中' ? 'status-training' : 
+                                  model.status === '已完成' ? 'status-completed' : 'status-pending';
+                const levelClass = model.level === '专家级' ? 'ai-level-expert' : 
+                                 model.level === '高级' ? 'ai-level-advanced' : 'ai-level-beginner';
+                const gradeClass = model.grade === 'A+' ? 'grade-a-plus' : 
+                                 model.grade === 'A' ? 'grade-a' : 'grade-c';
+                
+                html += `
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <h6><span class="status-indicator ${statusClass}"></span>${model.name}</h6>
+                            <small class="text-muted">${model.type}</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="progress mb-2">
+                                <div class="progress-bar" style="width: ${model.progress}%"></div>
+                            </div>
+                            <small>进度: ${model.progress.toFixed(1)}% (${model.epoch}/${model.total_epochs})</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div>准确率: ${model.accuracy.toFixed(1)}%</div>
+                            <div>等级: <span class="${levelClass}">${model.level}</span></div>
+                            <div>评分: <span class="${gradeClass}">${model.grade}</span></div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('ai-training-status').innerHTML = html;
+        }
+        
+        function updatePositionsTable(positions) {
+            let html = '';
+            positions.forEach(pos => {
+                const pnlClass = pos.unrealized_pnl >= 0 ? 'profit-positive' : 'profit-negative';
+                const sideIcon = pos.side === 'long' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger';
+                
+                html += `
+                    <tr class="real-time-update">
+                        <td><strong>${pos.symbol}</strong></td>
+                        <td><i class="fas ${sideIcon}"></i> ${pos.side.toUpperCase()}</td>
+                        <td>${pos.size}</td>
+                        <td>$${pos.entry_price.toFixed(2)}</td>
+                        <td>$${pos.current_price.toFixed(2)}</td>
+                        <td>${pos.leverage}x</td>
+                        <td>$${pos.margin.toFixed(2)}</td>
+                        <td class="${pnlClass}">$${pos.unrealized_pnl.toFixed(2)}</td>
+                        <td class="${pnlClass}">${pos.unrealized_pnl_pct.toFixed(2)}%</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="closePosition('${pos.id}')">
+                                <i class="fas fa-times"></i> 平仓
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('positions-table').innerHTML = html;
+        }
+        
+        function updateTradeHistoryTable(trades) {
+            let html = '';
+            trades.forEach(trade => {
+                const profitClass = trade.profit >= 0 ? 'profit-positive' : 'profit-negative';
+                const resultBadge = trade.result === 'win' ? 'badge bg-success' : 'badge bg-danger';
+                const sideIcon = trade.side === 'long' ? 'fa-arrow-up text-success' : 'fa-arrow-down text-danger';
+                
+                html += `
+                    <tr>
+                        <td><strong>${trade.symbol}</strong></td>
+                        <td><i class="fas ${sideIcon}"></i> ${trade.side.toUpperCase()}</td>
+                        <td>${trade.size}</td>
+                        <td>$${trade.entry_price.toFixed(2)}</td>
+                        <td>$${trade.exit_price.toFixed(2)}</td>
+                        <td>${trade.leverage}x</td>
+                        <td class="${profitClass}">$${trade.profit.toFixed(2)}</td>
+                        <td class="${profitClass}">${trade.profit_pct.toFixed(2)}%</td>
+                        <td>${trade.duration}</td>
+                        <td><span class="${resultBadge}">${trade.result === 'win' ? '盈利' : '亏损'}</span></td>
+                    </tr>
+                `;
+            });
+            document.getElementById('trade-history-table').innerHTML = html;
+        }
+        
+        function updateMarketDataTable(symbols) {
+            let html = '';
+            symbols.forEach(symbol => {
+                const changeClass = symbol.change_24h >= 0 ? 'profit-positive' : 'profit-negative';
+                const signalBadge = symbol.ai_signal === '买入' ? 'badge bg-success' : 
+                                  symbol.ai_signal === '卖出' ? 'badge bg-danger' : 'badge bg-warning';
+                const trendIcon = symbol.trend === '上涨' ? 'fa-arrow-up text-success' : 
+                                symbol.trend === '下跌' ? 'fa-arrow-down text-danger' : 'fa-arrows-alt-h text-warning';
+                
+                html += `
+                    <tr class="real-time-update">
+                        <td><strong>${symbol.symbol}</strong></td>
+                        <td>$${symbol.price.toFixed(2)}</td>
+                        <td class="${changeClass}">${symbol.change_24h.toFixed(2)}%</td>
+                        <td>$${symbol.volume_24h.toLocaleString()}</td>
+                        <td><span class="${signalBadge}">${symbol.ai_signal}</span></td>
+                        <td>${symbol.ai_confidence.toFixed(1)}%</td>
+                        <td><i class="fas ${trendIcon}"></i> ${symbol.trend}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('market-data-table').innerHTML = html;
+        }
+        
+        function closePosition(positionId) {
+            if (confirm('确定要平仓吗？')) {
+                // 这里可以调用API来平仓
+                console.log('平仓位置:', positionId);
+                alert('平仓请求已发送');
+            }
+        }
+        
+        function initProfitChart() {
+            const ctx = document.getElementById('profit-chart').getContext('2d');
+            profitChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '累计收益',
+                        data: [],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ffffff'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#ffffff'
+                            },
+                            grid: {
+                                color: '#4a5568'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#ffffff'
+                            },
+                            grid: {
+                                color: '#4a5568'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            connectWebSocket();
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            initProfitChart();
+        });
+    </script>
+</body>
+</html>
