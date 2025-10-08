@@ -1,0 +1,89 @@
+[
+  {
+    "timestamp": "2025-10-08T11:53:44.016734",
+    "metrics": {
+      "current_day": 1,
+      "current_level": 1,
+      "level_name": "实时监控AI",
+      "daily_return": 6.992993916619157,
+      "total_return": 6.992993916619161,
+      "current_balance": 53496.49695830958,
+      "win_rate": 68.8,
+      "max_drawdown": 10.5,
+      "sharpe_ratio": 1.55,
+      "leverage": 2.6,
+      "position_size": 12.5,
+      "confidence_score": 75.3,
+      "trades_today": 8,
+      "successful_trades": 5,
+      "evolution_progress": 3.3333333333333335,
+      "days_to_legendary": 29,
+      "acceleration_factor": 45
+    },
+    "acceleration_factors": {
+      "data_frequency": 12,
+      "decision_speed": 8,
+      "learning_rate": 15,
+      "parallel_processing": 6,
+      "risk_optimization": 4
+    }
+  },
+  {
+    "timestamp": "2025-10-08T11:53:47.037668",
+    "metrics": {
+      "current_day": 1,
+      "current_level": 1,
+      "level_name": "实时监控AI",
+      "daily_return": 7.020067877360884,
+      "total_return": 14.50397471358642,
+      "current_balance": 57251.987356793215,
+      "win_rate": 68.8,
+      "max_drawdown": 10.5,
+      "sharpe_ratio": 1.55,
+      "leverage": 2.6,
+      "position_size": 12.5,
+      "confidence_score": 75.3,
+      "trades_today": 8,
+      "successful_trades": 5,
+      "evolution_progress": 3.3333333333333335,
+      "days_to_legendary": 29,
+      "acceleration_factor": 45
+    },
+    "acceleration_factors": {
+      "data_frequency": 12,
+      "decision_speed": 8,
+      "learning_rate": 15,
+      "parallel_processing": 6,
+      "risk_optimization": 4
+    }
+  },
+  {
+    "timestamp": "2025-10-08T11:53:50.110601",
+    "metrics": {
+      "current_day": 1,
+      "current_level": 1,
+      "level_name": "实时监控AI",
+      "daily_return": 8.71923898197227,
+      "total_return": 24.487849912721128,
+      "current_balance": 62243.92495636056,
+      "win_rate": 68.8,
+      "max_drawdown": 10.5,
+      "sharpe_ratio": 1.55,
+      "leverage": 2.6,
+      "position_size": 12.5,
+      "confidence_score": 75.3,
+      "trades_today": 8,
+      "successful_trades": 5,
+      "evolution_progress": 3.3333333333333335,
+      "days_to_legendary": 29,
+      "acceleration_factor": 45
+    },
+    "acceleration_factors": {
+      "data_frequency": 12,
+      "decision_speed": 8,
+      "learning_rate": 15,
+      "parallel_processing": 6,
+      "risk_optimization": 4
+    }
+  }
+]
