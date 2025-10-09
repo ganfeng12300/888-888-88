@@ -616,7 +616,7 @@
                         </div>
                         <div class="terminal-line">
                             <span class="terminal-prompt">[04:30:19]</span>
-                            <span class="terminal-success">💰 合约账户余额: 48.82 USDT</span>
+                            <span class="terminal-success">💰 合约账户余额: 50.90 USDT</span>
                         </div>
                         <div class="terminal-line">
                             <span class="terminal-prompt">[04:30:20]</span>
@@ -676,34 +676,15 @@
 
         function getMockData() {
             return {
-                totalBalance: 48.82,
-                availableBalance: 35.67,
-                frozenBalance: 13.15,
-                dailyPnl: 2.34,
-                positionCount: 2,
+                totalBalance: 50.90,  // 真实余额
+                availableBalance: 50.90,  // 真实可用余额
+                frozenBalance: 0.00,  // 真实冻结金额
+                dailyPnl: 0.00,  // 真实盈亏
+                positionCount: 0,  // 真实持仓数量
                 leverage: '10x',
-                unrealizedPnl: 1.23,
-                marginRatio: '15.6%',
-                positions: [
-                    {
-                        symbol: 'BTCUSDT',
-                        side: 'LONG',
-                        size: 0.001,
-                        avgPrice: 43250.5,
-                        markPrice: 43456.8,
-                        pnl: 0.206,
-                        pnlRate: 4.77
-                    },
-                    {
-                        symbol: 'ETHUSDT',
-                        side: 'SHORT',
-                        size: 0.01,
-                        avgPrice: 2650.3,
-                        markPrice: 2634.7,
-                        pnl: 0.156,
-                        pnlRate: 5.89
-                    }
-                ]
+                unrealizedPnl: 0.00,  // 真实未实现盈亏
+                marginRatio: '0%',  // 真实保证金率
+                positions: []  // 真实持仓（当前为空）
             };
         }
 

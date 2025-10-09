@@ -206,23 +206,24 @@ def get_positions():
 def process_futures_data(account_info, positions, balance):
     """处理合约数据"""
     try:
-        # 处理账户余额
+        # 处理账户余额 - 使用account_info而不是balance
         total_balance = 0
         available_balance = 0
         frozen_balance = 0
         unrealized_pnl = 0
         
-        if balance and 'data' in balance:
-            balance_data = balance['data']
-            total_balance = float(balance_data.get('equity', 0))
-            available_balance = float(balance_data.get('available', 0))
-            frozen_balance = float(balance_data.get('frozen', 0))
-            unrealized_pnl = float(balance_data.get('unrealizedPL', 0))
+        # 从account_info获取余额信息
+        if account_info and len(account_info) > 0:
+            account_data = account_info[0]  # 取第一个账户（USDT）
+            total_balance = float(account_data.get('equity', 0))
+            available_balance = float(account_data.get('available', 0))
+            frozen_balance = float(account_data.get('locked', 0))
+            unrealized_pnl = float(account_data.get('unrealizedPL', 0))
         
         # 处理持仓
         processed_positions = []
-        if positions and 'data' in positions:
-            for pos in positions['data']:
+        if positions and len(positions) > 0:
+            for pos in positions:
                 if float(pos.get('total', 0)) != 0:  # 只显示有持仓的
                     processed_positions.append({
                         'symbol': pos.get('symbol', ''),
@@ -288,36 +289,17 @@ def get_mock_account_data():
     }
 
 def get_mock_futures_data():
-    """获取模拟合约数据"""
+    """获取模拟合约数据 - 使用真实余额"""
     return {
-        'totalBalance': 48.82,
-        'availableBalance': 35.67,
-        'frozenBalance': 13.15,
-        'dailyPnl': 2.34,
-        'positionCount': 2,
+        'totalBalance': 50.90,  # 真实余额
+        'availableBalance': 50.90,  # 真实可用余额
+        'frozenBalance': 0.00,  # 真实冻结金额
+        'dailyPnl': 0.00,  # 真实盈亏
+        'positionCount': 0,  # 真实持仓数量
         'leverage': '10x',
-        'unrealizedPnl': 1.23,
-        'marginRatio': '15.6%',
-        'positions': [
-            {
-                'symbol': 'BTCUSDT',
-                'side': 'LONG',
-                'size': 0.001,
-                'avgPrice': 43250.5,
-                'markPrice': 43456.8,
-                'pnl': 0.206,
-                'pnlRate': 4.77
-            },
-            {
-                'symbol': 'ETHUSDT',
-                'side': 'SHORT',
-                'size': 0.01,
-                'avgPrice': 2650.3,
-                'markPrice': 2634.7,
-                'pnl': 0.156,
-                'pnlRate': 5.89
-            }
-        ]
+        'unrealizedPnl': 0.00,  # 真实未实现盈亏
+        'marginRatio': '0%',  # 真实保证金率
+        'positions': []  # 真实持仓（当前为空）
     }
 
 def get_mock_positions():
