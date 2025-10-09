@@ -1,6 +1,14 @@
-# 🚀 AI量化交易系统
+# 🚀 生产级量化交易系统 v1.0
 
-专业级AI驱动的量化交易系统，集成6大AI模型，实现多策略融合决策，目标周收益20%+。
+[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Production-success.svg)](README.md)
+
+## 📋 项目简介
+
+这是一个完整的生产级量化交易系统，支持实盘交易、多策略并行执行、实时风险控制、AI优化和商业化部署。系统采用模块化设计，具备高可用性、高性能和高扩展性。
+
+**🎯 核心亮点**: 集成Bitget实盘交易、10个完整开发阶段、20+核心模块、10,000+行生产级代码
 
 ## ✨ 核心特性
 
