@@ -1,0 +1,191 @@
+{
+  "timestamp": "2025-10-09T14:57:23.658410",
+  "analysis_duration": 0.13646578788757324,
+  "hardware_specs": {
+    "cpu_cores": 3,
+    "cpu_threads": 3,
+    "memory_total_gb": 6,
+    "gpu_name": "Unknown",
+    "gpu_memory_gb": 0,
+    "storage_total_gb": 512,
+    "storage_free_gb": 183,
+    "network_latency_ms": 999.0
+  },
+  "module_analyses": [
+    {
+      "module_name": "ai",
+      "completion_rate": 1.0,
+      "performance_score": 1.0,
+      "bottlenecks": [],
+      "optimization_suggestions": []
+    },
+    {
+      "module_name": "exchanges",
+      "completion_rate": 0.9,
+      "performance_score": 1.0,
+      "bottlenecks": [],
+      "optimization_suggestions": []
+    },
+    {
+      "module_name": "hardware",
+      "completion_rate": 1.0,
+      "performance_score": 1.0,
+      "bottlenecks": [],
+      "optimization_suggestions": []
+    },
+    {
+      "module_name": "trading",
+      "completion_rate": 1.0,
+      "performance_score": 1.0,
+      "bottlenecks": [],
+      "optimization_suggestions": []
+    },
+    {
+      "module_name": "risk",
+      "completion_rate": 0.3,
+      "performance_score": 1.0,
+      "bottlenecks": [
+        "文件数量不足"
+      ],
+      "optimization_suggestions": [
+        "需要补充核心功能模块"
+      ]
+    },
+    {
+      "module_name": "monitoring",
+      "completion_rate": 1.0,
+      "performance_score": 1.0,
+      "bottlenecks": [],
+      "optimization_suggestions": []
+    }
+  ],
+  "overall_score": 0.575625,
+  "critical_issues": [
+    "内存容量不足，建议升级到128G",
+    "GPU显存不足，影响AI模型性能",
+    "网络延迟过高，影响交易执行速度",
+    "存储空间不足，需要清理数据",
+    "risk模块完成度不足"
+  ],
+  "optimization_priorities": [
+    "🔴 高优先级: 网络延迟过高，影响交易执行速度",
+    "🟡 中优先级: 内存容量不足，建议升级到128G",
+    "🟡 中优先级: GPU显存不足，影响AI模型性能",
+    "🟢 低优先级: 存储空间不足，需要清理数据",
+    "🟢 低优先级: risk模块完成度不足"
+  ],
+  "fee_analysis": {
+    "exchange_fees": {
+      "binance": {
+        "spot_maker": 0.001,
+        "spot_taker": 0.001,
+        "futures_maker": 0.0002,
+        "futures_taker": 0.0004
+      },
+      "okx": {
+        "spot_maker": 0.0008,
+        "spot_taker": 0.001,
+        "futures_maker": 0.0002,
+        "futures_taker": 0.0005
+      },
+      "bybit": {
+        "spot_maker": 0.001,
+        "spot_taker": 0.001,
+        "futures_maker": 0.0002,
+        "futures_taker": 0.0006
+      },
+      "bitget": {
+        "spot_maker": 0.001,
+        "spot_taker": 0.001,
+        "futures_maker": 0.0002,
+        "futures_taker": 0.0006
+      },
+      "huobi": {
+        "spot_maker": 0.002,
+        "spot_taker": 0.002,
+        "futures_maker": 0.0002,
+        "futures_taker": 0.0004
+      },
+      "gateio": {
+        "spot_maker": 0.002,
+        "spot_taker": 0.002,
+        "futures_maker": 0.0002,
+        "futures_taker": 0.0006
+      },
+      "kucoin": {
+        "spot_maker": 0.001,
+        "spot_taker": 0.001,
+        "futures_maker": 0.0002,
+        "futures_taker": 0.0006
+      },
+      "kraken": {
+        "spot_maker": 0.0016,
+        "spot_taker": 0.0026,
+        "futures_maker": 0.0002,
+        "futures_taker": 0.0005
+      }
+    },
+    "arbitrage_costs": {
+      "binance": {
+        "spot_arbitrage": 0.002,
+        "futures_arbitrage": 0.0018,
+        "min_profit_threshold": 0.0025
+      },
+      "okx": {
+        "spot_arbitrage": 0.002,
+        "futures_arbitrage": 0.002,
+        "min_profit_threshold": 0.0025
+      },
+      "bybit": {
+        "spot_arbitrage": 0.002,
+        "futures_arbitrage": 0.0021999999999999997,
+        "min_profit_threshold": 0.0025
+      },
+      "bitget": {
+        "spot_arbitrage": 0.002,
+        "futures_arbitrage": 0.0021999999999999997,
+        "min_profit_threshold": 0.0025
+      },
+      "huobi": {
+        "spot_arbitrage": 0.004,
+        "futures_arbitrage": 0.0028,
+        "min_profit_threshold": 0.005
+      },
+      "gateio": {
+        "spot_arbitrage": 0.004,
+        "futures_arbitrage": 0.0031999999999999997,
+        "min_profit_threshold": 0.005
+      },
+      "kucoin": {
+        "spot_arbitrage": 0.002,
+        "futures_arbitrage": 0.0021999999999999997,
+        "min_profit_threshold": 0.0025
+      },
+      "kraken": {
+        "spot_arbitrage": 0.0052,
+        "futures_arbitrage": 0.0036,
+        "min_profit_threshold": 0.0065
+      }
+    },
+    "vip_upgrade_path": {
+      "bitget": {
+        "vip1_requirement": 2000,
+        "fee_discount": 0.25
+      },
+      "bybit": {
+        "vip1_requirement": 5000,
+        "fee_discount": 0.2
+      },
+      "okx": {
+        "vip1_requirement": 10000,
+        "fee_discount": 0.2
+      },
+      "binance": {
+        "vip1_requirement": 50,
+        "fee_discount": 0.25,
+        "currency": "BNB"
+      }
+    },
+    "recommended_strategy": "优先发展资金费率套利，最小化手续费成本"
+  }
+}
