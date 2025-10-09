@@ -386,6 +386,25 @@ class RiskManager:
         
         return True
     
+    def calculate_trading_fees(self, exchange: str, order_type: str, amount: float) -> float:
+        """计算交易手续费（非VIP费率）"""
+        # 非VIP用户实际手续费
+        fee_rates = {
+            "binance": {"spot": 0.001, "futures": 0.0004},
+            "okx": {"spot": 0.001, "futures": 0.0005},
+            "bybit": {"spot": 0.001, "futures": 0.0006},
+            "bitget": {"spot": 0.001, "futures": 0.0006},
+            "huobi": {"spot": 0.002, "futures": 0.0004},
+            "gateio": {"spot": 0.002, "futures": 0.0006},
+            "kucoin": {"spot": 0.001, "futures": 0.0006},
+            "kraken": {"spot": 0.0026, "futures": 0.0005}
+        }
+        
+        if exchange in fee_rates:
+            rate = fee_rates[exchange].get(order_type, 0.001)
+            return amount * rate
+        return amount * 0.001  # 默认0.1%
+    
     def update_pnl(self, pnl: float):
         """更新盈亏"""
         self.daily_pnl += pnl
@@ -502,9 +521,33 @@ class CoreTradingEngine:
     async def _execute_arbitrage(self, opportunity: ArbitrageOpportunity):
         """执行套利交易"""
         try:
+            # 计算手续费成本
+            buy_amount = opportunity.max_quantity * opportunity.buy_price
+            sell_amount = opportunity.max_quantity * opportunity.sell_price
+            
+            buy_fee = self.risk_manager.calculate_trading_fees(
+                opportunity.buy_exchange, "spot", buy_amount
+            )
+            sell_fee = self.risk_manager.calculate_trading_fees(
+                opportunity.sell_exchange, "spot", sell_amount
+            )
+            
+            # 计算净利润（扣除手续费）
+            gross_profit = opportunity.estimated_profit
+            net_profit = gross_profit - buy_fee - sell_fee
+            net_profit_rate = net_profit / buy_amount
+            
+            # 检查净利润是否满足最小阈值
+            min_profit_threshold = 0.002  # 0.2% 最小净利润
+            if net_profit_rate < min_profit_threshold:
+                self.logger.info(f"Arbitrage opportunity rejected: net profit rate {net_profit_rate:.4f} "
+                               f"below threshold {min_profit_threshold:.4f}")
+                return
+            
             self.logger.info(f"Executing arbitrage: {opportunity.symbol} "
                            f"{opportunity.buy_exchange}->{opportunity.sell_exchange} "
-                           f"profit: {opportunity.profit_rate:.4f}")
+                           f"gross profit: {opportunity.profit_rate:.4f}, "
+                           f"net profit: {net_profit_rate:.4f} (after fees: ${buy_fee+sell_fee:.2f})")
             
             # 创建买单和卖单
             buy_order = TradingOrder(
@@ -542,11 +585,12 @@ class CoreTradingEngine:
             
             if isinstance(buy_result, str) and isinstance(sell_result, str) and buy_result and sell_result:
                 self.stats['orders_executed'] += 2
-                self.stats['total_profit'] += opportunity.estimated_profit
-                self.risk_manager.update_pnl(opportunity.estimated_profit)
+                self.stats['total_profit'] += net_profit  # 使用净利润
+                self.risk_manager.update_pnl(net_profit)
                 
                 self.logger.info(f"Arbitrage executed successfully: "
-                               f"Buy order {buy_result}, Sell order {sell_result}")
+                               f"Buy order {buy_result}, Sell order {sell_result}, "
+                               f"Net profit: ${net_profit:.2f}")
             else:
                 self.logger.error(f"Arbitrage execution failed: buy={buy_result}, sell={sell_result}")
                 
