@@ -24,12 +24,12 @@ from typing import Dict, List, Optional
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # 导入核心模块
-from src.monitoring.unified_logging_system import UnifiedLogger
+from src.monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 from src.exchanges.bitget_api import BitgetAPI, BitgetConfig
 from src.trading.advanced_trading_engine import AdvancedTradingEngine
 from src.trading.strategy_manager import StrategyManager, StrategyConfig
 from src.risk.enhanced_risk_manager import EnhancedRiskManager
-from src.ai.ai_system import AISystem
+from src.ai.ai_engine import AIEngine
 from src.optimization.performance_optimizer import PerformanceOptimizer
 from src.business.license_manager import LicenseManager
 from src.ui.web_dashboard import WebDashboard
@@ -39,14 +39,21 @@ class TradingSystemMain:
     """交易系统主类"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("TradingSystemMain")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config)
         
         # 系统组件
         self.bitget_api = None
         self.trading_engine = None
         self.strategy_manager = None
         self.risk_manager = None
-        self.ai_system = None
+        self.ai_engine = None
         self.performance_optimizer = None
         self.license_manager = None
         self.web_dashboard = None

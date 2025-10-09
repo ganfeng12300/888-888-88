@@ -13,8 +13,8 @@ from src.core.config import settings
 class AIEngine:
     """AI决策引擎"""
     
-    def __init__(self):
-        self.settings = settings
+    def __init__(self, config=None):
+        self.settings = config or settings
         self.models_loaded = False
         self.running = False
         logger.info("AI决策引擎初始化完成")

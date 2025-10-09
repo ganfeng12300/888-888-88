@@ -56,7 +56,14 @@ class EmailNotifier:
     
     def __init__(self, config: Dict):
         self.config = config
-        self.logger = UnifiedLogger("EmailNotifier")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "EmailNotifier")
     
     async def send_alert(self, alert: Alert, recipients: List[str]) -> bool:
         """发送告警邮件"""
@@ -151,7 +158,14 @@ class WebhookNotifier:
     
     def __init__(self, config: Dict):
         self.config = config
-        self.logger = UnifiedLogger("WebhookNotifier")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "WebhookNotifier")
     
     async def send_alert(self, alert: Alert) -> bool:
         """发送Webhook告警"""
@@ -196,7 +210,14 @@ class TelegramNotifier:
     
     def __init__(self, config: Dict):
         self.config = config
-        self.logger = UnifiedLogger("TelegramNotifier")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "TelegramNotifier")
     
     async def send_alert(self, alert: Alert) -> bool:
         """发送Telegram告警"""
@@ -245,7 +266,14 @@ class AlertManager:
     """告警管理器"""
     
     def __init__(self, config_file: str = None):
-        self.logger = UnifiedLogger("AlertManager")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "AlertManager")
         self.config = self._load_config(config_file)
         
         # 告警存储

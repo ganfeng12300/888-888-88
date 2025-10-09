@@ -48,6 +48,7 @@ class LogCategory(Enum):
     """日志分类枚举"""
     SYSTEM = "SYSTEM"          # 系统级日志
     TRADING = "TRADING"        # 交易相关日志
+    AI = "AI"                 # AI相关日志
     RISK = "RISK"             # 风险管理日志
     PERFORMANCE = "PERFORMANCE" # 性能监控日志
     NETWORK = "NETWORK"        # 网络通信日志
@@ -804,4 +805,3 @@ if __name__ == "__main__":
     
     # 关闭系统
     logger_system.shutdown()
-

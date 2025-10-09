@@ -46,7 +46,7 @@ except ImportError:
     cuda = None
     jit = None
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 
 @dataclass
 class GPUInfo:
@@ -80,7 +80,14 @@ class GPUMemoryPool:
     """GPU内存池管理器"""
     
     def __init__(self, device_id: int = 0):
-        self.logger = UnifiedLogger("GPUMemoryPool")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "GPUMemoryPool")
         self.device_id = device_id
         self.allocated_blocks = {}
         self.free_blocks = {}
@@ -182,7 +189,14 @@ class CUDAAccelerator:
     """CUDA加速器"""
     
     def __init__(self, device_id: int = 0):
-        self.logger = UnifiedLogger("CUDAAccelerator")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "CUDAAccelerator")
         self.device_id = device_id
         self.available = CUPY_AVAILABLE
         self.memory_pool = GPUMemoryPool(device_id) if self.available else None
@@ -381,7 +395,14 @@ class NumbaAccelerator:
     """Numba JIT加速器"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("NumbaAccelerator")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "NumbaAccelerator")
         self.available = NUMBA_AVAILABLE and cuda is not None
         self.compiled_functions = {}
         
@@ -465,7 +486,14 @@ class GPUTaskScheduler:
     """GPU任务调度器"""
     
     def __init__(self, max_concurrent_tasks: int = 4):
-        self.logger = UnifiedLogger("GPUTaskScheduler")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "GPUTaskScheduler")
         self.max_concurrent_tasks = max_concurrent_tasks
         self.task_queue = deque()
         self.running_tasks = {}
@@ -675,7 +703,14 @@ class GPUAccelerator:
     """GPU加速器主类"""
     
     def __init__(self, device_id: int = 0, max_concurrent_tasks: int = 4):
-        self.logger = UnifiedLogger("GPUAccelerator")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "GPUAccelerator")
         self.device_id = device_id
         
         # 初始化组件

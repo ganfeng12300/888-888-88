@@ -1,0 +1,17 @@
+{
+  "license_key": "TRIAL-1BC9BF5C3EDA47AF",
+  "license_type": "trial",
+  "status": "active",
+  "issued_date": "2025-10-09T03:53:56.504438",
+  "expiry_date": "2025-11-08T03:53:56.504441",
+  "max_users": 1,
+  "allowed_features": [
+    "basic_trading"
+  ],
+  "hardware_id": "2503AD48EF4638B3",
+  "organization": "Trial User",
+  "contact_email": "trial@example.com",
+  "metadata": {
+    "trial": true
+  }
+}

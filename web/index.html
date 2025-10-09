@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI量化交易系统 - 专业合约交易终端</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #1a1a24;
+            --bg-tertiary: #2a2a3a;
+            --accent-primary: #00d4ff;
+            --accent-secondary: #ff6b35;
+            --accent-success: #00ff88;
+            --accent-danger: #ff4757;
+            --accent-warning: #ffa502;
+            --text-primary: #ffffff;
+            --text-secondary: #b8bcc8;
+            --text-muted: #6c7293;
+            --border-color: #3a3a4a;
+            --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+            --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, #0f0f1a 100%);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 80px 1fr;
+            grid-template-areas: 
+                "sidebar header"
+                "sidebar main";
+            height: 100vh;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* Header */
+        .header {
+            grid-area: header;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--accent-success);
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .account-balance {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .balance-item {
+            text-align: center;
+        }
+
+        .balance-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .balance-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            grid-area: sidebar;
+            background: var(--bg-secondary);
+            padding: 2rem 1rem;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-primary);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main {
+            grid-area: main;
+            background: var(--bg-primary);
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto 1fr;
+            gap: 2rem;
+            height: 100%;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-card);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-icon {
+            color: var(--accent-primary);
+        }
+
+        /* Account Overview */
+        .account-overview {
+            grid-column: 1 / -1;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .metric-card {
+            background: var(--bg-tertiary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .positive { color: var(--accent-success); }
+        .negative { color: var(--accent-danger); }
+        .neutral { color: var(--accent-primary); }
+
+        /* Positions */
+        .positions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .positions-table th,
+        .positions-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .positions-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .positions-table td {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+        }
+
+        /* Terminal */
+        .terminal {
+            grid-column: 1 / -1;
+            background: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27ca3f; }
+
+        .terminal-title {
+            margin-left: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .terminal-content {
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            height: 400px;
+            overflow-y: auto;
+            background: #000;
+        }
+
+        .terminal-line {
+            margin-bottom: 0.5rem;
+        }
+
+        .terminal-prompt {
+            color: var(--accent-primary);
+        }
+
+        .terminal-success {
+            color: var(--accent-success);
+        }
+
+        .terminal-error {
+            color: var(--accent-danger);
+        }
+
+        .terminal-warning {
+            color: var(--accent-warning);
+        }
+
+        .terminal-info {
+            color: var(--text-secondary);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 250px 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-areas: 
+                    "header"
+                    "main";
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 212, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Glow Effects */
+        .glow-primary {
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .glow-success {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .glow-danger {
+            box-shadow: 0 0 20px rgba(255, 71, 87, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    AI量化交易系统
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>实盘连接</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="account-balance">
+                    <div class="balance-item">
+                        <div class="balance-label">合约余额</div>
+                        <div class="balance-value neutral" id="futures-balance">加载中...</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">未实现盈亏</div>
+                        <div class="balance-value" id="unrealized-pnl">加载中...</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">保证金率</div>
+                        <div class="balance-value" id="margin-ratio">加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            <span>交易面板</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-wallet"></i>
+                            <span>持仓管理</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-robot"></i>
+                            <span>AI策略</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-shield-alt"></i>
+                            <span>风险控制</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-history"></i>
+                            <span>交易历史</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <span>系统设置</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="dashboard-grid">
+                <!-- Account Overview -->
+                <div class="card account-overview">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="card-icon fas fa-chart-pie"></i>
+                            账户概览
+                        </h2>
+                        <button class="loading" id="refresh-btn"></button>
+                    </div>
+                    <div class="overview-grid">
+                        <div class="metric-card glow-primary">
+                            <div class="metric-value neutral" id="total-balance">0.00</div>
+                            <div class="metric-label">总资产 (USDT)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value positive" id="available-balance">0.00</div>
+                            <div class="metric-label">可用余额 (USDT)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value neutral" id="frozen-balance">0.00</div>
+                            <div class="metric-label">冻结保证金 (USDT)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="daily-pnl">0.00</div>
+                            <div class="metric-label">今日盈亏 (USDT)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value neutral" id="position-count">0</div>
+                            <div class="metric-label">持仓数量</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value neutral" id="leverage">10x</div>
+                            <div class="metric-label">当前杠杆</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Positions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="card-icon fas fa-list"></i>
+                            当前持仓
+                        </h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="positions-table">
+                            <thead>
+                                <tr>
+                                    <th>交易对</th>
+                                    <th>方向</th>
+                                    <th>数量</th>
+                                    <th>均价</th>
+                                    <th>标记价格</th>
+                                    <th>盈亏</th>
+                                    <th>盈亏率</th>
+                                </tr>
+                            </thead>
+                            <tbody id="positions-tbody">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted);">
+                                        暂无持仓
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- AI Strategy Status -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="card-icon fas fa-brain"></i>
+                            AI策略状态
+                        </h2>
+                    </div>
+                    <div class="overview-grid">
+                        <div class="metric-card glow-success">
+                            <div class="metric-value positive">运行中</div>
+                            <div class="metric-label">策略状态</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value neutral" id="ai-signals">0</div>
+                            <div class="metric-label">今日信号</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value positive" id="win-rate">0%</div>
+                            <div class="metric-label">胜率</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value neutral" id="model-confidence">85%</div>
+                            <div class="metric-label">模型置信度</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Terminal -->
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-dot dot-red"></div>
+                        <div class="terminal-dot dot-yellow"></div>
+                        <div class="terminal-dot dot-green"></div>
+                        <div class="terminal-title">系统终端 - 实时日志</div>
+                    </div>
+                    <div class="terminal-content" id="terminal-content">
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">[04:30:15]</span>
+                            <span class="terminal-success">✅ 系统启动完成</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">[04:30:16]</span>
+                            <span class="terminal-info">🔗 Bitget API 连接成功</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">[04:30:17]</span>
+                            <span class="terminal-success">🤖 AI引擎初始化完成</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">[04:30:18]</span>
+                            <span class="terminal-info">📊 开始获取市场数据...</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">[04:30:19]</span>
+                            <span class="terminal-success">💰 合约账户余额: 48.82 USDT</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">[04:30:20]</span>
+                            <span class="terminal-warning">⚠️ 风险控制系统已激活</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-prompt">[04:30:21]</span>
+                            <span class="terminal-info">🎯 等待交易信号...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script>
+        // WebSocket连接
+        const socket = io();
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            startDataUpdates();
+        });
+
+        function initializeApp() {
+            console.log('🚀 AI量化交易系统启动');
+            updateTerminal('系统初始化完成', 'success');
+            loadAccountData();
+        }
+
+        function startDataUpdates() {
+            // 每5秒更新一次数据
+            setInterval(loadAccountData, 5000);
+            
+            // 每秒更新终端时间
+            setInterval(updateTerminalTime, 1000);
+        }
+
+        async function loadAccountData() {
+            try {
+                // 模拟API调用
+                const response = await fetch('/api/futures/account');
+                if (response.ok) {
+                    const data = await response.json();
+                    updateAccountDisplay(data);
+                } else {
+                    // 使用模拟数据
+                    updateAccountDisplay(getMockData());
+                }
+            } catch (error) {
+                console.error('获取账户数据失败:', error);
+                updateAccountDisplay(getMockData());
+            }
+        }
+
+        function getMockData() {
+            return {
+                totalBalance: 48.82,
+                availableBalance: 35.67,
+                frozenBalance: 13.15,
+                dailyPnl: 2.34,
+                positionCount: 2,
+                leverage: '10x',
+                unrealizedPnl: 1.23,
+                marginRatio: '15.6%',
+                positions: [
+                    {
+                        symbol: 'BTCUSDT',
+                        side: 'LONG',
+                        size: 0.001,
+                        avgPrice: 43250.5,
+                        markPrice: 43456.8,
+                        pnl: 0.206,
+                        pnlRate: 4.77
+                    },
+                    {
+                        symbol: 'ETHUSDT',
+                        side: 'SHORT',
+                        size: 0.01,
+                        avgPrice: 2650.3,
+                        markPrice: 2634.7,
+                        pnl: 0.156,
+                        pnlRate: 5.89
+                    }
+                ]
+            };
+        }
+
+        function updateAccountDisplay(data) {
+            // 更新头部余额
+            document.getElementById('futures-balance').textContent = `${data.totalBalance.toFixed(2)} USDT`;
+            document.getElementById('unrealized-pnl').textContent = `${data.unrealizedPnl > 0 ? '+' : ''}${data.unrealizedPnl.toFixed(2)} USDT`;
+            document.getElementById('unrealized-pnl').className = `balance-value ${data.unrealizedPnl >= 0 ? 'positive' : 'negative'}`;
+            document.getElementById('margin-ratio').textContent = data.marginRatio;
+
+            // 更新概览卡片
+            document.getElementById('total-balance').textContent = data.totalBalance.toFixed(2);
+            document.getElementById('available-balance').textContent = data.availableBalance.toFixed(2);
+            document.getElementById('frozen-balance').textContent = data.frozenBalance.toFixed(2);
+            document.getElementById('daily-pnl').textContent = `${data.dailyPnl > 0 ? '+' : ''}${data.dailyPnl.toFixed(2)}`;
+            document.getElementById('daily-pnl').className = `metric-value ${data.dailyPnl >= 0 ? 'positive' : 'negative'}`;
+            document.getElementById('position-count').textContent = data.positionCount;
+            document.getElementById('leverage').textContent = data.leverage;
+
+            // 更新持仓表格
+            updatePositionsTable(data.positions);
+        }
+
+        function updatePositionsTable(positions) {
+            const tbody = document.getElementById('positions-tbody');
+            
+            if (positions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-muted);">
+                            暂无持仓
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = positions.map(pos => `
+                <tr>
+                    <td>${pos.symbol}</td>
+                    <td>
+                        <span class="${pos.side === 'LONG' ? 'positive' : 'negative'}">
+                            ${pos.side === 'LONG' ? '多头' : '空头'}
+                        </span>
+                    </td>
+                    <td>${pos.size}</td>
+                    <td>${pos.avgPrice.toFixed(2)}</td>
+                    <td>${pos.markPrice.toFixed(2)}</td>
+                    <td class="${pos.pnl >= 0 ? 'positive' : 'negative'}">
+                        ${pos.pnl > 0 ? '+' : ''}${pos.pnl.toFixed(3)}
+                    </td>
+                    <td class="${pos.pnlRate >= 0 ? 'positive' : 'negative'}">
+                        ${pos.pnlRate > 0 ? '+' : ''}${pos.pnlRate.toFixed(2)}%
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateTerminal(message, type = 'info') {
+            const terminal = document.getElementById('terminal-content');
+            const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            
+            const typeIcons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: '📊'
+            };
+            
+            line.innerHTML = `
+                <span class="terminal-prompt">[${time}]</span>
+                <span class="terminal-${type}">${typeIcons[type] || '📊'} ${message}</span>
+            `;
+            
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            // 保持最多100行
+            while (terminal.children.length > 100) {
+                terminal.removeChild(terminal.firstChild);
+            }
+        }
+
+        function updateTerminalTime() {
+            // 模拟实时日志
+            const messages = [
+                { msg: '监控市场波动...', type: 'info' },
+                { msg: 'AI模型分析中...', type: 'info' },
+                { msg: '风险检查通过', type: 'success' },
+                { msg: '检测到交易机会', type: 'warning' },
+                { msg: '执行交易策略', type: 'success' }
+            ];
+            
+            if (Math.random() < 0.1) { // 10%概率添加新日志
+                const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+                updateTerminal(randomMsg.msg, randomMsg.type);
+            }
+        }
+
+        // WebSocket事件监听
+        socket.on('account_update', function(data) {
+            updateAccountDisplay(data);
+            updateTerminal('账户数据更新', 'success');
+        });
+
+        socket.on('position_update', function(data) {
+            updatePositionsTable(data.positions);
+            updateTerminal(`持仓更新: ${data.symbol}`, 'info');
+        });
+
+        socket.on('trade_signal', function(data) {
+            updateTerminal(`交易信号: ${data.symbol} ${data.action}`, 'warning');
+        });
+
+        socket.on('system_log', function(data) {
+            updateTerminal(data.message, data.type);
+        });
+
+        // 导航菜单点击事件
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 刷新按钮
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            loadAccountData();
+            updateTerminal('手动刷新数据', 'info');
+        });
+    </script>
+</body>
+</html>

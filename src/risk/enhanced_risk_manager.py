@@ -22,7 +22,7 @@ from dataclasses import dataclass, asdict
 from collections import deque, defaultdict
 from enum import Enum
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 
 class RiskLevel(Enum):
     """风险等级枚举"""
@@ -86,7 +86,14 @@ class VaRCalculator:
     """风险价值计算器"""
     
     def __init__(self, confidence_level: float = 0.95):
-        self.logger = UnifiedLogger("VaRCalculator")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "VaRCalculator")
         self.confidence_level = confidence_level
         self.price_history = defaultdict(deque)
         self.return_history = defaultdict(deque)
@@ -128,7 +135,14 @@ class DrawdownMonitor:
     """回撤监控器"""
     
     def __init__(self, max_lookback_days: int = 252):
-        self.logger = UnifiedLogger("DrawdownMonitor")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "DrawdownMonitor")
         self.max_lookback_days = max_lookback_days
         self.equity_curve = deque(maxlen=max_lookback_days)
         self.peak_value = 0.0
@@ -166,7 +180,14 @@ class RiskLimitManager:
     """风险限额管理器"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("RiskLimitManager")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "RiskLimitManager")
         self.risk_limits: Dict[str, RiskLimit] = {}
         self.limit_violations = deque(maxlen=1000)
         self._lock = threading.Lock()
@@ -226,8 +247,16 @@ class RiskLimitManager:
 class EnhancedRiskManager:
     """增强风险管理器主类"""
     
-    def __init__(self):
-        self.logger = UnifiedLogger("EnhancedRiskManager")
+    def __init__(self, config=None):
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "EnhancedRiskManager")
+        self.settings = config
         
         # 初始化组件
         self.var_calculator = VaRCalculator()

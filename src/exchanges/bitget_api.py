@@ -24,7 +24,7 @@ from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass
 import urllib.parse
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 
 @dataclass
 class BitgetConfig:
@@ -38,12 +38,30 @@ class BitgetConfig:
 class BitgetAPI:
     """Bitget API主类"""
     
-    def __init__(self, config: BitgetConfig):
-        self.logger = UnifiedLogger("BitgetAPI")
-        self.config = config
+    def __init__(self, config: BitgetConfig = None, api_key: str = None, secret_key: str = None, passphrase: str = None):
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config)
+        
+        # 支持两种初始化方式
+        if config:
+            self.config = config
+        elif api_key and secret_key and passphrase:
+            self.config = BitgetConfig(
+                api_key=api_key,
+                secret_key=secret_key,
+                passphrase=passphrase
+            )
+        else:
+            raise ValueError("必须提供config对象或api_key、secret_key、passphrase参数")
         
         # API端点
-        if config.sandbox:
+        if self.config.sandbox:
             self.base_url = "https://api.bitget.com"  # Bitget没有沙盒环境，使用正式环境
         else:
             self.base_url = "https://api.bitget.com"
@@ -57,7 +75,7 @@ class BitgetAPI:
         
         # 会话管理
         self.session = requests.Session()
-        self.session.timeout = config.timeout
+        self.session.timeout = self.config.timeout
         
         self.logger.info("Bitget API初始化完成")
     
@@ -147,8 +165,20 @@ class BitgetAPI:
     
     # 账户相关接口
     def get_account_info(self) -> Optional[Dict]:
-        """获取账户信息"""
+        """获取现货账户信息"""
         return self._make_request('GET', '/api/spot/v1/account/assets')
+    
+    def get_futures_account_info(self) -> Optional[Dict]:
+        """获取合约账户信息"""
+        return self._make_request('GET', '/api/mix/v1/account/accounts', {'productType': 'UMCBL'})
+    
+    def get_futures_positions(self) -> Optional[List[Dict]]:
+        """获取合约持仓信息"""
+        return self._make_request('GET', '/api/mix/v1/position/allPosition', {'productType': 'UMCBL'})
+    
+    def get_futures_balance(self) -> Optional[Dict]:
+        """获取合约账户余额"""
+        return self._make_request('GET', '/api/mix/v1/account/account', {'symbol': 'BTCUSDT', 'marginCoin': 'USDT'})
     
     def get_balance(self, coin: str = None) -> Optional[Dict]:
         """获取余额"""

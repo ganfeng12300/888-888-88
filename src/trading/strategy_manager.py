@@ -21,7 +21,7 @@ from collections import deque, defaultdict
 from enum import Enum
 import numpy as np
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 
 class StrategyStatus(Enum):
     """策略状态"""
@@ -74,7 +74,14 @@ class BaseStrategy:
     
     def __init__(self, config: StrategyConfig):
         self.config = config
-        self.logger = UnifiedLogger(f"Strategy_{config.strategy_id}")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # f"Strategy_{config.strategy_id}")
         self.status = StrategyStatus.INACTIVE
         self.signals = deque(maxlen=1000)
         self.performance = StrategyPerformance(
@@ -335,7 +342,14 @@ class StrategyManager:
     """策略管理器主类"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("StrategyManager")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "StrategyManager")
         self.strategies: Dict[str, BaseStrategy] = {}
         self.strategy_configs: Dict[str, StrategyConfig] = {}
         self.signal_queue = deque()

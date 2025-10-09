@@ -65,7 +65,14 @@ class MetricsCollector:
     """指标收集器"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("MetricsCollector")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "MetricsCollector")
         self.system_metrics_history = deque(maxlen=1000)
         self.trading_metrics_history = deque(maxlen=1000)
         self._running = False
@@ -166,7 +173,14 @@ class AlertManager:
     """告警管理器"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("AlertManager")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "AlertManager")
         self.alert_rules: List[AlertRule] = []
         self.alert_history = deque(maxlen=1000)
         self.active_alerts = {}
@@ -292,7 +306,14 @@ class PerformanceProfiler:
     """性能分析器"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("PerformanceProfiler")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "PerformanceProfiler")
         self.function_stats = defaultdict(list)
         self.active_timers = {}
     
@@ -360,7 +381,14 @@ class RealTimeMonitor:
     """实时监控主类"""
     
     def __init__(self, config: Dict = None):
-        self.logger = UnifiedLogger("RealTimeMonitor")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "RealTimeMonitor")
         self.config = config or self._get_default_config()
         
         # 初始化组件

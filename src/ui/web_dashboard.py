@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 import os
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 from ..trading.advanced_trading_engine import AdvancedTradingEngine
 from ..trading.strategy_manager import StrategyManager
 from ..risk.enhanced_risk_manager import EnhancedRiskManager
@@ -31,7 +31,14 @@ class WebDashboard:
     def __init__(self, trading_engine: AdvancedTradingEngine = None,
                  strategy_manager: StrategyManager = None,
                  risk_manager: EnhancedRiskManager = None):
-        self.logger = UnifiedLogger("WebDashboard")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "WebDashboard")
         
         # 初始化Flask应用
         self.app = Flask(__name__, 

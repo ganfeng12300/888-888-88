@@ -22,7 +22,7 @@ from collections import deque, defaultdict
 from enum import Enum
 import uuid
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 from ..risk.enhanced_risk_manager import EnhancedRiskManager
 
 class OrderType(Enum):
@@ -104,7 +104,14 @@ class MarketDataManager:
     """市场数据管理器"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("MarketDataManager")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "MarketDataManager")
         self.price_data = defaultdict(deque)
         self.order_book = defaultdict(dict)
         self.tick_data = defaultdict(deque)
@@ -205,7 +212,14 @@ class OrderManager:
     """订单管理器"""
     
     def __init__(self, market_data_manager: MarketDataManager):
-        self.logger = UnifiedLogger("OrderManager")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "OrderManager")
         self.market_data = market_data_manager
         self.orders: Dict[str, Order] = {}
         self.trades: List[Trade] = []
@@ -465,7 +479,14 @@ class PositionManager:
     """持仓管理器"""
     
     def __init__(self, market_data_manager: MarketDataManager):
-        self.logger = UnifiedLogger("PositionManager")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "PositionManager")
         self.market_data = market_data_manager
         self.positions: Dict[str, Position] = {}
         self._lock = threading.Lock()
@@ -543,8 +564,16 @@ class PositionManager:
 class AdvancedTradingEngine:
     """高级交易引擎主类"""
     
-    def __init__(self):
-        self.logger = UnifiedLogger("AdvancedTradingEngine")
+    def __init__(self, config=None):
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "AdvancedTradingEngine")
+        self.settings = config
         
         # 初始化组件
         self.market_data = MarketDataManager()

@@ -54,7 +54,7 @@ try:
 except ImportError:
     SKLEARN_AVAILABLE = False
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 
 @dataclass
 class ModelInfo:
@@ -130,7 +130,14 @@ class ModelManager:
     """模型管理器"""
     
     def __init__(self, models_dir: str = "models"):
-        self.logger = UnifiedLogger("ModelManager")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "ModelManager")
         self.models_dir = Path(models_dir)
         self.models_dir.mkdir(exist_ok=True)
         
@@ -296,7 +303,14 @@ class ModelTrainer:
     """模型训练器"""
     
     def __init__(self, model_manager: ModelManager):
-        self.logger = UnifiedLogger("ModelTrainer")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "ModelTrainer")
         self.model_manager = model_manager
         self.training_history = deque(maxlen=100)
     
@@ -454,7 +468,14 @@ class PredictionEngine:
     """预测引擎"""
     
     def __init__(self, model_manager: ModelManager):
-        self.logger = UnifiedLogger("PredictionEngine")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "PredictionEngine")
         self.model_manager = model_manager
         self.prediction_queue = deque()
         self.prediction_history = deque(maxlen=10000)
@@ -639,7 +660,14 @@ class NeuralNetworkEngine:
     """神经网络引擎主类"""
     
     def __init__(self, models_dir: str = "models"):
-        self.logger = UnifiedLogger("NeuralNetworkEngine")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "NeuralNetworkEngine")
         
         # 初始化组件
         self.model_manager = ModelManager(models_dir)

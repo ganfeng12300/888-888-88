@@ -7,11 +7,11 @@ import os
 from typing import Dict, List, Optional, Any
 from pathlib import Path
 
-from pydantic import BaseSettings, Field, validator
-from pydantic_settings import BaseSettings as PydanticBaseSettings
+from pydantic import Field, validator
+from pydantic_settings import BaseSettings
 
 
-class DatabaseSettings(PydanticBaseSettings):
+class DatabaseSettings(BaseSettings):
     """数据库配置"""
     redis_url: str = Field(default="redis://localhost:6379", env="REDIS_URL")
     clickhouse_url: str = Field(default="clickhouse://localhost:9000/quant_data", env="CLICKHOUSE_URL")
@@ -23,7 +23,7 @@ class DatabaseSettings(PydanticBaseSettings):
     postgres_max_connections: int = 20
 
 
-class ExchangeSettings(PydanticBaseSettings):
+class ExchangeSettings(BaseSettings):
     """交易所配置"""
     # 支持的交易所列表
     supported_exchanges: List[str] = [
@@ -35,6 +35,10 @@ class ExchangeSettings(PydanticBaseSettings):
     enabled_exchanges: List[str] = ["binance", "okx", "bybit"]
     
     # API配置 (从环境变量读取)
+    bitget_api_key: Optional[str] = Field(default=None, env="BITGET_API_KEY")
+    bitget_secret_key: Optional[str] = Field(default=None, env="BITGET_SECRET_KEY")
+    bitget_passphrase: Optional[str] = Field(default=None, env="BITGET_PASSPHRASE")
+    
     binance_api_key: Optional[str] = Field(default=None, env="BINANCE_API_KEY")
     binance_secret_key: Optional[str] = Field(default=None, env="BINANCE_SECRET_KEY")
     
@@ -52,7 +56,7 @@ class ExchangeSettings(PydanticBaseSettings):
     max_order_size: float = 10000.0  # USDT
 
 
-class AISettings(PydanticBaseSettings):
+class AISettings(BaseSettings):
     """AI模型配置"""
     # GPU配置
     cuda_device: str = Field(default="cuda:0", env="CUDA_VISIBLE_DEVICES")
@@ -72,14 +76,16 @@ class AISettings(PydanticBaseSettings):
     gan_weight: float = 0.05
     graph_neural_weight: float = 0.05
     
-    @validator('*_weight')
+    @validator('meta_learning_weight', 'ensemble_learning_weight', 'reinforcement_learning_weight', 
+               'time_series_weight', 'transfer_learning_weight', 'expert_system_weight', 
+               'gan_weight', 'graph_neural_weight')
     def validate_weights(cls, v):
         if not 0 <= v <= 1:
             raise ValueError('权重必须在0-1之间')
         return v
 
 
-class RiskSettings(PydanticBaseSettings):
+class RiskSettings(BaseSettings):
     """风险控制配置"""
     # 收益目标
     weekly_profit_target: float = 0.20  # 20%
@@ -98,7 +104,7 @@ class RiskSettings(PydanticBaseSettings):
     emergency_stop_threshold: float = 0.05  # 5%紧急止损
 
 
-class TradingSettings(PydanticBaseSettings):
+class TradingSettings(BaseSettings):
     """交易配置"""
     # 交易模式
     trading_mode: str = "live"  # live, paper, backtest
@@ -119,7 +125,7 @@ class TradingSettings(PydanticBaseSettings):
     slippage_tolerance: float = 0.001  # 0.1%
 
 
-class WebSettings(PydanticBaseSettings):
+class WebSettings(BaseSettings):
     """Web界面配置"""
     host: str = "0.0.0.0"
     port: int = 8000
@@ -136,7 +142,7 @@ class WebSettings(PydanticBaseSettings):
     cors_origins: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
 
-class HardwareSettings(PydanticBaseSettings):
+class HardwareSettings(BaseSettings):
     """硬件配置"""
     # CPU配置
     cpu_cores: int = 20
@@ -156,7 +162,7 @@ class HardwareSettings(PydanticBaseSettings):
     max_storage_usage: float = 0.90  # 90%
 
 
-class LoggingSettings(PydanticBaseSettings):
+class LoggingSettings(BaseSettings):
     """日志配置"""
     log_level: str = "INFO"
     log_file: str = "logs/quant_system.log"
@@ -167,7 +173,7 @@ class LoggingSettings(PydanticBaseSettings):
     log_format: str = "{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} | {message}"
 
 
-class Settings(PydanticBaseSettings):
+class Settings(BaseSettings):
     """主配置类"""
     
     # 基本信息
@@ -192,10 +198,18 @@ class Settings(PydanticBaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
+        extra = "ignore"  # 忽略额外的环境变量
     
     def get_exchange_config(self, exchange_name: str) -> Dict[str, Any]:
         """获取指定交易所的配置"""
         exchange_configs = {
+            "bitget": {
+                "api_key": self.exchange.bitget_api_key,
+                "secret": self.exchange.bitget_secret_key,
+                "password": self.exchange.bitget_passphrase,
+                "sandbox": False,  # 强制生产环境
+                "enableRateLimit": True,
+            },
             "binance": {
                 "api_key": self.exchange.binance_api_key,
                 "secret": self.exchange.binance_secret_key,

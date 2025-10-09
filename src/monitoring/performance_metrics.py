@@ -54,7 +54,14 @@ class SystemMetricsCollector:
     """系统指标收集器"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("SystemMetricsCollector")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "SystemMetricsCollector")
         self.metrics_history = deque(maxlen=10000)
         self._collection_interval = 1.0
         self._running = False
@@ -238,7 +245,14 @@ class ApplicationMetricsCollector:
     """应用指标收集器"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("ApplicationMetricsCollector")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "ApplicationMetricsCollector")
         self.metrics_history = deque(maxlen=10000)
         self.function_timers = {}
         self.counters = defaultdict(int)
@@ -306,7 +320,14 @@ class PerformanceAnalyzer:
     """性能分析器"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("PerformanceAnalyzer")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "PerformanceAnalyzer")
         self.baselines: Dict[str, PerformanceBaseline] = {}
         self.anomaly_threshold = 2.0  # 标准差倍数
     
@@ -511,7 +532,14 @@ class PerformanceMetricsManager:
     """性能指标管理器"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("PerformanceMetricsManager")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "PerformanceMetricsManager")
         
         # 初始化组件
         self.system_collector = SystemMetricsCollector()

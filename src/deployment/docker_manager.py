@@ -21,7 +21,7 @@ from dataclasses import dataclass, asdict
 import os
 import yaml
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 
 @dataclass
 class ContainerConfig:
@@ -52,7 +52,14 @@ class DockerManager:
     """Docker管理器主类"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("DockerManager")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "DockerManager")
         
         try:
             self.client = docker.from_env()

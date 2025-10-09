@@ -22,7 +22,7 @@ from collections import deque, defaultdict
 import statistics
 import gc
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 
 @dataclass
 class PerformanceMetrics:
@@ -50,7 +50,14 @@ class PerformanceOptimizer:
     """性能优化器主类"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("PerformanceOptimizer")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "PerformanceOptimizer")
         
         # 性能数据收集
         self.metrics_history = deque(maxlen=1000)

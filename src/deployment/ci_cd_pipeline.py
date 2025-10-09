@@ -22,7 +22,7 @@ from dataclasses import dataclass, asdict
 from enum import Enum
 import yaml
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 
 class PipelineStage(Enum):
     """流水线阶段"""
@@ -71,7 +71,14 @@ class CICDPipeline:
     """CI/CD流水线主类"""
     
     def __init__(self):
-        self.logger = UnifiedLogger("CICDPipeline")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "CICDPipeline")
         
         # 流水线配置
         self.pipeline_config = self._load_pipeline_config()

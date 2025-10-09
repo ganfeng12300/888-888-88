@@ -19,13 +19,20 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 import os
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 
 class MobileApp:
     """移动端应用主类"""
     
     def __init__(self, trading_engine=None, strategy_manager=None):
-        self.logger = UnifiedLogger("MobileApp")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "MobileApp")
         
         # 初始化Flask应用
         self.app = Flask(__name__, 

@@ -23,7 +23,7 @@ import base64
 import uuid
 import requests
 
-from ..monitoring.unified_logging_system import UnifiedLogger
+from ..monitoring.unified_logging_system import UnifiedLoggingSystem, LogConfig, LogCategory
 
 class LicenseType(Enum):
     """许可证类型"""
@@ -69,7 +69,14 @@ class LicenseManager:
     """许可证管理器主类"""
     
     def __init__(self, license_server_url: str = None):
-        self.logger = UnifiedLogger("LicenseManager")
+        # 初始化日志系统
+        log_config = LogConfig(
+            log_dir="logs",
+            console_output=True,
+            file_output=True,
+            json_format=False
+        )
+        self.logger = UnifiedLoggingSystem(log_config) # "LicenseManager")
         
         # 许可证服务器配置
         self.license_server_url = license_server_url or "https://license.trading-system.com"
