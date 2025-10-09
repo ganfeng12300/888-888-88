@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 专业套利量化系统 - 收益拉满版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #1a1a24;
+            --bg-tertiary: #2a2a3a;
+            --accent-primary: #00d4ff;
+            --accent-secondary: #ff6b35;
+            --accent-success: #00ff88;
+            --accent-danger: #ff4757;
+            --accent-warning: #ffa502;
+            --text-primary: #ffffff;
+            --text-secondary: #b8bcc8;
+            --border-color: #3a3a4a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: rgba(26, 26, 36, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo h1 {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .system-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-success));
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-danger), var(--accent-secondary));
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.3);
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(26, 26, 36, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-running {
+            background: var(--accent-success);
+        }
+
+        .status-stopped {
+            background: var(--accent-danger);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(42, 42, 58, 0.5);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .profit-positive {
+            color: var(--accent-success);
+        }
+
+        .profit-negative {
+            color: var(--accent-danger);
+        }
+
+        .opportunities-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .opportunity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: rgba(42, 42, 58, 0.3);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .opportunity-info {
+            flex: 1;
+        }
+
+        .opportunity-symbol {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .opportunity-exchanges {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .opportunity-profit {
+            text-align: right;
+        }
+
+        .profit-percentage {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-success);
+        }
+
+        .signal-strength {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background: var(--accent-warning);
+            color: var(--bg-primary);
+            margin-top: 0.25rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .compound-projection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .projection-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(0, 255, 136, 0.1));
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .projection-period {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .projection-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-success);
+            margin-bottom: 0.25rem;
+        }
+
+        .projection-growth {
+            font-size: 0.875rem;
+            color: var(--accent-primary);
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-rocket" style="color: var(--accent-primary); font-size: 2rem;"></i>
+                <h1>专业套利量化系统</h1>
+            </div>
+            <div class="system-controls">
+                <div class="status-indicator" id="systemStatus"></div>
+                <button class="btn btn-primary" id="startBtn">
+                    <i class="fas fa-play"></i>
+                    启动系统
+                </button>
+                <button class="btn btn-danger" id="stopBtn">
+                    <i class="fas fa-stop"></i>
+                    停止系统
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- 系统概览 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-chart-line"></i>
+                    系统概览
+                </h2>
+            </div>
+            <div class="metric-grid">
+                <div class="metric-item">
+                    <div class="metric-value profit-positive" id="currentCapital">50.90</div>
+                    <div class="metric-label">当前资金 (USDT)</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value profit-positive" id="totalProfit">0.00</div>
+                    <div class="metric-label">总利润 (USDT)</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" id="growthRate">0.00%</div>
+                    <div class="metric-label">增长率</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" id="winRate">0.00%</div>
+                    <div class="metric-label">胜率</div>
+                </div>
+            </div>
+            <div class="metric-grid">
+                <div class="metric-item">
+                    <div class="metric-value" id="connectedExchanges">0</div>
+                    <div class="metric-label">已连接交易所</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" id="activeOpportunities">0</div>
+                    <div class="metric-label">活跃机会</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" id="totalTrades">0</div>
+                    <div class="metric-label">总交易次数</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" id="dailyTarget">1.20%</div>
+                    <div class="metric-label">日收益目标</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 套利机会 -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-bullseye"></i>
+                    实时套利机会
+                </h2>
+                <span id="opportunityCount">0 个机会</span>
+            </div>
+            <div class="opportunities-list" id="opportunitiesList">
+                <div style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                    <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>正在扫描套利机会...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 复利增长预测 -->
+        <div class="card full-width">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-chart-area"></i>
+                    复利增长预测
+                </h2>
+            </div>
+            <div class="compound-projection" id="compoundProjection">
+                <!-- 动态生成复利预测数据 -->
+            </div>
+            <div class="chart-container">
+                <canvas id="growthChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket连接
+        const socket = io();
+        
+        // 图表实例
+        let growthChart = null;
+        
+        // 初始化图表
+        function initializeChart() {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+            growthChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '资金增长',
+                        data: [],
+                        borderColor: '#00d4ff',
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ffffff'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#b8bcc8'
+                            },
+                            grid: {
+                                color: 'rgba(184, 188, 200, 0.1)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#b8bcc8'
+                            },
+                            grid: {
+                                color: 'rgba(184, 188, 200, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 更新系统状态
+        function updateSystemStatus(status) {
+            document.getElementById('currentCapital').textContent = status.current_capital.toFixed(2);
+            document.getElementById('totalProfit').textContent = status.total_profit.toFixed(2);
+            document.getElementById('growthRate').textContent = (status.growth_rate * 100).toFixed(2) + '%';
+            document.getElementById('winRate').textContent = (status.stats.win_rate * 100).toFixed(2) + '%';
+            document.getElementById('connectedExchanges').textContent = status.connected_exchanges;
+            document.getElementById('activeOpportunities').textContent = status.active_opportunities;
+            document.getElementById('totalTrades').textContent = status.stats.total_trades;
+            document.getElementById('dailyTarget').textContent = (status.daily_target_rate * 100).toFixed(2) + '%';
+            
+            // 更新系统状态指示器
+            const statusIndicator = document.getElementById('systemStatus');
+            if (status.is_running) {
+                statusIndicator.className = 'status-indicator status-running';
+            } else {
+                statusIndicator.className = 'status-indicator status-stopped';
+            }
+            
+            // 更新增长率颜色
+            const growthElement = document.getElementById('growthRate');
+            if (status.growth_rate > 0) {
+                growthElement.className = 'metric-value profit-positive';
+            } else if (status.growth_rate < 0) {
+                growthElement.className = 'metric-value profit-negative';
+            } else {
+                growthElement.className = 'metric-value';
+            }
+        }
+        
+        // 更新套利机会
+        function updateOpportunities(opportunities) {
+            const list = document.getElementById('opportunitiesList');
+            const count = document.getElementById('opportunityCount');
+            
+            count.textContent = `${opportunities.length} 个机会`;
+            
+            if (opportunities.length === 0) {
+                list.innerHTML = `
+                    <div style="text-align: center; color: var(--text-secondary); padding: 2rem;">
+                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <p>暂无套利机会</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = opportunities.map(opp => `
+                <div class="opportunity-item">
+                    <div class="opportunity-info">
+                        <div class="opportunity-symbol">${opp.symbol}</div>
+                        <div class="opportunity-exchanges">${opp.exchange_a} ↔ ${opp.exchange_b}</div>
+                    </div>
+                    <div class="opportunity-profit">
+                        <div class="profit-percentage">${opp.expected_profit.toFixed(3)}%</div>
+                        <div class="signal-strength">强度: ${opp.signal_strength}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 更新复利预测
+        function updateCompoundProjection() {
+            fetch('/api/compound/projection')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('compoundProjection');
+                    container.innerHTML = data.map(item => `
+                        <div class="projection-item">
+                            <div class="projection-period">${item.day}天后</div>
+                            <div class="projection-value">${item.capital} USDT</div>
+                            <div class="projection-growth">+${item.growth_rate}%</div>
+                        </div>
+                    `).join('');
+                    
+                    // 更新图表
+                    if (growthChart) {
+                        growthChart.data.labels = data.map(item => `${item.day}天`);
+                        growthChart.data.datasets[0].data = data.map(item => item.capital);
+                        growthChart.update();
+                    }
+                });
+        }
+        
+        // WebSocket事件处理
+        socket.on('system_status', updateSystemStatus);
+        socket.on('arbitrage_opportunities', updateOpportunities);
+        
+        // 按钮事件处理
+        document.getElementById('startBtn').addEventListener('click', () => {
+            fetch('/api/system/start', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                    } else {
+                        alert('❌ ' + data.message);
+                    }
+                });
+        });
+        
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            fetch('/api/system/stop', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                    } else {
+                        alert('❌ ' + data.message);
+                    }
+                });
+        });
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeChart();
+            updateCompoundProjection();
+            
+            // 定期更新复利预测
+            setInterval(updateCompoundProjection, 60000); // 每分钟更新一次
+        });
+    </script>
+</body>
+</html>
