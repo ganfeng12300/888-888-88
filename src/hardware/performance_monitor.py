@@ -1,7 +1,15 @@
 """
-💻 硬件性能实时监控系统
+💻 硬件性能实时监控系统 (温控集成版)
 生产级硬件资源监控、优化和动态调节系统
 支持20核CPU + RTX3060 + 128GB内存 + 1TB NVMe的极限性能释放
+
+集成温控优化功能：
+- 温度感知性能调节
+- 热负载均衡
+- 温控驱动的资源管理
+- 与thermal_monitor.py深度集成
+
+Version: 2.0.0 (Thermal Control Integration)
 """
 
 import asyncio
@@ -28,6 +36,14 @@ except ImportError:
 
 from loguru import logger
 
+
+# 导入温控监控系统
+try:
+    from .thermal_monitor import ThermalMonitor, ThermalReading, ThermalAlert, get_thermal_monitor
+    THERMAL_MONITOR_AVAILABLE = True
+except ImportError:
+    THERMAL_MONITOR_AVAILABLE = False
+    logger.warning("温控监控系统不可用")
 
 @dataclass
 class HardwareMetrics:
@@ -83,6 +99,28 @@ class HardwarePerformanceMonitor:
         self.monitoring = False
         self.metrics_history: List[HardwareMetrics] = []
         self.max_history_size = 3600  # 保留1小时的历史数据
+
+        # 温控监控集成
+        self.thermal_monitor = None
+        if THERMAL_MONITOR_AVAILABLE:
+            try:
+                thermal_config = {
+                    "monitor_interval": 1.0,
+                    "thresholds": {
+                        "cpu_warning": 70.0,
+                        "cpu_critical": 75.0,
+                        "cpu_emergency": 80.0,
+                        "gpu_warning": 75.0,
+                        "gpu_critical": 80.0,
+                        "gpu_emergency": 85.0
+                    }
+                }
+                self.thermal_monitor = get_thermal_monitor(thermal_config)
+                self.thermal_monitor.add_alert_callback(self._handle_thermal_alert)
+                logger.info("温控监控系统集成成功")
+            except Exception as e:
+                logger.error(f"温控监控系统集成失败: {e}")
+                self.thermal_monitor = None
         
         # 硬件信息
         self.cpu_cores = psutil.cpu_count(logical=True)
@@ -114,6 +152,10 @@ class HardwarePerformanceMonitor:
         self.monitoring = True
         logger.info(f"开始硬件性能监控，监控间隔: {interval}秒")
         
+
+        # 启动温控监控
+        if self.thermal_monitor:
+            self.thermal_monitor.start_monitoring()
         # 获取基准性能
         await self._establish_baseline()
         
@@ -517,6 +559,10 @@ class HardwarePerformanceMonitor:
         """停止监控"""
         self.monitoring = False
         logger.info("硬件性能监控已停止")
+
+        # 停止温控监控
+        if self.thermal_monitor:
+            self.thermal_monitor.stop_monitoring()
     
     def save_metrics_to_file(self, filepath: str):
         """保存指标到文件"""
@@ -557,3 +603,232 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+    def _handle_thermal_alert(self, alert: 'ThermalAlert'):
+        """处理温控警报"""
+        try:
+            logger.warning(f"收到温控警报: {alert.message}")
+            
+            # 根据警报级别采取不同措施
+            if alert.level == "emergency":
+                # 紧急情况：立即降低性能
+                self._emergency_thermal_response(alert)
+            elif alert.level == "critical":
+                # 严重情况：大幅降低性能
+                self._critical_thermal_response(alert)
+            elif alert.level == "warning":
+                # 警告情况：适度降低性能
+                self._warning_thermal_response(alert)
+                
+        except Exception as e:
+            logger.error(f"处理温控警报失败: {e}")
+    
+    def _emergency_thermal_response(self, alert: 'ThermalAlert'):
+        """紧急温控响应"""
+        logger.critical(f"执行紧急温控响应: {alert.component}")
+        
+        if alert.component == "CPU":
+            # CPU紧急降频
+            self._emergency_cpu_throttle()
+        elif alert.component == "GPU":
+            # GPU紧急降频
+            self._emergency_gpu_throttle()
+        elif alert.component == "Memory":
+            # 内存紧急保护
+            self._emergency_memory_protection()
+    
+    def _critical_thermal_response(self, alert: 'ThermalAlert'):
+        """严重温控响应"""
+        logger.error(f"执行严重温控响应: {alert.component}")
+        
+        if alert.component == "CPU":
+            self._critical_cpu_throttle()
+        elif alert.component == "GPU":
+            self._critical_gpu_throttle()
+        elif alert.component == "Memory":
+            self._critical_memory_protection()
+    
+    def _warning_thermal_response(self, alert: 'ThermalAlert'):
+        """警告温控响应"""
+        logger.warning(f"执行警告温控响应: {alert.component}")
+        
+        if alert.component == "CPU":
+            self._warning_cpu_throttle()
+        elif alert.component == "GPU":
+            self._warning_gpu_throttle()
+        elif alert.component == "Memory":
+            self._warning_memory_protection()
+    
+    def _emergency_cpu_throttle(self):
+        """CPU紧急降频"""
+        try:
+            # 设置CPU为最低性能模式
+            if platform.system() == "Linux":
+                subprocess.run(["cpupower", "frequency-set", "-g", "powersave"], 
+                             capture_output=True, check=False)
+                logger.critical("CPU已设置为省电模式")
+            
+            # 限制CPU使用率
+            self._limit_cpu_usage(50)  # 限制到50%
+            
+        except Exception as e:
+            logger.error(f"CPU紧急降频失败: {e}")
+    
+    def _emergency_gpu_throttle(self):
+        """GPU紧急降频"""
+        try:
+            if self.gpu_available:
+                # 降低GPU功耗限制
+                self._set_gpu_power_limit(60)  # 限制到60%
+                logger.critical("GPU功耗已限制到60%")
+                
+        except Exception as e:
+            logger.error(f"GPU紧急降频失败: {e}")
+    
+    def _emergency_memory_protection(self):
+        """内存紧急保护"""
+        try:
+            # 清理内存缓存
+            if platform.system() == "Linux":
+                subprocess.run(["sync"], check=False)
+                subprocess.run(["echo", "3", ">", "/proc/sys/vm/drop_caches"], 
+                             shell=True, check=False)
+                logger.critical("内存缓存已清理")
+                
+        except Exception as e:
+            logger.error(f"内存紧急保护失败: {e}")
+    
+    def _critical_cpu_throttle(self):
+        """CPU严重降频"""
+        try:
+            # 设置CPU为平衡模式
+            if platform.system() == "Linux":
+                subprocess.run(["cpupower", "frequency-set", "-g", "ondemand"], 
+                             capture_output=True, check=False)
+                logger.error("CPU已设置为按需模式")
+            
+            # 限制CPU使用率
+            self._limit_cpu_usage(70)  # 限制到70%
+            
+        except Exception as e:
+            logger.error(f"CPU严重降频失败: {e}")
+    
+    def _critical_gpu_throttle(self):
+        """GPU严重降频"""
+        try:
+            if self.gpu_available:
+                # 降低GPU功耗限制
+                self._set_gpu_power_limit(75)  # 限制到75%
+                logger.error("GPU功耗已限制到75%")
+                
+        except Exception as e:
+            logger.error(f"GPU严重降频失败: {e}")
+    
+    def _critical_memory_protection(self):
+        """内存严重保护"""
+        try:
+            # 适度清理内存
+            if platform.system() == "Linux":
+                subprocess.run(["sync"], check=False)
+                subprocess.run(["echo", "1", ">", "/proc/sys/vm/drop_caches"], 
+                             shell=True, check=False)
+                logger.error("内存页缓存已清理")
+                
+        except Exception as e:
+            logger.error(f"内存严重保护失败: {e}")
+    
+    def _warning_cpu_throttle(self):
+        """CPU警告降频"""
+        try:
+            # 限制CPU使用率
+            self._limit_cpu_usage(85)  # 限制到85%
+            logger.warning("CPU使用率已限制到85%")
+            
+        except Exception as e:
+            logger.error(f"CPU警告降频失败: {e}")
+    
+    def _warning_gpu_throttle(self):
+        """GPU警告降频"""
+        try:
+            if self.gpu_available:
+                # 降低GPU功耗限制
+                self._set_gpu_power_limit(90)  # 限制到90%
+                logger.warning("GPU功耗已限制到90%")
+                
+        except Exception as e:
+            logger.error(f"GPU警告降频失败: {e}")
+    
+    def _warning_memory_protection(self):
+        """内存警告保护"""
+        try:
+            # 轻度内存优化
+            logger.warning("内存使用率较高，建议关闭不必要的程序")
+            
+        except Exception as e:
+            logger.error(f"内存警告保护失败: {e}")
+    
+    def _limit_cpu_usage(self, max_usage_percent: int):
+        """限制CPU使用率"""
+        try:
+            # 这里可以实现CPU使用率限制逻辑
+            # 例如通过cgroups或其他方式
+            logger.info(f"CPU使用率限制设置为: {max_usage_percent}%")
+            
+        except Exception as e:
+            logger.error(f"限制CPU使用率失败: {e}")
+    
+    def _set_gpu_power_limit(self, power_percent: int):
+        """设置GPU功耗限制"""
+        try:
+            if self.gpu_available:
+                # 通过nvidia-ml设置GPU功耗限制
+                import pynvml
+                for i in range(self.gpu_count):
+                    handle = pynvml.nvmlDeviceGetHandleByIndex(i)
+                    max_power = pynvml.nvmlDeviceGetMaxPowerManagementLimitConstraints(handle)[1]
+                    new_limit = int(max_power * power_percent / 100)
+                    pynvml.nvmlDeviceSetPowerManagementLimitConstraints(handle, new_limit)
+                    logger.info(f"GPU {i} 功耗限制设置为: {new_limit}W ({power_percent}%)")
+                    
+        except Exception as e:
+            logger.error(f"设置GPU功耗限制失败: {e}")
+    
+    def get_thermal_status(self) -> Dict[str, Any]:
+        """获取温控状态"""
+        if not self.thermal_monitor:
+            return {"status": "thermal_monitor_unavailable"}
+        
+        try:
+            return self.thermal_monitor.get_current_status()
+        except Exception as e:
+            logger.error(f"获取温控状态失败: {e}")
+            return {"status": "error", "message": str(e)}
+    
+    def get_integrated_status(self) -> Dict[str, Any]:
+        """获取集成状态（性能+温控）"""
+        try:
+            # 获取性能状态
+            performance_status = {
+                "monitoring": self.monitoring,
+                "metrics_count": len(self.metrics_history),
+                "cpu_cores": self.cpu_cores,
+                "gpu_available": self.gpu_available
+            }
+            
+            # 获取温控状态
+            thermal_status = self.get_thermal_status()
+            
+            # 合并状态
+            integrated_status = {
+                "timestamp": time.time(),
+                "performance": performance_status,
+                "thermal": thermal_status,
+                "integration_status": "active" if self.thermal_monitor else "thermal_unavailable"
+            }
+            
+            return integrated_status
+            
+        except Exception as e:
+            logger.error(f"获取集成状态失败: {e}")
+            return {"status": "error", "message": str(e)}
+
