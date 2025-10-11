@@ -1,0 +1,133 @@
+# AI量化套利系统配置文件
+# 请根据实际情况修改以下配置
+
+# 交易所API配置
+exchanges:
+  binance:
+    api_key: "YOUR_BINANCE_API_KEY"
+    api_secret: "YOUR_BINANCE_SECRET"
+    testnet: false  # 设为true使用测试网
+    
+  bitget:
+    api_key: "YOUR_BITGET_API_KEY"
+    api_secret: "YOUR_BITGET_SECRET"
+    passphrase: "YOUR_BITGET_PASSPHRASE"
+    testnet: false
+    
+  bybit:
+    api_key: "YOUR_BYBIT_API_KEY"
+    api_secret: "YOUR_BYBIT_SECRET"
+    testnet: false
+
+# 风险管理配置
+risk_management:
+  initial_capital: 1000.0  # 初始资金 USDT
+  max_daily_drawdown: 0.03  # 最大日回撤 3%
+  max_position_size: 0.1    # 单策略最大仓位 10%
+  max_single_trade: 100.0   # 单笔交易最大金额 USDT
+  stop_loss_threshold: 0.02 # 止损阈值 2%
+  
+# 策略配置
+strategies:
+  funding_rate_arbitrage:
+    enabled: true
+    allocation: 0.6  # 60%资金分配
+    min_funding_rate: 0.01  # 最小资金费率 1%
+    max_leverage: 3  # 最大杠杆
+    
+  cross_exchange_arbitrage:
+    enabled: true
+    allocation: 0.25  # 25%资金分配
+    min_spread: 0.002  # 最小价差 0.2%
+    max_slippage: 0.001  # 最大滑点 0.1%
+    
+  triangular_arbitrage:
+    enabled: true
+    allocation: 0.15  # 15%资金分配
+    min_profit: 0.001  # 最小利润 0.1%
+    
+  flashloan_arbitrage:
+    enabled: false  # 默认关闭，需要配置DeFi相关参数
+    allocation: 0.0
+    min_profit: 0.005  # 最小利润 0.5%
+
+# 交易对配置
+trading_pairs:
+  - "BTC/USDT"
+  - "ETH/USDT"
+  - "BNB/USDT"
+  - "SOL/USDT"
+  - "ADA/USDT"
+  - "DOT/USDT"
+  - "MATIC/USDT"
+  - "AVAX/USDT"
+
+# 数据库配置
+database:
+  postgresql:
+    host: "localhost"
+    port: 5432
+    database: "arbitrage_db"
+    username: "postgres"
+    password: "password"
+    
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: ""
+
+# DeFi配置 (闪电贷套利)
+defi:
+  ethereum:
+    rpc_url: "https://mainnet.infura.io/v3/YOUR_INFURA_KEY"
+    private_key: "YOUR_PRIVATE_KEY"  # 请使用环境变量
+    
+  arbitrum:
+    rpc_url: "https://arb1.arbitrum.io/rpc"
+    private_key: "YOUR_PRIVATE_KEY"
+    
+  aave_v3:
+    pool_address: "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2"
+    
+  flashbots:
+    relay_url: "https://relay.flashbots.net"
+    
+# 监控配置
+monitoring:
+  web_port: 8080
+  metrics_port: 9090
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  
+  alerts:
+    email:
+      enabled: false
+      smtp_server: "smtp.gmail.com"
+      smtp_port: 587
+      username: "your_email@gmail.com"
+      password: "your_app_password"
+      recipients: ["alert@example.com"]
+      
+    telegram:
+      enabled: false
+      bot_token: "YOUR_TELEGRAM_BOT_TOKEN"
+      chat_id: "YOUR_CHAT_ID"
+      
+    dingtalk:
+      enabled: false
+      webhook_url: "YOUR_DINGTALK_WEBHOOK"
+
+# 系统配置
+system:
+  max_workers: 10  # 最大工作线程数
+  update_interval: 1.0  # 数据更新间隔(秒)
+  order_timeout: 30  # 订单超时时间(秒)
+  reconnect_delay: 5  # 重连延迟(秒)
+  
+# 日志配置
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/arbitrage.log"
+  max_size: "100MB"
+  backup_count: 5
